@@ -1,0 +1,55 @@
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Vehicles</h2>
+    </x-slot>
+
+    <div class="py-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="mb-4 flex justify-end">
+                <a href="{{ route('vehicles.create') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Add Vehicle</a>
+            </div>
+
+            @if (session('success'))
+                <div class="mb-4 p-3 bg-green-100 text-green-700 rounded">{{ session('success') }}</div>
+            @endif
+
+            <div class="bg-white shadow-sm sm:rounded-lg overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Reg. Number</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Brand</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Model</th>
+                            <th class="px-4 py-2"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse ($vehicles as $vehicle)
+                            <tr>
+                                <td class="px-4 py-2">{{ $vehicle->registration_number }}</td>
+                                <td class="px-4 py-2">{{ $vehicle->type }}</td>
+                                <td class="px-4 py-2">{{ $vehicle->brand }}</td>
+                                <td class="px-4 py-2">{{ $vehicle->model }}</td>
+                                <td class="px-4 py-2 text-right space-x-3">
+                                    <a class="text-indigo-600" href="{{ route('vehicles.edit', $vehicle) }}">Edit</a>
+                                    <form class="inline" method="POST" action="{{ route('vehicles.destroy', $vehicle) }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600" onclick="return confirm('Delete this vehicle?')">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="px-4 py-4 text-center text-gray-500">No vehicles found.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4">{{ $vehicles->links() }}</div>
+        </div>
+    </div>
+</x-app-layout>

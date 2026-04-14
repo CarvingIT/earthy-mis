@@ -1,0 +1,40 @@
+<?php
+
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SocietyController;
+use App\Http\Controllers\VehicleController;
+use App\Models\Customer;
+use App\Models\Product;
+use App\Models\Society;
+use App\Models\Vehicle;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', function () {
+    return view('welcome');
+});
+
+Route::get('/dashboard', function () {
+    $userId = auth()->id();
+
+    return view('dashboard', [
+        'societiesCount' => Society::where('user_id', $userId)->count(),
+        'vehiclesCount' => Vehicle::where('user_id', $userId)->count(),
+        'customersCount' => Customer::where('user_id', $userId)->count(),
+        'productsCount' => Product::where('user_id', $userId)->count(),
+    ]);
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::resource('societies', SocietyController::class)->except('show');
+    Route::resource('vehicles', VehicleController::class)->except('show');
+    Route::resource('customers', CustomerController::class)->except('show');
+    Route::resource('products', ProductController::class)->except('show');
+});
+
+require __DIR__.'/auth.php';
