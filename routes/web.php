@@ -11,9 +11,7 @@ use App\Models\Society;
 use App\Models\Vehicle;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::redirect('/', '/login');
 
 Route::get('/dashboard', function () {
     $userId = auth()->id();

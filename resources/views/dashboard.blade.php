@@ -9,23 +9,35 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <a href="{{ route('societies.index') }}" class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 block hover:shadow-md transition">
-                    <h3 class="text-sm text-gray-500">Societies</h3>
-                    <p class="mt-2 text-3xl font-bold text-gray-900">{{ $societiesCount }}</p>
+                    <div class="flex items-center gap-2">
+                        <img src="{{ asset(rawurlencode('society icon.png')) }}" alt="Society icon" class="h-8 w-8 object-contain">
+                        <h3 class="text-sm text-gray-500">Societies</h3>
+                    </div>
+                    <p class="mt-2 text-3xl font-bold text-gray-900 text-right">{{ $societiesCount }}</p>
                 </a>
 
                 <a href="{{ route('vehicles.index') }}" class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 block hover:shadow-md transition">
-                    <h3 class="text-sm text-gray-500">Vehicles</h3>
-                    <p class="mt-2 text-3xl font-bold text-gray-900">{{ $vehiclesCount }}</p>
+                    <div class="flex items-center gap-2">
+                        <img src="{{ asset(rawurlencode('vehicles icon.png')) }}" alt="Vehicle icon" class="h-8 w-8 object-contain">
+                        <h3 class="text-sm text-gray-500">Vehicles</h3>
+                    </div>
+                    <p class="mt-2 text-3xl font-bold text-gray-900 text-right">{{ $vehiclesCount }}</p>
                 </a>
 
                 <a href="{{ route('customers.index') }}" class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 block hover:shadow-md transition">
-                    <h3 class="text-sm text-gray-500">Customers</h3>
-                    <p class="mt-2 text-3xl font-bold text-gray-900">{{ $customersCount }}</p>
+                    <div class="flex items-center gap-2">
+                        <img src="{{ asset(rawurlencode('customers icon.png')) }}" alt="Customer icon" class="h-8 w-8 object-contain">
+                        <h3 class="text-sm text-gray-500">Customers</h3>
+                    </div>
+                    <p class="mt-2 text-3xl font-bold text-gray-900 text-right">{{ $customersCount }}</p>
                 </a>
 
                 <a href="{{ route('products.index') }}" class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 block hover:shadow-md transition">
-                    <h3 class="text-sm text-gray-500">Products</h3>
-                    <p class="mt-2 text-3xl font-bold text-gray-900">{{ $productsCount }}</p>
+                    <div class="flex items-center gap-2">
+                        <img src="{{ asset(rawurlencode('products icon.png')) }}" alt="Product icon" class="h-8 w-8 object-contain">
+                        <h3 class="text-sm text-gray-500">Products</h3>
+                    </div>
+                    <p class="mt-2 text-3xl font-bold text-gray-900 text-right">{{ $productsCount }}</p>
                 </a>
             </div>
 

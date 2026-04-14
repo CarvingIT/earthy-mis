@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('model')->nullable();
             $table->string('color')->nullable();
             $table->date('purchased_on')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

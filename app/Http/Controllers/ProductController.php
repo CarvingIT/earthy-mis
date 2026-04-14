@@ -11,7 +11,7 @@ class ProductController extends Controller
     {
         $products = Product::where('user_id', auth()->id())
             ->latest()
-            ->paginate(10);
+            ->get();
 
         return view('products.index', compact('products'));
     }

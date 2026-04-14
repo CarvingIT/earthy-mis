@@ -25,23 +25,30 @@
         </div>
 
         <!-- Remember Me -->
-        <div class="block mt-4">
+        <div class="mt-4 flex items-center justify-between gap-4">
             <label for="remember_me" class="inline-flex items-center">
                 <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
                 <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
             </label>
-        </div>
 
-        <div class="flex items-center justify-end mt-4">
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
+                <a class="underline text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" style="color:#2563eb;" onmouseover="this.style.color='#1d4ed8'" onmouseout="this.style.color='#2563eb'" href="{{ route('password.request') }}">
+                    {{ __('Forgot password?') }}
                 </a>
             @endif
+        </div>
 
-            <x-primary-button class="ms-3">
+        <div class="flex justify-center mt-6">
+            <x-primary-button style="background-color:#16a34a;border-color:#16a34a;" onmouseover="this.style.backgroundColor='#15803d';this.style.borderColor='#15803d'" onmouseout="this.style.backgroundColor='#16a34a';this.style.borderColor='#16a34a'">
                 {{ __('Log in') }}
             </x-primary-button>
+        </div>
+
+        <div class="mt-4 text-center text-sm text-gray-600">
+            <span>Don't have an account?</span>
+            <a class="underline rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ms-1" style="color:#2563eb;" onmouseover="this.style.color='#1d4ed8'" onmouseout="this.style.color='#2563eb'" href="{{ route('register') }}">
+                Create an account
+            </a>
         </div>
     </form>
 </x-guest-layout>

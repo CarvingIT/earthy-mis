@@ -11,7 +11,7 @@ class VehicleController extends Controller
     {
         $vehicles = Vehicle::where('user_id', auth()->id())
             ->latest()
-            ->paginate(10);
+            ->get();
 
         return view('vehicles.index', compact('vehicles'));
     }

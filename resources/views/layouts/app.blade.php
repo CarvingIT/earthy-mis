@@ -10,9 +10,11 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.min.css">
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @stack('styles')
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">
@@ -32,5 +34,24 @@
                 {{ $slot }}
             </main>
         </div>
+
+        <script src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('[data-datatable]').forEach((table) => {
+                    if (!window.DataTable || table.dataset.datatableInitialized === 'true') {
+                        return;
+                    }
+
+                    table.dataset.datatableInitialized = 'true';
+                    new DataTable(table, {
+                        pageLength: 10,
+                        lengthChange: false,
+                        order: [],
+                    });
+                });
+            });
+        </script>
+        @stack('scripts')
     </body>
 </html>

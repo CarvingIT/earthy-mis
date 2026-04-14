@@ -11,7 +11,7 @@ class SocietyController extends Controller
     {
         $societies = Society::where('user_id', auth()->id())
             ->latest()
-            ->paginate(10);
+            ->get();
 
         return view('societies.index', compact('societies'));
     }

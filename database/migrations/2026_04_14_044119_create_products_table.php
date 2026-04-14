@@ -19,6 +19,7 @@ return new class extends Migration
             $table->decimal('price', 10, 2)->default(0);
             $table->unsignedInteger('stock')->default(0);
             $table->text('description')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }
