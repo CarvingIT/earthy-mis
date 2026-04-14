@@ -6,7 +6,7 @@
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="mb-4 flex justify-end">
-                <a href="{{ route('societies.create') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Add Society</a>
+                <a href="{{ route('societies.create') }}" class="px-4 py-2 text-white rounded-md" style="background-color:#16a34a;border:1px solid #16a34a;" onmouseover="this.style.backgroundColor='#15803d';this.style.borderColor='#15803d'" onmouseout="this.style.backgroundColor='#16a34a';this.style.borderColor='#16a34a'">Add Society</a>
             </div>
 
             @if (session('success'))
@@ -32,7 +32,7 @@
                                 <td class="px-4 py-2">{{ $society->contact_person }}</td>
                                 <td class="px-4 py-2">{{ $society->phone }}</td>
                                 <td class="px-4 py-2 text-right space-x-3">
-                                    <a class="text-indigo-600" href="{{ route('societies.edit', $society) }}">Edit</a>
+                                    <a class="text-green-600" href="{{ route('societies.edit', $society) }}">Edit</a>
                                     <form class="inline" method="POST" action="{{ route('societies.destroy', $society) }}">
                                         @csrf
                                         @method('DELETE')
