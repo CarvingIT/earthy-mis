@@ -44,11 +44,13 @@
             </x-primary-button>
         </div>
 
-        <div class="mt-4 text-center text-sm text-gray-600">
-            <span>Don't have an account?</span>
-            <a class="underline rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ms-1" style="color:#2563eb;" onmouseover="this.style.color='#1d4ed8'" onmouseout="this.style.color='#2563eb'" href="{{ route('register') }}">
-                Create an account
-            </a>
-        </div>
+        @if (Route::has('register'))
+            <div class="mt-4 text-center text-sm text-gray-600">
+                <span>Don't have an account?</span>
+                <a class="underline rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ms-1" style="color:#2563eb;" onmouseover="this.style.color='#1d4ed8'" onmouseout="this.style.color='#2563eb'" href="{{ route('register') }}">
+                    Create an account
+                </a>
+            </div>
+        @endif
     </form>
 </x-guest-layout>

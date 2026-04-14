@@ -4,6 +4,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SocietyController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehicleController;
 use App\Models\Customer;
 use App\Models\Product;
@@ -33,6 +34,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('vehicles', VehicleController::class)->except('show');
     Route::resource('customers', CustomerController::class)->except('show');
     Route::resource('products', ProductController::class)->except('show');
+
+    Route::middleware('admin')->group(function () {
+        Route::resource('users', UserController::class)->except('show');
+    });
 });
 
 require __DIR__.'/auth.php';
