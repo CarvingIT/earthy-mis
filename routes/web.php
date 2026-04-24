@@ -10,6 +10,7 @@ use App\Http\Controllers\LogisticsController;
 use App\Http\Controllers\WeightController;
 use App\Http\Controllers\TripsController;
 use App\Http\Controllers\WindrowController;
+use App\Http\Controllers\TurningController;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Society;
@@ -18,6 +19,7 @@ use App\Models\Logisctics;
 use App\Models\Weight;
 use App\Models\Trip;
 use App\Models\Windrow;
+use App\Models\Turning;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
@@ -46,6 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('weights', WeightController::class)->except('show');
     Route::resource('trips', TripsController::class)->except('show');
     Route::resource('windrow', WindrowController::class)->except('show');
+    Route::resource('turning', TurningController::class)->except('show');
 
     Route::middleware('admin')->group(function () {
         Route::resource('users', UserController::class)->except('show');
