@@ -6,10 +6,12 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SocietyController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\LogisticsController;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Society;
 use App\Models\Vehicle;
+use App\Models\Logisctics;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
@@ -34,6 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('vehicles', VehicleController::class)->except('show');
     Route::resource('customers', CustomerController::class)->except('show');
     Route::resource('products', ProductController::class)->except('show');
+    Route::resource('logistics', LogisticsController::class)->except('show');
 
     Route::middleware('admin')->group(function () {
         Route::resource('users', UserController::class)->except('show');

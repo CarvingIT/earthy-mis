@@ -19,6 +19,10 @@
                         <tr>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">City</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Joining Month</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Chairman</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Secretary</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Flats/Families</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
                             <th class="px-4 py-2"></th>
@@ -29,7 +33,11 @@
                             <tr>
                                 <td class="px-4 py-2">{{ $society->name }}</td>
                                 <td class="px-4 py-2">{{ $society->city }}</td>
-                                <td class="px-4 py-2">{{ $society->contact_person }}</td>
+                                <td class="px-4 py-2">{{ $society->joining_month }}</td>
+                                <td class="px-4 py-2">{{ $society->chairman_name }}</td>
+                                <td class="px-4 py-2">{{ $society->secretary_name }}</td>
+                                <td class="px-4 py-2">{{ $society->flats_families }}</td>
+                                <td class="px-4 py-2">{{ $society->contact_person_email }}</td>
                                 <td class="px-4 py-2">{{ $society->phone }}</td>
                                 <td class="px-4 py-2 text-right space-x-3">
                                     <a class="text-green-600" href="{{ route('societies.edit', $society) }}">Edit</a>

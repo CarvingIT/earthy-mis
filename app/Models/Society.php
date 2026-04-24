@@ -16,7 +16,11 @@ class Society extends Model
         'name',
         'address',
         'city',
-        'contact_person',
+        'joining_month',
+        'flats_families',
+        'chairman_name',
+        'secretary_name',
+        'contact_person_email',
         'phone',
     ];
 

@@ -15,6 +15,7 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @stack('styles')
+        @stack('js')
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">

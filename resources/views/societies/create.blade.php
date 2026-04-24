@@ -1,3 +1,7 @@
+@push('js')
+<script src="/build/assets/jquery-ui.js"></script>
+@endpush
+
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">Create Society</h2>
@@ -22,19 +26,37 @@
                     </div>
 
                     <div>
-                        <x-input-label for="city" value="City" />
-                        <x-text-input id="city" name="city" type="text" class="mt-1 block w-full" :value="old('city')" />
-                        <x-input-error class="mt-2" :messages="$errors->get('city')" />
+                        <x-input-label for="joining_month" value="Joining Month" />
+                        <x-text-input id="joining_month" name="joining_month" type="text" class="mt-1 block w-full" :value="old('joining_month')" placeholder="March"/>
+                        <x-input-error class="mt-2" :messages="$errors->get('joining_month')" />
                     </div>
 
                     <div>
-                        <x-input-label for="contact_person" value="Contact Person" />
-                        <x-text-input id="contact_person" name="contact_person" type="text" class="mt-1 block w-full" :value="old('contact_person')" />
-                        <x-input-error class="mt-2" :messages="$errors->get('contact_person')" />
+                        <x-input-label for="flats_families" value="Falts/Families" />
+                        <x-text-input id="flats_families" name="flats_families" type="text" class="mt-1 block w-full" :value="old('flats_families')" />
+                        <x-input-error class="mt-2" :messages="$errors->get('flats_families')" />
                     </div>
 
                     <div>
-                        <x-input-label for="phone" value="Phone" />
+                        <x-input-label for="chairman_name" value="Chairman Name" />
+                        <x-text-input id="chairman_name" name="chairman_name" type="text" class="mt-1 block w-full" :value="old('flats_families')" />
+                        <x-input-error class="mt-2" :messages="$errors->get('chairman_name')" />
+                    </div>
+
+                    <div>
+                        <x-input-label for="secretary_name" value="Secretary Name" />
+                        <x-text-input id="secretary_name" name="secretary_name" type="text" class="mt-1 block w-full" :value="old('secretary_name')" />
+                        <x-input-error class="mt-2" :messages="$errors->get('secretary_name')" />
+                    </div>
+
+                    <div>
+                        <x-input-label for="contact_person_email" value="Contact Person Email" />
+                        <x-text-input id="contact_person" name="contact_person_email" type="text" class="mt-1 block w-full" :value="old('contact_person_email')" />
+                        <x-input-error class="mt-2" :messages="$errors->get('contact_person_email')" />
+                    </div>
+
+                    <div>
+                        <x-input-label for="phone" value="Contact Number" />
                         <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" :value="old('phone')" />
                         <x-input-error class="mt-2" :messages="$errors->get('phone')" />
                     </div>

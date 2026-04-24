@@ -27,6 +27,9 @@
                     <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
                         {{ __('Products') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('logistics.index')" :active="request()->routeIs('logistics.*')">
+                        {{ __('Logistics') }}
+                    </x-nav-link>
                     @if (auth()->user()?->isAdmin())
                         <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                             {{ __('Users') }}

@@ -27,7 +27,11 @@ class SocietyController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'address' => ['nullable', 'string'],
             'city' => ['nullable', 'string', 'max:255'],
-            'contact_person' => ['nullable', 'string', 'max:255'],
+            'joining_month' => ['nullable', 'string', 'max:255'],
+            'flats_families' => ['nullable', 'string', 'max:255'],
+            'chairman_name' => ['nullable', 'string', 'max:255'],
+            'secretary_name' => ['nullable', 'string', 'max:255'],
+            'contact_person_email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
         ]);
 
@@ -58,7 +62,11 @@ class SocietyController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'address' => ['nullable', 'string'],
             'city' => ['nullable', 'string', 'max:255'],
-            'contact_person' => ['nullable', 'string', 'max:255'],
+            'joining_month' => ['nullable', 'string', 'max:255'],
+            'flats_families' => ['nullable', 'string', 'max:255'],
+            'chairman_name' => ['nullable', 'string', 'max:255'],
+            'secretary_name' => ['nullable', 'string', 'max:255'],
+            'contact_person_email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
         ]);
 
