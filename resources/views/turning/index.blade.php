@@ -34,7 +34,7 @@
                                     <form class="inline" method="POST" action="{{ route('turning.destroy', $turning) }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-red-600" onclick="return confirm('Delete this logistic?')">Delete</button>
+                                        <button type="submit" class="text-red-600" onclick="return confirm('Delete this Turning?')">Delete</button>
                                     </form>
                                 </td>
                             </tr>
