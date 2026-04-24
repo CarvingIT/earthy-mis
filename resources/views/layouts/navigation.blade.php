@@ -30,6 +30,12 @@
                     <x-nav-link :href="route('logistics.index')" :active="request()->routeIs('logistics.*')">
                         {{ __('Logistics') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('weights.index')" :active="request()->routeIs('weights.*')">
+                        {{ __('Weights') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('trips.index')" :active="request()->routeIs('trips.*')">
+                        {{ __('Trips') }}
+                    </x-nav-link>
                     @if (auth()->user()?->isAdmin())
                         <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                             {{ __('Users') }}

@@ -40,7 +40,7 @@
     
 
                     <div class="flex justify-end gap-2">
-                        <a href="{{ route('vehicles.index') }}" class="px-4 py-2 border rounded-md">Cancel</a>
+                        <a href="{{ route('logistics.index') }}" class="px-4 py-2 border rounded-md">Cancel</a>
                         <x-primary-button>Save</x-primary-button>
                     </div>
                 </form>

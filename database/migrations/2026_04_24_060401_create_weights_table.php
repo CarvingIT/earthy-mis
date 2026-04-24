@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('logistics', function (Blueprint $table) {
+        Schema::create('weights', function (Blueprint $table) {
             $table->id();
             $table->foreignId('vehicle_id')->constrained()->cascadeOnDelete();
-            $table->datetime('start_time')->nullable();
-            $table->datetime('end_time')->nullable();
-            $table->string('running_kms')->nullable();
+            $table->date('Date')->nullable();
+            $table->bigInteger('gross_weight')->nullable();
+            $table->bigInteger('tare_weight')->nullable();
+            $table->bigInteger('net_weight')->nullable();
+            $table->bigInteger('number_of_buckets')->nullable();
             $table->timestamps();
         });
     }
@@ -26,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('logistics');
+        Schema::dropIfExists('weights');
     }
 };

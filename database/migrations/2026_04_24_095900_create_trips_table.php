@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('logistics', function (Blueprint $table) {
+        Schema::create('trips', function (Blueprint $table) {
             $table->id();
+            $table->date('Date')->nullable();
             $table->foreignId('vehicle_id')->constrained()->cascadeOnDelete();
-            $table->datetime('start_time')->nullable();
-            $table->datetime('end_time')->nullable();
-            $table->string('running_kms')->nullable();
+            $table->longText('purpose')->nullable();
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('logistics');
+        Schema::dropIfExists('trips');
     }
 };

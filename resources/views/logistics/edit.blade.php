@@ -15,7 +15,7 @@
                         <select name="vehicle_id" class="mt-1 block w-full">
                             <option value="">Select Vehicle</option>
                             @foreach($vehicles as $vehicle)
-                                <option value="{{ $vehicle->id }}" @if($logistic->vehicle == $vehicle->id) selected @endif>{{ $vehicle->registration_number }}</option>
+                                <option value="{{ $vehicle->id }}" @if($logistic->vehicle_id == $vehicle->id) selected @endif>{{ $vehicle->registration_number }}</option>
                             @endforeach
                         </select>
                         <x-input-error class="mt-2" :messages="$errors->get('vehicle_id')" />
