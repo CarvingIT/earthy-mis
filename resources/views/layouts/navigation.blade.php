@@ -36,6 +36,9 @@
                     <x-nav-link :href="route('trips.index')" :active="request()->routeIs('trips.*')">
                         {{ __('Trips') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('windrow.index')" :active="request()->routeIs('windrow.*')">
+                        {{ __('Windrow') }}
+                    </x-nav-link>
                     @if (auth()->user()?->isAdmin())
                         <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                             {{ __('Users') }}
