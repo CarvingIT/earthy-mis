@@ -12,50 +12,76 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('societies.index')" :active="request()->routeIs('societies.*')">
-                        {{ __('Societies') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('vehicles.index')" :active="request()->routeIs('vehicles.*')">
-                        {{ __('Vehicles') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
-                        {{ __('Customers') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
-                        {{ __('Products') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('logistics.index')" :active="request()->routeIs('logistics.*')">
-                        {{ __('Logistics') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('weights.index')" :active="request()->routeIs('weights.*')">
-                        {{ __('Weights') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('trips.index')" :active="request()->routeIs('trips.*')">
-                        {{ __('Trips') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('windrow.index')" :active="request()->routeIs('windrow.*')">
-                        {{ __('Windrow') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('turning.index')" :active="request()->routeIs('turning.*')">
-                        {{ __('Turnings') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('fuel.index')" :active="request()->routeIs('fuel.*')">
-                        {{ __('Fuel') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('sale.index')" :active="request()->routeIs('sale.*')">
-                        {{ __('Sale') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('stock.index')" :active="request()->routeIs('stock.*')">
-                        {{ __('Stock') }}
-                    </x-nav-link>
-                    @if (auth()->user()?->isAdmin())
-                        <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
-                            {{ __('Users') }}
-                        </x-nav-link>
-                    @endif
+                    <x-dropdown align="right" width="48">
+                        <x-slot name="trigger">
+                            <button class="flex items-center text-sm font-medium text-gray-500">
+                                Master Tables
+                            </button>
+                        </x-slot>
+
+                        <x-slot name="content">
+                            @if (auth()->user()?->isAdmin())
+                                <x-dropdown-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                                    {{ __('Users') }}
+                                </x-dropdown-link>
+                            @endif
+                            <x-dropdown-link :href="route('profile.edit')">
+                                {{ __('Profile') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('societies.index')" :active="request()->routeIs('societies.*')">
+                                {{ __('Societies') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('vehicles.index')" :active="request()->routeIs('vehicles.*')">
+                                {{ __('Vehicles') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
+                                {{ __('Customers') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('products.index')" :active="request()->routeIs('products.*')">
+                                {{ __('Products') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('fuel.index')" :active="request()->routeIs('fuel.*')">
+                                {{ __('Fuel') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('stock.index')" :active="request()->routeIs('stock.*')">
+                                {{ __('Stock') }}
+                            </x-dropdown-link>
+                               <!-- Add more links -->
+                        </x-slot>
+                    </x-dropdown>
+                    <x-dropdown align="right" width="48">
+                        <x-slot name="trigger">
+                            <button class="flex items-center text-sm font-medium text-gray-500">
+                                Logs
+                            </button>
+                        </x-slot>
+
+                        <x-slot name="content">
+                            <x-dropdown-link :href="route('profile.edit')">
+                                {{ __('Profile1') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('logistics.index')" :active="request()->routeIs('logistics.*')">
+                                {{ __('Logistics') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('weights.index')" :active="request()->routeIs('weights.*')">
+                                {{ __('Weights') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('trips.index')" :active="request()->routeIs('trips.*')">
+                                {{ __('Trips') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('windrow.index')" :active="request()->routeIs('windrow.*')">
+                                {{ __('Windrow') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('turning.index')" :active="request()->routeIs('turning.*')">
+                                {{ __('Turnings') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('sale.index')" :active="request()->routeIs('sale.*')">
+                                {{ __('Sale') }}
+                            </x-dropdown-link>
+                            <!-- Add more links -->
+                        </x-slot>
+                    </x-dropdown>
+
                 </div>
             </div>
 
