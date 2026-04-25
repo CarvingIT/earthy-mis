@@ -12,9 +12,13 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-dropdown align="right" width="48">
+                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                        {{ __('Dashboard') }}
+                    </x-nav-link>
+                    <x-dropdown>
                         <x-slot name="trigger">
-                            <button class="flex items-center text-sm font-medium text-gray-500">
+                            <!--button class="flex items-center text-sm font-medium text-gray-500"-->
+                            <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out">
                                 Master Tables
                             </button>
                         </x-slot>
@@ -40,26 +44,18 @@
                             <x-dropdown-link :href="route('products.index')" :active="request()->routeIs('products.*')">
                                 {{ __('Products') }}
                             </x-dropdown-link>
-                            <x-dropdown-link :href="route('fuel.index')" :active="request()->routeIs('fuel.*')">
-                                {{ __('Fuel') }}
-                            </x-dropdown-link>
-                            <x-dropdown-link :href="route('stock.index')" :active="request()->routeIs('stock.*')">
-                                {{ __('Stock') }}
-                            </x-dropdown-link>
                                <!-- Add more links -->
                         </x-slot>
                     </x-dropdown>
                     <x-dropdown align="right" width="48">
                         <x-slot name="trigger">
-                            <button class="flex items-center text-sm font-medium text-gray-500">
+                            <!--button class="flex items-center text-sm font-medium text-gray-500"-->
+                            <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out">
                                 Logs
                             </button>
                         </x-slot>
 
                         <x-slot name="content">
-                            <x-dropdown-link :href="route('profile.edit')">
-                                {{ __('Profile1') }}
-                            </x-dropdown-link>
                             <x-dropdown-link :href="route('logistics.index')" :active="request()->routeIs('logistics.*')">
                                 {{ __('Logistics') }}
                             </x-dropdown-link>
@@ -74,6 +70,12 @@
                             </x-dropdown-link>
                             <x-dropdown-link :href="route('turning.index')" :active="request()->routeIs('turning.*')">
                                 {{ __('Turnings') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('fuel.index')" :active="request()->routeIs('fuel.*')">
+                                {{ __('Fuel') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('stock.index')" :active="request()->routeIs('stock.*')">
+                                {{ __('Stock') }}
                             </x-dropdown-link>
                             <x-dropdown-link :href="route('sale.index')" :active="request()->routeIs('sale.*')">
                                 {{ __('Sale') }}
