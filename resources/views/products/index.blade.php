@@ -19,8 +19,8 @@
                         <tr>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">SKU</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price in Rs. (For each bucket)</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Created at</th>
                             <th class="px-4 py-2"></th>
                         </tr>
                     </thead>
@@ -30,7 +30,7 @@
                                 <td class="px-4 py-2">{{ $product->name }}</td>
                                 <td class="px-4 py-2">{{ $product->sku }}</td>
                                 <td class="px-4 py-2">{{ number_format($product->price, 2) }}</td>
-                                <td class="px-4 py-2">{{ $product->stock }}</td>
+                                <td class="px-4 py-2">{{ $product->created_at }}</td>
                                 <td class="px-4 py-2 text-right space-x-3">
                                     <a class="text-green-600" href="{{ route('products.edit', $product) }}">Edit</a>
                                     <form class="inline" method="POST" action="{{ route('products.destroy', $product) }}">

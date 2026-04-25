@@ -1,3 +1,29 @@
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<script>
+    function calculateAmount(){
+        var quantity = document.getElementById('quantity').value;
+        var rate = document.getElementById('rate').value;
+        var amount = quantity * rate;
+        document.getElementById('amount').value = amount;
+    }    
+
+    function getRate(product_id){
+        var product_id = product_id;
+        //alert(product_id);
+        $.ajax({
+                    url: '/get_product_rate/ajax/'+product_id,
+                    type: "GET",
+                    dataType: "json",
+                    success:function(data) {
+                        //alert(data.rate);
+                        $('#rate').val(data.rate);
+        calculateAmount();
+                    }
+              });
+    }
+
+
+</script>
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">Create Sale</h2>
@@ -16,23 +42,6 @@
                     </div>
 
                     <div>
-                        <x-input-label for="product_id" value="Product" />
-                        <select name="product_id" class="mt-1 block w-full">
-                            <option value="">Select Product</option>
-                            @foreach($products as $product)
-                                <option value="{{ $product->id }}">{{ $product->name }}</option>
-                            @endforeach
-                        </select>
-                        <x-input-error class="mt-2" :messages="$errors->get('product_id')" />
-                    </div>
-
-                    <div>
-                        <x-input-label for="quantity" value="Quantity" />
-                        <x-text-input id="quantity" name="quantity" type="number" class="mt-1 block w-full" :value="old('quantity')" />
-                        <x-input-error class="mt-2" :messages="$errors->get('quantity')" />
-                    </div>
-            
-                    <div>
                         <x-input-label for="customer_id" value="Customer" />
                         <select name="customer_id" class="mt-1 block w-full">
                             <option value="">Select Customer</option>
@@ -44,14 +53,32 @@
                     </div>
 
                     <div>
-                        <x-input-label for="rate" value="Rate" />
-                        <x-text-input id="rate" name="rate" type="text" class="mt-1 block w-full" :value="old('rate')" />
+                        <x-input-label for="product_id" value="Product" />
+                        <select name="product_id" class="mt-1 block w-full" onChange="getRate(this.value);" />
+                            <option value="">Select Product</option>
+                            @foreach($products as $product)
+                                <option value="{{ $product->id }}">{{ $product->name }}</option>
+                            @endforeach
+                        </select>
+                        <x-input-error class="mt-2" :messages="$errors->get('product_id')" />
+                    </div>
+
+                    <div>
+                        <x-input-label for="quantity" value="Quantity" />
+                        <x-text-input id="quantity" name="quantity" type="number" class="mt-1 block w-full" :value="old('quantity')" onChange="calculateAmount();"/>
+                        <x-input-error class="mt-2" :messages="$errors->get('quantity')" />
+                    </div>
+            
+
+                    <div>
+                        <x-input-label for="rate" value="Rate in Rs." />
+                        <x-text-input id="rate" name="rate" type="text" class="mt-1 block w-full" :value="old('rate')" readonly/>
                         <x-input-error class="mt-2" :messages="$errors->get('rate')" />
                     </div>
     
                     <div>
-                        <x-input-label for="amount" value="Amount" />
-                        <x-text-input id="amount" name="amount" type="text" class="mt-1 block w-full" :value="old('amount')" />
+                        <x-input-label for="amount" value="Amount in Rs." />
+                        <x-text-input id="amount" name="amount" type="text" class="mt-1 block w-full" :value="old('amount')" readonly/>
                         <x-input-error class="mt-2" :messages="$errors->get('amount')" />
                     </div>
     

@@ -9,9 +9,7 @@ class SocietyController extends Controller
 {
     public function index()
     {
-        $societies = Society::where('user_id', auth()->id())
-            ->latest()
-            ->get();
+        $societies = Society::latest()->get();
 
         return view('societies.index', compact('societies'));
     }

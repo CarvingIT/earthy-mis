@@ -9,10 +9,7 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::where('user_id', auth()->id())
-            ->latest()
-            ->get();
-
+        $products = Product::latest()->get();
         return view('products.index', compact('products'));
     }
 
@@ -79,5 +76,10 @@ class ProductController extends Controller
     private function authorizeOwnership(Product $product): void
     {
         abort_if($product->user_id !== auth()->id(), 403);
+    }
+
+    public function getProductRate($product_id){
+        $product_details = Product::find($product_id);
+        return json_encode(['rate'=>$product_details->price]);
     }
 }

@@ -20,15 +20,19 @@
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Created at</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Updated at</th>
                             <th class="px-4 py-2"></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @forelse ($stocks as $stock)
                             <tr>
-                                <td class="px-4 py-2">{{ @$stock->product->name }}</td>
                                 <td class="px-4 py-2">{{ $stock->Date }}</td>
+                                <td class="px-4 py-2">{{ @$stock->product->name }}</td>
                                 <td class="px-4 py-2">{{ $stock->quantity }}</td>
+                                <td class="px-4 py-2">{{ $stock->created_at }}</td>
+                                <td class="px-4 py-2">{{ $stock->updated_at }}</td>
                                 <td class="px-4 py-2 text-right space-x-3">
                                     <a class="text-green-600" href="{{ route('stock.edit', $stock) }}">Edit</a>
                                     <form class="inline" method="POST" action="{{ route('stock.destroy', $stock) }}">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Sale;
+use App\Models\Stock;
 use App\Models\Customer;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -43,6 +44,13 @@ class SaleController extends Controller
         ]);
 
         Sale::create($data);
+        $stock = Stock::where('product_id', $request->product_id)->first();
+        if(!empty($stock->id)){
+        $quantity = $stock->quantity;
+        $new_quantity = $quantity - $request->quantity;
+        $stock->quantity = $new_quantity;
+        $stock->save();
+        }
 
         return redirect()->route('sale.index')->with('success', 'Sale created successfully.');
     }
@@ -70,6 +78,7 @@ class SaleController extends Controller
      */
     public function update(Request $request, Sale $sale)
     {
+        $old_quantity = $sale->quantity;
         $data = $request->validate([
             'Date' => ['nullable', 'date'],
             'product_id' => ['nullable','integer'],
@@ -80,6 +89,13 @@ class SaleController extends Controller
         ]);
 
         $sale->update($data);
+        $stock = Stock::where('product_id', $request->product_id)->first();
+        if(!empty($stock->id) && $old_quantity != $request->quantity){
+        $quantity = $stock->quantity;
+        $new_quantity = $quantity - $request->quantity;
+        $stock->quantity = $new_quantity;
+        $stock->save();
+        }
 
         return redirect()->route('sale.index')->with('success', 'Sale updated successfully.');
     }

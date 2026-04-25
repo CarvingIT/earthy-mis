@@ -9,9 +9,7 @@ class CustomerController extends Controller
 {
     public function index()
     {
-        $customers = Customer::where('user_id', auth()->id())
-            ->latest()
-            ->get();
+        $customers = Customer::latest()->get();
 
         return view('customers.index', compact('customers'));
     }

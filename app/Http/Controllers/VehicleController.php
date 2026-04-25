@@ -9,9 +9,7 @@ class VehicleController extends Controller
 {
     public function index()
     {
-        $vehicles = Vehicle::where('user_id', auth()->id())
-            ->latest()
-            ->get();
+        $vehicles = Vehicle::latest()->get();
 
         return view('vehicles.index', compact('vehicles'));
     }

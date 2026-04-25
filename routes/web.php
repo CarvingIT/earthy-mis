@@ -59,6 +59,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('sale', SaleController::class)->except('show');
     Route::resource('stock', StockController::class)->except('show');
 
+    Route::get('/get_product_rate/ajax/{product_id}',[ProductController::class, 'getProductRate']);
+
     Route::middleware('admin')->group(function () {
         Route::resource('users', UserController::class)->except('show');
     });
