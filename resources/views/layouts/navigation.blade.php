@@ -15,11 +15,13 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+		</div>
+		<div class="hidden sm:flex sm:items-center sm:ms-6">
                     <x-dropdown>
                         <x-slot name="trigger">
                             <!--button class="flex items-center text-sm font-medium text-gray-500"-->
                             <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out">
-                                Master Tables
+                                Master data
                             </button>
                         </x-slot>
 
@@ -29,9 +31,6 @@
                                     {{ __('Users') }}
                                 </x-dropdown-link>
                             @endif
-                            <x-dropdown-link :href="route('profile.edit')">
-                                {{ __('Profile') }}
-                            </x-dropdown-link>
                             <x-dropdown-link :href="route('societies.index')" :active="request()->routeIs('societies.*')">
                                 {{ __('Societies') }}
                             </x-dropdown-link>
@@ -47,11 +46,13 @@
                                <!-- Add more links -->
                         </x-slot>
                     </x-dropdown>
+		    </div>
+		   <div class="hidden sm:flex sm:items-center sm:ms-6">
                     <x-dropdown align="right" width="48">
                         <x-slot name="trigger">
                             <!--button class="flex items-center text-sm font-medium text-gray-500"-->
                             <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out">
-                                Logs
+                                Operations
                             </button>
                         </x-slot>
 
