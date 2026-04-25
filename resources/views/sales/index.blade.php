@@ -30,7 +30,7 @@
                         @forelse ($sales as $sale)
                             <tr>
                                 <td class="px-4 py-2">{{ $sale->Date }}</td>
-                                <td class="px-4 py-2">{{ $sale->product->name }}</td>
+                                <td class="px-4 py-2">{{ @$sale->product->name }}</td>
                                 <td class="px-4 py-2">{{ $sale->quantity }}</td>
                                 <td class="px-4 py-2">{{ $sale->customer->name }}</td>
                                 <td class="px-4 py-2">{{ $sale->rate }}</td>

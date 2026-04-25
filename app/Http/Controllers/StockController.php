@@ -14,7 +14,11 @@ class StockController extends Controller
     public function index()
     {
         $stocks = Stock::latest()->get();
-        return view('stock.index', compact('stocks'));
+        $sum = [];
+        foreach($stocks as $stock){
+            $sum[$stock->product_id] = ($sum[$stock->product_id] ?? 0) + $stock->quantity;
+        }
+        return view('stock.index', compact('stocks','sum'));
     }
 
     /**
