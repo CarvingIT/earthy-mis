@@ -44,12 +44,17 @@ class SaleController extends Controller
         ]);
 
         Sale::create($data);
-        $stock = Stock::where('product_id', $request->product_id)->first();
+        $stock = Stock::where('product_id', $request->product_id)->latest()->first();
         if(!empty($stock->id)){
         $quantity = $stock->quantity;
         $new_quantity = $quantity - $request->quantity;
-        $stock->quantity = $new_quantity;
-        $stock->save();
+
+        $new_stock = new Stock();
+        $new_stock->product_id = $request->product_id;
+        $new_stock->quantity = $new_quantity;
+        $new_stock->new_adjustment_in_stock = $request->quantity;
+        $new_stock->action = 'sold';
+        $new_stock->save();
         }
 
         return redirect()->route('sale.index')->with('success', 'Sale created successfully.');
@@ -89,12 +94,17 @@ class SaleController extends Controller
         ]);
 
         $sale->update($data);
-        $stock = Stock::where('product_id', $request->product_id)->first();
+        $stock = Stock::where('product_id', $request->product_id)->latest()->first();
         if(!empty($stock->id) && $old_quantity != $request->quantity){
         $quantity = $stock->quantity;
         $new_quantity = $quantity - $request->quantity;
-        $stock->quantity = $new_quantity;
-        $stock->save();
+
+        $new_stock = new Stock();
+        $new_stock->product_id = $request->product_id;
+        $new_stock->quantity = $new_quantity;
+        $new_stock->new_adjustment_in_stock = $request->quantity;
+        $new_stock->action = 'sold';
+        $new_stock->save();
         }
 
         return redirect()->route('sale.index')->with('success', 'Sale updated successfully.');

@@ -29,7 +29,7 @@
                     </div>
 
                     <div>
-                        <x-input-label for="quantity" value="Quantity" />
+                        <x-input-label for="quantity" value="Current Quantity" />
                         <x-text-input id="quantity" name="quantity" type="text" class="mt-1 block w-full" :value="old('quantity', $stock->quantity)" />
                         <x-input-error class="mt-2" :messages="$errors->get('quantity')" />
                     </div>

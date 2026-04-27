@@ -19,8 +19,8 @@
                         <tr>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Latest Quantity</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sold/Added Stock</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Created at</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Updated at</th>
                             <th class="px-4 py-2"></th>
@@ -32,16 +32,22 @@
                                 <td class="px-4 py-2">{{ $stock->Date }}</td>
                                 <td class="px-4 py-2">{{ @$stock->product->name }}</td>
                                 <td class="px-4 py-2">{{ $stock->quantity }}</td>
-                                <td class="px-4 py-2">{{ $sum[$stock->product_id] }}</td>
+                                <td class="px-4 py-2">
+                                    @if($stock->action == 'sold') 
+                                        <span style="color:red"> - {{ $stock->new_adjustment_in_stock }} </span>
+                                    @elseif($stock->action == 'added') 
+                                        <span style="color:green"> + {{ $stock->new_adjustment_in_stock }} </span>
+                                    @endif 
+                                    </td>
                                 <td class="px-4 py-2">{{ $stock->created_at }}</td>
                                 <td class="px-4 py-2">{{ $stock->updated_at }}</td>
                                 <td class="px-4 py-2 text-right space-x-3">
-                                    <a class="text-green-600" href="{{ route('stock.edit', $stock) }}">Edit</a>
-                                    <form class="inline" method="POST" action="{{ route('stock.destroy', $stock) }}">
+                                    <!--a class="text-green-600" href="{{ route('stock.edit', $stock) }}">Edit</a-->
+                                    <!--form class="inline" method="POST" action="{{ route('stock.destroy', $stock) }}">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-600" onclick="return confirm('Delete this Stock?')">Delete</button>
-                                    </form>
+                                    </form-->
                                 </td>
                             </tr>
                         @empty

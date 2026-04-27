@@ -41,7 +41,16 @@ class StockController extends Controller
             'quantity' => ['nullable', 'integer'],
         ]);
 
-        Stock::create($data);
+        $previous_stock = Stock::where('product_id',$request->product_id)->latest()->first();
+        $new_stock = $previous_stock->quantity + $request->quantity; 
+
+        $stock = new Stock();
+        $stock->product_id = $data['product_id'];
+        $stock->Date = $data['Date'];
+        $stock->quantity=$new_stock;
+        $stock->new_adjustment_in_stock = $request->quantity;
+        $stock->action = 'added';
+        $stock->save();
 
         return redirect()->route('stock.index')->with('success', 'Stock created successfully.');
 
