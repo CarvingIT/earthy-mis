@@ -24,7 +24,7 @@
 
                     <div>
                         <x-input-label for="city" value="City" />
-                        <x-text-input id="city" name="city" type="text" class="mt-1 block w-full" :value="old('city', $society->city)" required />
+                        <x-text-input id="city" name="city" type="text" class="mt-1 block w-full" :value="old('city', $society->city)" />
                         <x-input-error class="mt-2" :messages="$errors->get('city')" />
                     </div>
 

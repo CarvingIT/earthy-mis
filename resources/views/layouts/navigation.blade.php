@@ -43,6 +43,9 @@
                             <x-dropdown-link :href="route('products.index')" :active="request()->routeIs('products.*')">
                                 {{ __('Products') }}
                             </x-dropdown-link>
+                            <x-dropdown-link :href="route('consumables.index')" :active="request()->routeIs('consumables.*')">
+                                {{ __('Consumables') }}
+                            </x-dropdown-link>
                                <!-- Add more links -->
                         </x-slot>
                     </x-dropdown>
@@ -72,8 +75,8 @@
                             <x-dropdown-link :href="route('turning.index')" :active="request()->routeIs('turning.*')">
                                 {{ __('Turnings') }}
                             </x-dropdown-link>
-                            <x-dropdown-link :href="route('fuel.index')" :active="request()->routeIs('fuel.*')">
-                                {{ __('Fuel') }}
+                            <x-dropdown-link :href="route('supplyitems.index')" :active="request()->routeIs('supplyitems.*')">
+                                {{ __('Supply Items') }}
                             </x-dropdown-link>
                             <x-dropdown-link :href="route('stock.index')" :active="request()->routeIs('stock.*')">
                                 {{ __('Stock') }}

@@ -29,7 +29,7 @@ class SocietyController extends Controller
             'flats_families' => ['nullable', 'string', 'max:255'],
             'chairman_name' => ['nullable', 'string', 'max:255'],
             'secretary_name' => ['nullable', 'string', 'max:255'],
-            'contact_person_email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
+            'contact_person_email' => ['nullable', 'string', 'lowercase', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
         ]);
 
@@ -64,7 +64,7 @@ class SocietyController extends Controller
             'flats_families' => ['nullable', 'string', 'max:255'],
             'chairman_name' => ['nullable', 'string', 'max:255'],
             'secretary_name' => ['nullable', 'string', 'max:255'],
-            'contact_person_email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
+            'contact_person_email' => ['nullable', 'string', 'lowercase', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
         ]);
 

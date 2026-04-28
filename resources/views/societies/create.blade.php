@@ -26,6 +26,12 @@
                     </div>
 
                     <div>
+                        <x-input-label for="city" value="City" />
+                        <x-text-input id="city" name="city" type="text" class="mt-1 block w-full" :value="old('city')" />
+                        <x-input-error class="mt-2" :messages="$errors->get('city')" />
+                    </div>
+
+                    <div>
                         <x-input-label for="joining_month" value="Joining Month" />
                         <x-text-input id="joining_month" name="joining_month" type="text" class="mt-1 block w-full" :value="old('joining_month')" placeholder="March"/>
                         <x-input-error class="mt-2" :messages="$errors->get('joining_month')" />
