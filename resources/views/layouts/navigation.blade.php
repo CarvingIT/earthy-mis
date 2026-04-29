@@ -19,7 +19,6 @@
 		<div class="hidden sm:flex sm:items-center sm:ms-6">
                     <x-dropdown>
                         <x-slot name="trigger">
-                            <!--button class="flex items-center text-sm font-medium text-gray-500"-->
                             <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out">
                                 Master data
                             </button>
@@ -143,24 +142,73 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('societies.index')" :active="request()->routeIs('societies.*')">
-                {{ __('Societies') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('vehicles.index')" :active="request()->routeIs('vehicles.*')">
-                {{ __('Vehicles') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
-                {{ __('Customers') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
-                {{ __('Products') }}
-            </x-responsive-nav-link>
-            @if (auth()->user()?->isAdmin())
-                <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
-                    {{ __('Users') }}
-                </x-responsive-nav-link>
-            @endif
-        </div>
+                    <x-dropdown>
+                        <x-slot name="trigger">
+                            <button class="block w-full ps-3 pe-4 py-2 border-l-4 text-start text-base font-medium text-green-700 bg-green-50 focus:outline-none focus:text-green-800 focus:bg-green-100 transition duration-150 ease-in-out">
+                                Master data
+                            </button>
+                        </x-slot>
+
+                        <x-slot name="content">
+                            @if (auth()->user()?->isAdmin())
+                                <x-dropdown-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                                    {{ __('Users') }}
+                                </x-dropdown-link>
+                            @endif
+                            <x-dropdown-link :href="route('societies.index')" :active="request()->routeIs('societies.*')">
+                                {{ __('Societies') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('vehicles.index')" :active="request()->routeIs('vehicles.*')">
+                                {{ __('Vehicles') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
+                                {{ __('Customers') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('products.index')" :active="request()->routeIs('products.*')">
+                                {{ __('Products') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('consumables.index')" :active="request()->routeIs('consumables.*')">
+                                {{ __('Consumables') }}
+                            </x-dropdown-link>
+                               <!-- Add more links -->
+                        </x-slot>
+                    </x-dropdown>
+                    <x-dropdown align="right" width="48">
+                        <x-slot name="trigger">
+                            <button class="block w-full ps-3 pe-4 py-2 border-l-4 text-start text-base font-medium text-green-700 bg-green-50 focus:outline-none focus:text-green-800 focus:bg-green-100 transition duration-150 ease-in-out">
+                                Operations
+                            </button>
+                        </x-slot>
+
+                        <x-slot name="content">
+                            <x-dropdown-link :href="route('logistics.index')" :active="request()->routeIs('logistics.*')">
+                                {{ __('Logistics') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('weights.index')" :active="request()->routeIs('weights.*')">
+                                {{ __('Weights') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('trips.index')" :active="request()->routeIs('trips.*')">
+                                {{ __('Trips') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('windrow.index')" :active="request()->routeIs('windrow.*')">
+                                {{ __('Windrow') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('turning.index')" :active="request()->routeIs('turning.*')">
+                                {{ __('Turnings') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('supplyitems.index')" :active="request()->routeIs('supplyitems.*')">
+                                {{ __('Supply Items') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('stock.index')" :active="request()->routeIs('stock.*')">
+                                {{ __('Stock') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('sale.index')" :active="request()->routeIs('sale.*')">
+                                {{ __('Sale') }}
+                            </x-dropdown-link>
+                            <!-- Add more links -->
+                        </x-slot>
+                    </x-dropdown>
+		    </div>
 
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200">
