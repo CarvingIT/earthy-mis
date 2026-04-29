@@ -17,7 +17,7 @@
                 <div class="mb-4 p-3 bg-red-100 text-red-700 rounded">{{ session('error') }}</div>
             @endif
 
-            <div class="bg-white shadow-sm sm:rounded-lg overflow-hidden p-4">
+            <div class="bg-white shadow-sm sm:rounded-lg overflow-hidden p-4" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
                 <table data-datatable class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>

@@ -13,7 +13,7 @@
                 <div class="mb-4 p-3 bg-green-100 text-green-700 rounded">{{ session('success') }}</div>
             @endif
 
-            <div class="bg-white shadow-sm sm:rounded-lg overflow-hidden p-4">
+            <div class="bg-white shadow-sm sm:rounded-lg overflow-hidden p-4" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
                 <table id="societies-table" data-datatable class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
