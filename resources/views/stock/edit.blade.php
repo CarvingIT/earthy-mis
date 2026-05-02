@@ -12,7 +12,7 @@
 
                     <div>
                         <x-input-label for="Date" value="Date" />
-                        <x-text-input id="Date" name="Date" type="date" class="mt-1 block w-full" :value="old('Date`', $stock->Date)" />
+                        <x-text-input id="Date" name="Date" type="date" class="mt-1 block w-full" :value="old('Date', $stock->Date)" />
                         <x-input-error class="mt-2" :messages="$errors->get('Date')" />
                     </div>
 

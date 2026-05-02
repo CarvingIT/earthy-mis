@@ -69,9 +69,13 @@ Route::middleware('auth')->group(function () {
     // Charts Routes
     Route::get('/charts', [ChartController::class, 'index'])->name('charts.index');
     Route::get('/api/stock-data', [ChartController::class, 'stockData']);
+    Route::get('/api/stock-data-by-product', [ChartController::class, 'stockDataByProduct']);
     Route::get('/api/sale-data', [ChartController::class, 'saleData']);
+    Route::get('/api/sale-data-by-product', [ChartController::class, 'saleDataByProduct']);
     Route::get('/api/cost-data', [ChartController::class, 'costData']);
+    Route::get('/api/cost-data-by-consumable', [ChartController::class, 'costDataByConsumable']);
     Route::get('/api/vehicle-data', [ChartController::class, 'vehicleData']);
+    Route::get('/api/profit-loss-data', [ChartController::class, 'profitLossData']);
 
     Route::middleware('admin')->group(function () {
         Route::resource('users', UserController::class)->except('show');

@@ -24,7 +24,6 @@ class ProductFactory extends Factory
             'name' => $this->faker->randomElement($indianProducts),
             'sku' => $this->faker->unique()->regexify('[A-Z]{3}[0-9]{5}'),
             'price' => $this->faker->numberBetween(500, 50000),
-            'stock' => $this->faker->numberBetween(0, 1000),
             'description' => $this->faker->sentence(),
         ];
     }

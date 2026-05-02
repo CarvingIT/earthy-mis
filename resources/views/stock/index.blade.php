@@ -42,12 +42,12 @@
                                 <td class="px-4 py-2">{{ $stock->created_at }}</td>
                                 <td class="px-4 py-2">{{ $stock->updated_at }}</td>
                                 <td class="px-4 py-2 text-right space-x-3">
-                                    <!--a class="text-green-600" href="{{ route('stock.edit', $stock) }}">Edit</a-->
-                                    <!--form class="inline" method="POST" action="{{ route('stock.destroy', $stock) }}">
+                                    <a class="text-green-600" href="{{ route('stock.edit', $stock) }}">Edit</a>
+                                    <form class="inline" method="POST" action="{{ route('stock.destroy', $stock) }}">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-600" onclick="return confirm('Delete this Stock?')">Delete</button>
-                                    </form-->
+                                    </form>
                                 </td>
                             </tr>
                         @empty
