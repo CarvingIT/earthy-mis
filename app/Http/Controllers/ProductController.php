@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Unit;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -15,7 +16,8 @@ class ProductController extends Controller
 
     public function create()
     {
-        return view('products.create');
+        $units = Unit::all();
+        return view('products.create', compact('units'));
     }
 
     public function store(Request $request)
@@ -24,8 +26,8 @@ class ProductController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'sku' => ['nullable', 'string', 'max:255'],
             'price' => ['required', 'numeric', 'min:0'],
-            'stock' => ['required', 'integer', 'min:0'],
             'description' => ['nullable', 'string'],
+            'base_unit_id' => ['nullable', 'integer', 'exists:units,id'],
         ]);
 
         Product::create($data + ['user_id' => auth()->id()]);
@@ -43,8 +45,9 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $this->authorizeOwnership($product);
+        $units = Unit::all();
 
-        return view('products.edit', compact('product'));
+        return view('products.edit', compact('product', 'units'));
     }
 
     public function update(Request $request, Product $product)
@@ -55,8 +58,8 @@ class ProductController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'sku' => ['nullable', 'string', 'max:255'],
             'price' => ['required', 'numeric', 'min:0'],
-            'stock' => ['required', 'integer', 'min:0'],
             'description' => ['nullable', 'string'],
+            'base_unit_id' => ['nullable', 'integer', 'exists:units,id'],
         ]);
 
         $product->update($data);

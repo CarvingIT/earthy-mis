@@ -15,6 +15,9 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('charts.index')" :active="request()->routeIs('charts.*')">
+                        {{ __('Charts') }}
+                    </x-nav-link>
 		</div>
 		<div class="hidden sm:flex sm:items-center sm:ms-6">
                     <x-dropdown>
@@ -45,6 +48,11 @@
                             <x-dropdown-link :href="route('consumables.index')" :active="request()->routeIs('consumables.*')">
                                 {{ __('Consumables') }}
                             </x-dropdown-link>
+                            @if (auth()->user()?->isAdmin())
+                                <x-dropdown-link href="/admin/units" :active="request()->is('admin/units*')">
+                                    {{ __('Units') }}
+                                </x-dropdown-link>
+                            @endif
                                <!-- Add more links -->
                         </x-slot>
                     </x-dropdown>
@@ -170,6 +178,11 @@
                             <x-dropdown-link :href="route('consumables.index')" :active="request()->routeIs('consumables.*')">
                                 {{ __('Consumables') }}
                             </x-dropdown-link>
+                            @if (auth()->user()?->isAdmin())
+                                <x-dropdown-link href="/admin/units" :active="request()->is('admin/units*')">
+                                    {{ __('Units') }}
+                                </x-dropdown-link>
+                            @endif
                                <!-- Add more links -->
                         </x-slot>
                     </x-dropdown>

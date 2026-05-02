@@ -20,7 +20,13 @@
                         <x-text-input id="quantity" name="quantity" type="text" class="mt-1 block w-full" :value="old('quantity')" />
                         <x-input-error class="mt-2" :messages="$errors->get('quantity')" />
                     </div>
-    
+
+                    <div>
+                        <x-input-label for="cost" value="Cost (Rs.)" />
+                        <x-text-input id="cost" name="cost" type="number" step="0.01" min="0" class="mt-1 block w-full" :value="old('cost')" />
+                        <x-input-error class="mt-2" :messages="$errors->get('cost')" />
+                    </div>
+
                     <div>
                         <x-input-label for="type" value="Item" />
                         <select name="consumable_id" class="mt-1 block w-full">
@@ -38,7 +44,7 @@
                         <x-input-error class="mt-2" :messages="$errors->get('description')" />
                     </div>
 
-    
+
 
                     <div class="flex justify-end gap-2">
                         <a href="{{ route('supplyitems.index') }}" class="px-4 py-2 border rounded-md">Cancel</a>

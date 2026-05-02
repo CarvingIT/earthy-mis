@@ -15,12 +15,25 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Create admin user
+        $adminUser = User::factory()->create([
+            'name' => 'Admin User',
+            'email' => 'admin@example.com',
             'is_admin' => true,
         ]);
+
+        // Create data for admin user
+        \App\Models\Customer::factory(15)->create(['user_id' => $adminUser->id]);
+        \App\Models\Society::factory(8)->create(['user_id' => $adminUser->id]);
+        \App\Models\Vehicle::factory(12)->create(['user_id' => $adminUser->id]);
+        \App\Models\Product::factory(20)->create(['user_id' => $adminUser->id]);
+
+        // Create regular users with their own data
+        User::factory(10)->create()->each(function ($user) {
+            \App\Models\Customer::factory(3)->create(['user_id' => $user->id]);
+            \App\Models\Society::factory(2)->create(['user_id' => $user->id]);
+            \App\Models\Vehicle::factory(2)->create(['user_id' => $user->id]);
+            \App\Models\Product::factory(4)->create(['user_id' => $user->id]);
+        });
     }
 }

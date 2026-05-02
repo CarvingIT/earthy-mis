@@ -23,6 +23,12 @@
                     </div>
 
                     <div>
+                        <x-input-label for="cost" value="Cost (Rs.)" />
+                        <x-text-input id="cost" name="cost" type="number" step="0.01" min="0" class="mt-1 block w-full" :value="old('cost', $supplyitem->cost)" />
+                        <x-input-error class="mt-2" :messages="$errors->get('cost')" />
+                    </div>
+
+                    <div>
                         <x-input-label for="type" value="Item" />
                         <select name="consumable_id" class="mt-1 block w-full">
                             <option value="">Select Consumable Item</option>

@@ -15,6 +15,8 @@ use App\Http\Controllers\ConsumableController;
 use App\Http\Controllers\SupplyItemController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\StockController;
+use App\Http\Controllers\UnitController;
+use App\Http\Controllers\ChartController;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Society;
@@ -64,8 +66,22 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/get_product_rate/ajax/{product_id}',[ProductController::class, 'getProductRate']);
 
+    // Charts Routes
+    Route::get('/charts', [ChartController::class, 'index'])->name('charts.index');
+    Route::get('/api/stock-data', [ChartController::class, 'stockData']);
+    Route::get('/api/sale-data', [ChartController::class, 'saleData']);
+    Route::get('/api/cost-data', [ChartController::class, 'costData']);
+    Route::get('/api/vehicle-data', [ChartController::class, 'vehicleData']);
+
     Route::middleware('admin')->group(function () {
         Route::resource('users', UserController::class)->except('show');
+
+        // Unit Management Routes
+        Route::get('/admin/units', [UnitController::class, 'index']);
+        Route::get('/admin/unit-form/{unit_id}', [UnitController::class, 'addEditUnit']);
+        Route::post('/admin/saveunit', [UnitController::class, 'save']);
+        Route::post('/admin/unit/delete', [UnitController::class, 'deleteUnit']);
+        Route::get('/admin/unit/{unit_id}', [UnitController::class, 'viewUnit']);
     });
 });
 

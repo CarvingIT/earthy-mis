@@ -17,21 +17,20 @@
                     </div>
 
                     <div>
-                        <x-input-label for="sku" value="SKU" />
-                        <x-text-input id="sku" name="sku" type="text" class="mt-1 block w-full" :value="old('sku', $product->sku)" />
-                        <x-input-error class="mt-2" :messages="$errors->get('sku')" />
-                    </div>
-
-                    <div>
                         <x-input-label for="price" value="Price" />
                         <x-text-input id="price" name="price" type="number" step="0.01" min="0" class="mt-1 block w-full" :value="old('price', $product->price)" required />
                         <x-input-error class="mt-2" :messages="$errors->get('price')" />
                     </div>
 
                     <div>
-                        <x-input-label for="stock" value="Stock" />
-                        <x-text-input id="stock" name="stock" type="number" min="0" class="mt-1 block w-full" :value="old('stock', $product->stock)" required />
-                        <x-input-error class="mt-2" :messages="$errors->get('stock')" />
+                        <x-input-label for="base_unit_id" value="Base Unit" />
+                        <select id="base_unit_id" name="base_unit_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                            <option value="">Select Base Unit</option>
+                            @foreach($units as $unit)
+                                <option value="{{ $unit->id }}" {{ old('base_unit_id', $product->base_unit_id) == $unit->id ? 'selected' : '' }}>{{ $unit->name }}</option>
+                            @endforeach
+                        </select>
+                        <x-input-error class="mt-2" :messages="$errors->get('base_unit_id')" />
                     </div>
 
                     <div>

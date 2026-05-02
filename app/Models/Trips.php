@@ -12,6 +12,7 @@ class Trips extends Model
         'Date',
         'vehicle_id',
         'purpose',
+        'km',
         ];
 
     public function vehicle(): BelongsTo
@@ -19,5 +20,5 @@ class Trips extends Model
         return $this->belongsTo(Vehicle::class, 'vehicle_id');
     }
 
-    
+
 }

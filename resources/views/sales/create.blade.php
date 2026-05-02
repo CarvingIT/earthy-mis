@@ -1,28 +1,28 @@
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
 <script>
     function calculateAmount(){
-        var quantity = document.getElementById('quantity').value;
-        var rate = document.getElementById('rate').value;
-        var amount = quantity * rate;
+        const quantity = document.getElementById('quantity').value;
+        const rate = document.getElementById('rate').value;
+        const amount = quantity * rate;
         document.getElementById('amount').value = amount;
-    }    
-
-    function getRate(product_id){
-        var product_id = product_id;
-        //alert(product_id);
-        $.ajax({
-                    url: '/get_product_rate/ajax/'+product_id,
-                    type: "GET",
-                    dataType: "json",
-                    success:function(data) {
-                        //alert(data.rate);
-                        $('#rate').val(data.rate);
-        calculateAmount();
-                    }
-              });
     }
 
+    function getRate(productId){
+        if (!productId) {
+            document.getElementById('rate').value = '';
+            document.getElementById('amount').value = '';
+            return;
+        }
 
+        fetch('/get_product_rate/ajax/' + productId)
+            .then(response => response.json())
+            .then(data => {
+                if (data.rate !== undefined) {
+                    document.getElementById('rate').value = data.rate;
+                    calculateAmount();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
 </script>
 <x-app-layout>
     <x-slot name="header">
@@ -54,7 +54,7 @@
 
                     <div>
                         <x-input-label for="product_id" value="Product" />
-                        <select name="product_id" class="mt-1 block w-full" onChange="getRate(this.value);" />
+                        <select id="product_id" name="product_id" class="mt-1 block w-full" onchange="getRate(this.value)">
                             <option value="">Select Product</option>
                             @foreach($products as $product)
                                 <option value="{{ $product->id }}">{{ $product->name }}</option>
@@ -65,23 +65,23 @@
 
                     <div>
                         <x-input-label for="quantity" value="Quantity" />
-                        <x-text-input id="quantity" name="quantity" type="number" class="mt-1 block w-full" :value="old('quantity')" onChange="calculateAmount();"/>
+                        <x-text-input id="quantity" name="quantity" type="number" class="mt-1 block w-full" :value="old('quantity')" onchange="calculateAmount();" oninput="calculateAmount();"/>
                         <x-input-error class="mt-2" :messages="$errors->get('quantity')" />
                     </div>
-            
+
 
                     <div>
                         <x-input-label for="rate" value="Rate in Rs." />
-                        <x-text-input id="rate" name="rate" type="text" class="mt-1 block w-full" :value="old('rate')" readonly/>
+                        <x-text-input id="rate" name="rate" type="number" step="0.01" class="mt-1 block w-full" :value="old('rate')" readonly/>
                         <x-input-error class="mt-2" :messages="$errors->get('rate')" />
                     </div>
-    
+
                     <div>
                         <x-input-label for="amount" value="Amount in Rs." />
-                        <x-text-input id="amount" name="amount" type="text" class="mt-1 block w-full" :value="old('amount')" readonly/>
+                        <x-text-input id="amount" name="amount" type="number" step="0.01" class="mt-1 block w-full" :value="old('amount')" readonly/>
                         <x-input-error class="mt-2" :messages="$errors->get('amount')" />
                     </div>
-    
+
 
                     <div class="flex justify-end gap-2">
                         <a href="{{ route('sale.index') }}" class="px-4 py-2 border rounded-md">Cancel</a>

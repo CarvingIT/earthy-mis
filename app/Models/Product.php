@@ -16,12 +16,17 @@ class Product extends Model
         'name',
         'sku',
         'price',
-        'stock',
         'description',
+        'base_unit_id',
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function baseUnit(): BelongsTo
+    {
+        return $this->belongsTo(Unit::class, 'base_unit_id');
     }
 }

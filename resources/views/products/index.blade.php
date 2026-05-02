@@ -18,8 +18,8 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">SKU</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price in Rs. (For each bucket)</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Base Unit</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price in Rs.</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Created at</th>
                             <th class="px-4 py-2"></th>
                         </tr>
@@ -28,7 +28,7 @@
                         @forelse ($products as $product)
                             <tr>
                                 <td class="px-4 py-2">{{ $product->name }}</td>
-                                <td class="px-4 py-2">{{ $product->sku }}</td>
+                                <td class="px-4 py-2">{{ $product->baseUnit->name ?? 'N/A' }}</td>
                                 <td class="px-4 py-2">{{ number_format($product->price, 2) }}</td>
                                 <td class="px-4 py-2">{{ $product->created_at }}</td>
                                 <td class="px-4 py-2 text-right space-x-3">

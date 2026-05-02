@@ -35,12 +35,13 @@ class TripsController extends Controller
             'Date' => ['nullable', 'date'],
             'vehicle_id' => ['nullable','max:255'],
             'purpose' => ['nullable', 'string', 'max:255'],
+            'km' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         Trips::create($data);
 
         return redirect()->route('trips.index')->with('success', 'Trip created successfully.');
-        
+
     }
 
     /**
@@ -69,6 +70,7 @@ class TripsController extends Controller
             'Date' => ['nullable', 'date'],
             'vehicle_id' => ['nullable','max:255'],
             'purpose' => ['nullable', 'string', 'max:255'],
+            'km' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $trip->update($data);
