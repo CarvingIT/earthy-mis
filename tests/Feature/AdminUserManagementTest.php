@@ -17,7 +17,7 @@ class AdminUserManagementTest extends TestCase
         $response = $this->actingAs($admin)->get(route('users.index'));
 
         $response->assertOk();
-        $response->assertSee('Users (Staff)');
+        $response->assertSee('Staff directory');
     }
 
     public function test_non_admin_cannot_access_users_page(): void

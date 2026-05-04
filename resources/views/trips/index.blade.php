@@ -20,6 +20,7 @@
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Vehicle</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Purpose</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Kilometers</th>
                             <th class="px-4 py-2"></th>
                         </tr>
                     </thead>
@@ -29,6 +30,7 @@
                                 <td class="px-4 py-2">{{ $trip->Date }}</td>
                                 <td class="px-4 py-2">{{ @$trip->vehicle->registration_number }}</td>
                                 <td class="px-4 py-2">{{ $trip->purpose }}</td>
+                                <td class="px-4 py-2">{{ number_format($trip->km, 2) }}</td>
                                 <td class="px-4 py-2 text-right space-x-3">
                                     <a class="text-green-600" href="{{ route('trips.edit', $trip) }}">Edit</a>
                                     <form class="inline" method="POST" action="{{ route('trips.destroy', $trip) }}">

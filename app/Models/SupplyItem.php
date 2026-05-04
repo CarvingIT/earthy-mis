@@ -13,6 +13,7 @@ class SupplyItem extends Model
         'quantity',
         'consumable_id',
         'description',
+        'cost',
     ];
 
     public function consumable(){

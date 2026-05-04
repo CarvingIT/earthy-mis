@@ -2,17 +2,17 @@
     <x-slot name="header">
         <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div>
-                <p class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-600">Inventory Management</p>
-                <h2 class="text-3xl font-extrabold leading-tight text-slate-900">Add Consumable Item</h2>
+                <p class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-600">Measurement Management</p>
+                <h2 class="text-3xl font-extrabold leading-tight text-slate-900">Add Unit</h2>
             </div>
-            <p class="max-w-xl text-sm font-medium text-slate-500">Register a new consumable item with name and optional description for your inventory.</p>
+            <p class="max-w-xl text-sm font-medium text-slate-500">Create a new measurement unit with optional conversion relationships.</p>
         </div>
     </x-slot>
 
     <style>
         * { box-sizing: border-box; }
 
-        .consumable-form-shell {
+        .unit-form-shell {
             background: linear-gradient(180deg, #f8fafc 0%, #f1f8f4 48%, #f8fafc 100%);
         }
 
@@ -83,7 +83,7 @@
         }
     </style>
 
-    <div class="consumable-form-shell min-h-screen py-10">
+    <div class="unit-form-shell min-h-screen py-10">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
             <section class="form-panel reveal rounded-2xl p-5">
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -94,16 +94,16 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-base font-extrabold text-slate-900">New consumable item</h3>
-                            <p class="text-sm font-medium text-slate-500">Add the item name and optional description details.</p>
+                            <h3 class="text-base font-extrabold text-slate-900">New measurement unit</h3>
+                            <p class="text-sm font-medium text-slate-500">Define a new unit and its conversion relationships.</p>
                         </div>
                     </div>
 
-                    <a href="{{ route('consumables.index') }}" class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-100 sm:w-auto">
+                    <a href="{{ route('units.index') }}" class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-100 sm:w-auto">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                         </svg>
-                        Back to Items
+                        Back to Units
                     </a>
                 </div>
             </section>
@@ -121,7 +121,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('consumables.store') }}">
+            <form method="POST" action="{{ route('units.store') }}">
                 @csrf
 
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_20rem]">
@@ -131,27 +131,72 @@
                                 <div class="mb-5 flex items-center gap-3">
                                     <div class="section-mark flex h-10 w-10 items-center justify-center rounded-xl text-white">
                                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m0 10v-10l8 4"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                         </svg>
                                     </div>
                                     <div>
-                                        <h3 class="text-lg font-extrabold text-slate-900">Item information</h3>
-                                        <p class="text-sm font-medium text-slate-500">Basic details for the consumable item.</p>
+                                        <h3 class="text-lg font-extrabold text-slate-900">Unit details</h3>
+                                        <p class="text-sm font-medium text-slate-500">Basic information for the measurement unit.</p>
                                     </div>
                                 </div>
 
                                 <div class="space-y-5">
                                     <div>
-                                        <label for="item" class="form-label">Item Name <span class="text-rose-500">*</span></label>
-                                        <x-text-input id="item" name="item" type="text" class="form-field mt-2 block w-full" :value="old('item')" required autofocus placeholder="e.g., Fuel, Oil, Grease" />
-                                        <x-input-error class="mt-2" :messages="$errors->get('item')" />
+                                        <label for="name" class="form-label">Unit Name <span class="text-rose-500">*</span></label>
+                                        <input type="text" id="name" name="name" value="{{ old('name') }}" required class="form-field mt-2 block w-full" autofocus placeholder="e.g., Kilogram, Liter, Meter" />
+                                        @error('name')
+                                            <p class="mt-2 text-sm font-medium text-rose-600">{{ $message }}</p>
+                                        @enderror
                                     </div>
 
                                     <div>
                                         <label for="description" class="form-label">Description</label>
-                                        <textarea id="description" name="description" class="form-field mt-2 block w-full resize-none" rows="5" placeholder="Add details about this consumable item (optional)...">{{ old('description') }}</textarea>
-                                        <x-input-error class="mt-2" :messages="$errors->get('description')" />
-                                        <p class="mt-2 text-xs font-medium text-slate-500">Provide any additional information about the item.</p>
+                                        <textarea id="description" name="description" class="form-field mt-2 block w-full resize-none" rows="4" placeholder="Add details about this unit (optional)...">{{ old('description') }}</textarea>
+                                        @error('description')
+                                            <p class="mt-2 text-sm font-medium text-rose-600">{{ $message }}</p>
+                                        @enderror
+                                        <p class="mt-2 text-xs font-medium text-slate-500">Provide any additional information about the unit.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="form-section reveal rounded-2xl p-5 sm:p-6" style="--reveal-delay: 140ms;">
+                            <div class="relative z-10">
+                                <div class="mb-5 flex items-center gap-3">
+                                    <div class="section-mark flex h-10 w-10 items-center justify-center rounded-xl text-white">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-extrabold text-slate-900">Conversion settings</h3>
+                                        <p class="text-sm font-medium text-slate-500">Optional: Set up conversion relationships.</p>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-5">
+                                    <div>
+                                        <label for="related_unit_id" class="form-label">Related Unit</label>
+                                        <select id="related_unit_id" name="related_unit_id" class="form-field mt-2 block w-full">
+                                            <option value="">-- No conversion --</option>
+                                            @foreach ($relatedUnits as $relatedUnit)
+                                                <option value="{{ $relatedUnit->id }}" {{ old('related_unit_id') == $relatedUnit->id ? 'selected' : '' }}>{{ $relatedUnit->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('related_unit_id')
+                                            <p class="mt-2 text-sm font-medium text-rose-600">{{ $message }}</p>
+                                        @enderror
+                                        <p class="mt-2 text-xs font-medium text-slate-500">Select a unit to create a conversion relationship.</p>
+                                    </div>
+
+                                    <div>
+                                        <label for="related_unit_quantity" class="form-label">Conversion Quantity</label>
+                                        <input type="number" id="related_unit_quantity" name="related_unit_quantity" value="{{ old('related_unit_quantity') }}" step="0.01" min="0" class="form-field mt-2 block w-full" placeholder="e.g., 1000 grams = 1 kg" />
+                                        @error('related_unit_quantity')
+                                            <p class="mt-2 text-sm font-medium text-rose-600">{{ $message }}</p>
+                                        @enderror
+                                        <p class="mt-2 text-xs font-medium text-slate-500">How many of this unit equals one related unit.</p>
                                     </div>
                                 </div>
                             </div>
@@ -159,7 +204,7 @@
                     </div>
 
                     <aside class="space-y-6 lg:sticky lg:top-8 lg:h-fit">
-                        <section class="form-section reveal rounded-2xl p-5" style="--reveal-delay: 140ms;">
+                        <section class="form-section reveal rounded-2xl p-5" style="--reveal-delay: 210ms;">
                             <div class="relative z-10">
                                 <p class="mb-4 text-sm font-bold text-slate-700">Actions</p>
                                 <div class="flex flex-col gap-2">
@@ -167,9 +212,9 @@
                                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                         </svg>
-                                        Create Item
+                                        Create Unit
                                     </button>
-                                    <a href="{{ route('consumables.index') }}" class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-extrabold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-100">
+                                    <a href="{{ route('units.index') }}" class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-extrabold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-100">
                                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                         </svg>
@@ -179,7 +224,7 @@
                             </div>
                         </section>
 
-                        <section class="form-section reveal rounded-2xl p-5" style="--reveal-delay: 210ms;">
+                        <section class="form-section reveal rounded-2xl p-5" style="--reveal-delay: 280ms;">
                             <div class="relative z-10">
                                 <p class="mb-3 text-sm font-bold text-slate-700">Tips</p>
                                 <ul class="space-y-2 text-xs font-medium text-slate-600">
@@ -187,19 +232,19 @@
                                         <svg class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                         </svg>
-                                        <span>Use clear, descriptive item names</span>
+                                        <span>Use standard unit names</span>
                                     </li>
                                     <li class="flex gap-2">
                                         <svg class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                         </svg>
-                                        <span>Descriptions help track usage patterns</span>
+                                        <span>Conversions help track quantities</span>
                                     </li>
                                     <li class="flex gap-2">
                                         <svg class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                         </svg>
-                                        <span>Keep data consistent across items</span>
+                                        <span>Conversions are optional</span>
                                     </li>
                                 </ul>
                             </div>

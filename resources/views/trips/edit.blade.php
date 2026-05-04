@@ -29,12 +29,18 @@
 
                     <div>
                         <x-input-label for="purpose" value="Purpose" />
-                        <x-text-input id="purpose" name="purpose" type="text" class="mt-1 block w-full" :value="old('purpose`', $trip->purpose)" />
-                        <x-input-error class="mt-2" :messages="$errors->get('trip')" />
+                        <x-text-input id="purpose" name="purpose" type="text" class="mt-1 block w-full" :value="old('purpose', $trip->purpose)" />
+                        <x-input-error class="mt-2" :messages="$errors->get('purpose')" />
+                    </div>
+
+                    <div>
+                        <x-input-label for="km" value="Kilometers" />
+                        <x-text-input id="km" name="km" type="number" step="0.01" min="0" class="mt-1 block w-full" :value="old('km', $trip->km)" />
+                        <x-input-error class="mt-2" :messages="$errors->get('km')" />
                     </div>
 
                     <div class="flex justify-end gap-2">
-                        <a href="{{ route('weights.index') }}" class="px-4 py-2 border rounded-md">Cancel</a>
+                        <a href="{{ route('trips.index') }}" class="px-4 py-2 border rounded-md">Cancel</a>
                         <x-primary-button>Update</x-primary-button>
                     </div>
                 </form>

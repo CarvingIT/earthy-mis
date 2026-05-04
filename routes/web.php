@@ -15,6 +15,8 @@ use App\Http\Controllers\ConsumableController;
 use App\Http\Controllers\SupplyItemController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\StockController;
+use App\Http\Controllers\UnitController;
+use App\Http\Controllers\ChartController;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Society;
@@ -64,8 +66,21 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/get_product_rate/ajax/{product_id}',[ProductController::class, 'getProductRate']);
 
+    // Charts Routes
+    Route::get('/charts', [ChartController::class, 'index'])->name('charts.index');
+    Route::get('/api/chart-stats', [ChartController::class, 'statsData']);
+    Route::get('/api/stock-data', [ChartController::class, 'stockData']);
+    Route::get('/api/stock-data-by-product', [ChartController::class, 'stockDataByProduct']);
+    Route::get('/api/sale-data', [ChartController::class, 'saleData']);
+    Route::get('/api/sale-data-by-product', [ChartController::class, 'saleDataByProduct']);
+    Route::get('/api/cost-data', [ChartController::class, 'costData']);
+    Route::get('/api/cost-data-by-consumable', [ChartController::class, 'costDataByConsumable']);
+    Route::get('/api/vehicle-data', [ChartController::class, 'vehicleData']);
+    Route::get('/api/profit-loss-data', [ChartController::class, 'profitLossData']);
+
     Route::middleware('admin')->group(function () {
         Route::resource('users', UserController::class)->except('show');
+        Route::resource('units', UnitController::class)->except('show');
     });
 });
 

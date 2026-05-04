@@ -36,6 +36,7 @@ class SupplyItemController extends Controller
             'quantity' => ['nullable', 'integer'],
             'consumable_id' => ['nullable', 'integer'],
             'description' => ['nullable', 'string'],
+            'cost' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         SupplyItem::create($data);
@@ -71,6 +72,7 @@ class SupplyItemController extends Controller
             'quantity' => ['nullable', 'integer'],
             'consumable_id' => ['nullable', 'integer'],
             'description' => ['nullable', 'string'],
+            'cost' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $supplyitem->update($data);
