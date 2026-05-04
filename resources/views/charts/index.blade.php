@@ -1,605 +1,656 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Advanced Analytics & Reports') }}
-        </h2>
+        <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-600">Business intelligence</p>
+                <h2 class="text-3xl font-extrabold leading-tight text-slate-900">Analytics & Reports</h2>
+            </div>
+            <p class="max-w-xl text-sm font-medium text-slate-500">A focused view of money, stock, fleet activity, and operational momentum.</p>
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            
-            <!-- Time Range Filter -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <div class="flex flex-wrap gap-2 items-center mb-4">
-                    <label class="font-semibold text-gray-700">Display Last:</label>
-                    <select id="daysFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <option value="7">7 Days</option>
-                        <option value="14">14 Days</option>
-                        <option value="30" selected>30 Days</option>
-                        <option value="60">60 Days</option>
-                        <option value="90">90 Days</option>
-                    </select>
-                </div>
-            </div>
+    <style>
+        * { box-sizing: border-box; }
 
-            <!-- Summary Statistics -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-gradient-to-br from-blue-500 to-blue-600 overflow-hidden shadow-lg sm:rounded-lg p-6 text-white">
-                    <h3 class="text-sm font-semibold opacity-90 mb-2">Total Sales</h3>
-                    <p class="text-3xl font-bold">₹{{ number_format($stats['total_sales'] ?? 0, 0) }}</p>
-                </div>
-                <div class="bg-gradient-to-br from-red-500 to-red-600 overflow-hidden shadow-lg sm:rounded-lg p-6 text-white">
-                    <h3 class="text-sm font-semibold opacity-90 mb-2">Total Costs</h3>
-                    <p class="text-3xl font-bold">₹{{ number_format($stats['total_cost'] ?? 0, 0) }}</p>
-                </div>
-                <div class="bg-gradient-to-br from-green-500 to-green-600 overflow-hidden shadow-lg sm:rounded-lg p-6 text-white">
-                    <h3 class="text-sm font-semibold opacity-90 mb-2">Total Profit</h3>
-                    <p class="text-3xl font-bold">₹{{ number_format($stats['total_profit'] ?? 0, 0) }}</p>
-                </div>
-                <div class="bg-gradient-to-br from-purple-500 to-purple-600 overflow-hidden shadow-lg sm:rounded-lg p-6 text-white">
-                    <h3 class="text-sm font-semibold opacity-90 mb-2">Vehicle Running</h3>
-                    <p class="text-3xl font-bold">{{ number_format($stats['total_vehicles_km'] ?? 0, 0) }} km</p>
-                </div>
-            </div>
+        .analytics-shell {
+            background:
+                linear-gradient(180deg, #f8fafc 0%, #f1f8f4 48%, #f8fafc 100%);
+        }
 
-            <!-- Profit vs Sales vs Cost Analysis -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <h3 class="text-lg font-semibold mb-4">📊 Profit, Sales & Cost Analysis</h3>
-                    <canvas id="profitLossChart" height="80"></canvas>
-                    <div id="profitLossSummary" class="mt-4 grid grid-cols-4 gap-4 text-sm"></div>
-                </div>
-            </div>
+        .insight-panel,
+        .metric-card,
+        .chart-card {
+            border: 1px solid rgba(15, 23, 42, .08);
+            background: #ffffff;
+            box-shadow: 0 10px 28px rgba(15, 23, 42, .07);
+        }
 
-            <!-- Stock Chart -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <h3 class="text-lg font-semibold mb-4">📦 Stock Quantity Over Time</h3>
-                    <canvas id="stockChart" height="80"></canvas>
-                    <div id="stockSummary" class="mt-4 grid grid-cols-4 gap-4 text-sm"></div>
-                </div>
-            </div>
+        .metric-card {
+            position: relative;
+            overflow: hidden;
+            transition: box-shadow .18s ease, border-color .18s ease;
+        }
 
-            <!-- Stock by Product Chart -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <h3 class="text-lg font-semibold mb-4">📦 Top 10 Products by Stock</h3>
-                    <canvas id="stockByProductChart" height="80"></canvas>
-                </div>
-            </div>
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--metric-tint), transparent 48%);
+            opacity: .95;
+            pointer-events: none;
+        }
 
-            <!-- Sales Chart -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <h3 class="text-lg font-semibold mb-4">💰 Sales Revenue Over Time</h3>
-                    <canvas id="saleChart" height="80"></canvas>
-                    <div id="saleSummary" class="mt-4 grid grid-cols-4 gap-4 text-sm"></div>
-                </div>
-            </div>
+        .metric-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--metric-accent);
+        }
 
-            <!-- Sales by Product Chart -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <h3 class="text-lg font-semibold mb-4">💰 Top 10 Products by Sales</h3>
-                    <canvas id="saleByProductChart" height="80"></canvas>
-                </div>
-            </div>
+        .metric-card:hover,
+        .chart-card:hover {
+            box-shadow: 0 14px 34px rgba(15, 23, 42, .1);
+        }
 
-            <!-- Cost Chart -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <h3 class="text-lg font-semibold mb-4">💳 Supply Items Cost Over Time</h3>
-                    <canvas id="costChart" height="80"></canvas>
-                    <div id="costSummary" class="mt-4 grid grid-cols-4 gap-4 text-sm"></div>
-                </div>
-            </div>
+        .reveal {
+            opacity: 0;
+            transform: translate3d(0, 18px, 0);
+            transition:
+                opacity .48s ease,
+                transform .48s ease,
+                box-shadow .18s ease,
+                border-color .18s ease;
+            transition-delay: var(--reveal-delay, 0ms);
+            will-change: opacity, transform;
+        }
 
-            <!-- Cost by Consumable Chart -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <h3 class="text-lg font-semibold mb-4">💳 Top 10 Consumables by Cost</h3>
-                    <canvas id="costByConsumableChart" height="80"></canvas>
-                </div>
-            </div>
+        .reveal.is-visible {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+            will-change: auto;
+        }
 
-            <!-- Vehicle KM Chart -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <h3 class="text-lg font-semibold mb-4">🚗 Vehicle Running (km) Over Time</h3>
-                    <canvas id="vehicleChart" height="80"></canvas>
-                    <div id="vehicleSummary" class="mt-4 grid grid-cols-4 gap-4 text-sm"></div>
-                </div>
-            </div>
+        .metric-icon {
+            background: var(--metric-accent);
+            box-shadow: 0 12px 28px var(--metric-shadow);
+        }
 
+        .metric-value {
+            color: var(--metric-text);
+            letter-spacing: 0;
+        }
+
+        .chart-card {
+            contain: layout paint;
+            transition: box-shadow .18s ease, border-color .18s ease;
+        }
+
+        .chart-mark {
+            background: var(--chart-accent);
+            box-shadow: 0 8px 18px var(--chart-shadow);
+        }
+
+        .chart-badge {
+            color: var(--chart-text);
+            background: var(--chart-tint);
+            border: 1px solid var(--chart-border);
+        }
+
+        .chart-canvas-wrap {
+            min-height: 260px;
+        }
+
+        .doughnut-wrap {
+            height: 310px;
+        }
+
+        .summary-card {
+            border: 1px solid rgba(15, 23, 42, .08);
+            background: #ffffff;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, .05);
+        }
+
+        @media (max-width: 640px) {
+            .chart-canvas-wrap { min-height: 220px; }
+            .doughnut-wrap { height: 270px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .reveal {
+                opacity: 1;
+                transform: none;
+                transition: none;
+            }
+        }
+    </style>
+
+    @php
+        $formatIndianNumber = function ($value) {
+            $value = (string) round((float) $value);
+            $negative = str_starts_with($value, '-');
+            $value = ltrim($value, '-');
+
+            if (strlen($value) <= 3) {
+                return ($negative ? '-' : '') . $value;
+            }
+
+            $lastThree = substr($value, -3);
+            $remaining = substr($value, 0, -3);
+            $remaining = preg_replace('/\B(?=(\d{2})+(?!\d))/', ',', $remaining);
+
+            return ($negative ? '-' : '') . $remaining . ',' . $lastThree;
+        };
+
+        $metricCards = [
+            [
+                'key' => 'total_sales',
+                'label' => 'Total Sales',
+                'tag' => 'Revenue',
+                'value' => '₹' . $formatIndianNumber($stats['total_sales'] ?? 0),
+                'note' => 'Period revenue',
+                'icon' => 'M3 13.5l4.5-4.5 3 3L17 5.5M17 5.5h-5M17 5.5v5',
+                'style' => '--metric-accent: linear-gradient(135deg, #0284c7, #22d3ee); --metric-tint: rgba(14, 165, 233, .15); --metric-shadow: rgba(14, 165, 233, .3); --metric-text: #0369a1;',
+            ],
+            [
+                'key' => 'total_cost',
+                'label' => 'Total Costs',
+                'tag' => 'Costs',
+                'value' => '₹' . $formatIndianNumber($stats['total_cost'] ?? 0),
+                'note' => 'Operating expenses',
+                'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-12v2m0 16v2m8-10h-2M6 12H4m14.364-6.364l-1.414 1.414M7.05 16.95l-1.414 1.414m12.728 0l-1.414-1.414M7.05 7.05L5.636 5.636',
+                'style' => '--metric-accent: linear-gradient(135deg, #f59e0b, #f97316); --metric-tint: rgba(245, 158, 11, .16); --metric-shadow: rgba(245, 158, 11, .3); --metric-text: #b45309;',
+            ],
+            [
+                'key' => 'total_profit',
+                'label' => 'Total Profit',
+                'tag' => 'Profit',
+                'value' => '₹' . $formatIndianNumber($stats['total_profit'] ?? 0),
+                'note' => 'Net earnings',
+                'icon' => 'M5 13l4 4L19 7',
+                'style' => '--metric-accent: linear-gradient(135deg, #059669, #84cc16); --metric-tint: rgba(16, 185, 129, .16); --metric-shadow: rgba(16, 185, 129, .3); --metric-text: #047857;',
+            ],
+            [
+                'key' => 'total_vehicles_km',
+                'label' => 'Vehicle Distance',
+                'tag' => 'Fleet',
+                'value' => $formatIndianNumber($stats['total_vehicles_km'] ?? 0) . ' km',
+                'note' => 'Fleet operations',
+                'icon' => 'M9 17a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H3v11h2m8 0h2m4 0h2v-5l-3-4h-5',
+                'style' => '--metric-accent: linear-gradient(135deg, #4f46e5, #06b6d4); --metric-tint: rgba(99, 102, 241, .14); --metric-shadow: rgba(79, 70, 229, .28); --metric-text: #4338ca;',
+            ],
+        ];
+
+        $chartCards = [
+            ['id' => 'profitLossChart', 'title' => 'Profit, Sales & Cost Analysis', 'badge' => 'Momentum', 'summary' => 'profitLossSummary', 'style' => '--chart-accent: linear-gradient(135deg, #0ea5e9, #10b981); --chart-shadow: rgba(14, 165, 233, .28); --chart-text: #0369a1; --chart-tint: rgba(14, 165, 233, .1); --chart-border: rgba(14, 165, 233, .18);'],
+            ['id' => 'stockChart', 'title' => 'Stock Quantity Overview', 'badge' => 'Inventory', 'summary' => 'stockSummary', 'style' => '--chart-accent: linear-gradient(135deg, #06b6d4, #22c55e); --chart-shadow: rgba(6, 182, 212, .25); --chart-text: #0e7490; --chart-tint: rgba(6, 182, 212, .1); --chart-border: rgba(6, 182, 212, .18);'],
+            ['id' => 'stockByProductChart', 'title' => 'Top 10 Products by Stock', 'badge' => 'Leaders', 'style' => '--chart-accent: linear-gradient(135deg, #f59e0b, #84cc16); --chart-shadow: rgba(245, 158, 11, .25); --chart-text: #a16207; --chart-tint: rgba(245, 158, 11, .12); --chart-border: rgba(245, 158, 11, .2);'],
+            ['id' => 'saleChart', 'title' => 'Sales Revenue Trends', 'badge' => 'Revenue', 'summary' => 'saleSummary', 'style' => '--chart-accent: linear-gradient(135deg, #16a34a, #14b8a6); --chart-shadow: rgba(22, 163, 74, .25); --chart-text: #15803d; --chart-tint: rgba(34, 197, 94, .1); --chart-border: rgba(34, 197, 94, .18);'],
+            ['id' => 'saleByProductChart', 'title' => 'Top 10 Products by Sales', 'badge' => 'Best sellers', 'style' => '--chart-accent: linear-gradient(135deg, #ec4899, #f97316); --chart-shadow: rgba(236, 72, 153, .22); --chart-text: #be185d; --chart-tint: rgba(236, 72, 153, .1); --chart-border: rgba(236, 72, 153, .18);'],
+            ['id' => 'costChart', 'title' => 'Supply Cost Over Time', 'badge' => 'Spend', 'summary' => 'costSummary', 'style' => '--chart-accent: linear-gradient(135deg, #f97316, #ef4444); --chart-shadow: rgba(249, 115, 22, .25); --chart-text: #c2410c; --chart-tint: rgba(249, 115, 22, .1); --chart-border: rgba(249, 115, 22, .18);'],
+            ['id' => 'costByConsumableChart', 'title' => 'Top 10 Consumables by Cost', 'badge' => 'Distribution', 'doughnut' => true, 'style' => '--chart-accent: linear-gradient(135deg, #7c3aed, #ec4899); --chart-shadow: rgba(124, 58, 237, .22); --chart-text: #6d28d9; --chart-tint: rgba(124, 58, 237, .1); --chart-border: rgba(124, 58, 237, .18);'],
+            ['id' => 'vehicleChart', 'title' => 'Vehicle Running Distance', 'badge' => 'Fleet km', 'summary' => 'vehicleSummary', 'style' => '--chart-accent: linear-gradient(135deg, #4f46e5, #0ea5e9); --chart-shadow: rgba(79, 70, 229, .24); --chart-text: #4338ca; --chart-tint: rgba(79, 70, 229, .1); --chart-border: rgba(79, 70, 229, .18);'],
+        ];
+    @endphp
+
+    <div class="analytics-shell min-h-screen py-10">
+        <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+            <section class="insight-panel reveal rounded-2xl p-5">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <label for="daysFilter" class="block text-sm font-extrabold text-slate-900">Analysis period</label>
+                            <p class="text-sm font-medium text-slate-500">Short ranges reveal urgency; longer ranges reveal patterns.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex w-full flex-col gap-3 sm:flex-row sm:items-center lg:w-auto">
+                        <select id="daysFilter" class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition focus:border-emerald-500 focus:ring-emerald-500 sm:w-52">
+                            <option value="all" selected>All</option>
+                            <option value="7">Last 7 Days</option>
+                            <option value="14">Last 14 Days</option>
+                            <option value="30">Last 30 Days</option>
+                            <option value="60">Last 60 Days</option>
+                            <option value="90">Last 90 Days</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+
+                        <div id="dateRangeContainer" class="hidden w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                            <input type="date" id="startDate" class="rounded-xl border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                            <span class="hidden text-slate-400 sm:inline">to</span>
+                            <input type="date" id="endDate" class="rounded-xl border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                            <button id="applyDateRange" class="rounded-xl bg-slate-900 px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-slate-900/15 transition hover:bg-emerald-700">Apply</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                @foreach ($metricCards as $index => $card)
+                    <article class="metric-card reveal rounded-2xl p-5" style="{{ $card['style'] }} --reveal-delay: {{ $index * 70 }}ms;">
+                        <div class="relative z-10">
+                            <div class="mb-5 flex items-start justify-between gap-3">
+                                <div class="metric-icon flex h-12 w-12 items-center justify-center rounded-xl text-white">
+                                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $card['icon'] }}"/>
+                                    </svg>
+                                </div>
+                                <span class="rounded-full bg-white/80 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-slate-600">{{ $card['tag'] }}</span>
+                            </div>
+                            <p class="text-sm font-bold text-slate-500">{{ $card['label'] }}</p>
+                            <p class="metric-value mt-2 text-3xl font-black" data-metric="{{ $card['key'] }}">{{ $card['value'] }}</p>
+                            <p class="mt-3 text-xs font-semibold leading-5 text-slate-500" data-metric-note>{{ $card['note'] }}</p>
+                        </div>
+                    </article>
+                @endforeach
+            </section>
+
+            <section class="grid grid-cols-1 gap-6">
+                @foreach ($chartCards as $index => $chart)
+                    <article class="chart-card reveal rounded-2xl p-5 sm:p-6" data-chart-id="{{ $chart['id'] }}" style="{{ $chart['style'] }} --reveal-delay: {{ min($index * 35, 105) }}ms;">
+                        <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex min-w-0 items-center gap-3">
+                                <div class="chart-mark h-11 w-2 shrink-0 rounded-full"></div>
+                                <div class="min-w-0">
+                                    <h3 class="truncate text-lg font-extrabold text-slate-900">{{ $chart['title'] }}</h3>
+                                    <p class="text-sm font-medium text-slate-500">Updated for the selected period.</p>
+                                </div>
+                            </div>
+                            <span class="chart-badge w-fit rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide">{{ $chart['badge'] }}</span>
+                        </div>
+
+                        <div class="{{ !empty($chart['doughnut']) ? 'doughnut-wrap' : 'chart-canvas-wrap' }}">
+                            <canvas id="{{ $chart['id'] }}"></canvas>
+                        </div>
+
+                        @if (!empty($chart['summary']))
+                            <div id="{{ $chart['summary'] }}" class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-4"></div>
+                        @endif
+                    </article>
+                @endforeach
+            </section>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const colors = {
-            primary: 'rgb(75, 192, 192)',
-            secondary: 'rgb(54, 162, 235)',
-            tertiary: 'rgb(255, 206, 86)',
-            quaternary: 'rgb(153, 102, 255)',
-            success: 'rgb(76, 175, 80)',
-            danger: 'rgb(255, 99, 132)',
+            primary: 'rgb(14, 165, 233)',
+            secondary: 'rgb(16, 185, 129)',
+            tertiary: 'rgb(249, 115, 22)',
+            quaternary: 'rgb(124, 58, 237)',
+            success: 'rgb(34, 197, 94)',
+            danger: 'rgb(239, 68, 68)',
+            warning: 'rgb(245, 158, 11)',
+            rose: 'rgb(236, 72, 153)',
         };
 
-        const chartOptions = {
+        const palette = [
+            colors.primary,
+            colors.secondary,
+            colors.warning,
+            colors.danger,
+            colors.tertiary,
+            colors.quaternary,
+            colors.rose,
+            'rgb(20, 184, 166)',
+            'rgb(99, 102, 241)',
+            'rgb(132, 204, 22)',
+        ];
+
+        const lineColorByLabel = {
+            sales: 'rgb(14, 165, 233)',
+            cost: 'rgb(244, 63, 94)',
+            costs: 'rgb(244, 63, 94)',
+            profit: 'rgb(34, 197, 94)',
+        };
+
+        const chartOpts = {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
             plugins: {
                 legend: {
                     display: true,
                     position: 'top',
+                    align: 'end',
                     labels: {
                         usePointStyle: true,
-                        padding: 20,
+                        pointStyle: 'circle',
+                        boxWidth: 8,
+                        boxHeight: 8,
+                        padding: 18,
+                        font: { size: 11, weight: '700' },
+                        color: '#475569',
                     }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, .92)',
+                    titleFont: { size: 12, weight: '800' },
+                    bodyFont: { size: 12, weight: '600' },
+                    padding: 12,
+                    cornerRadius: 10,
+                    displayColors: true,
                 }
             },
             scales: {
                 y: {
                     beginAtZero: true,
-                    stacked: false,
+                    border: { display: false },
+                    grid: { color: 'rgba(148, 163, 184, .18)' },
+                    ticks: { font: { size: 10, weight: '600' }, color: '#94A3B8' }
+                },
+                x: {
+                    border: { display: false },
+                    grid: { display: false },
+                    ticks: { font: { size: 10, weight: '600' }, color: '#94A3B8', maxRotation: 0 }
                 }
             }
         };
 
-        let allCharts = {};
+        let charts = {};
 
-        function getDaysFromFilter() {
-            return document.getElementById('daysFilter').value;
+        function getDateRange() {
+            const days = document.getElementById('daysFilter').value;
+            if (days === 'custom') {
+                const start = document.getElementById('startDate').value;
+                const end = document.getElementById('endDate').value;
+                if (start && end) return { start, end };
+            }
+            return { days };
+        }
+
+        function buildQuery() {
+            const range = getDateRange();
+            if (range.days) return `?days=${range.days}`;
+            return `?start=${range.start}&end=${range.end}`;
+        }
+
+        function getPeriodLabel() {
+            const range = getDateRange();
+            if (range.start && range.end) return 'Custom';
+            if (range.days === 'all') return 'All';
+            return `${range.days} days`;
+        }
+
+        function formatIndianNumber(value) {
+            const number = Math.round(Number(value || 0));
+            const sign = number < 0 ? '-' : '';
+            const digits = String(Math.abs(number));
+
+            if (digits.length <= 3) return `${sign}${digits}`;
+
+            const lastThree = digits.slice(-3);
+            const remaining = digits.slice(0, -3).replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+
+            return `${sign}${remaining},${lastThree}`;
+        }
+
+        function formatMoney(value) {
+            return `₹${formatIndianNumber(value)}`;
+        }
+
+        function formatNumber(value, suffix = '') {
+            return `${formatIndianNumber(value)}${suffix}`;
+        }
+
+        function loadMetricCards() {
+            fetch(`/api/chart-stats${buildQuery()}`).then(r => r.json()).then(stats => {
+                if (stats.error) return console.error(stats.error);
+
+                const values = {
+                    total_sales: formatMoney(stats.total_sales),
+                    total_cost: formatMoney(stats.total_cost),
+                    total_profit: formatMoney(stats.total_profit),
+                    total_vehicles_km: formatNumber(stats.total_vehicles_km, ' km'),
+                };
+
+                Object.entries(values).forEach(([key, value]) => {
+                    const el = document.querySelector(`[data-metric="${key}"]`);
+                    if (el) el.textContent = value;
+                });
+
+                document.querySelectorAll('[data-metric-note]').forEach(note => {
+                    note.textContent = `${getPeriodLabel()} data`;
+                });
+            }).catch(e => console.error('Stats error:', e));
+        }
+
+        function createSumCard(title, value, sub, color) {
+            const colorMap = {
+                blue: { accent: '#0ea5e9', tint: 'rgba(14, 165, 233, .12)', text: '#0369a1' },
+                red: { accent: '#ef4444', tint: 'rgba(239, 68, 68, .11)', text: '#b91c1c' },
+                green: { accent: '#10b981', tint: 'rgba(16, 185, 129, .12)', text: '#047857' },
+                yellow: { accent: '#f59e0b', tint: 'rgba(245, 158, 11, .14)', text: '#a16207' },
+                purple: { accent: '#7c3aed', tint: 'rgba(124, 58, 237, .1)', text: '#6d28d9' },
+                cyan: { accent: '#06b6d4', tint: 'rgba(6, 182, 212, .11)', text: '#0e7490' },
+                orange: { accent: '#f97316', tint: 'rgba(249, 115, 22, .12)', text: '#c2410c' },
+                pink: { accent: '#ec4899', tint: 'rgba(236, 72, 153, .1)', text: '#be185d' },
+            };
+            const c = colorMap[color] || colorMap.blue;
+
+            return `<div class="summary-card rounded-xl p-4" style="--summary-accent: ${c.accent}; --summary-tint: ${c.tint};">
+                <div class="mb-3 flex items-center justify-between gap-3">
+                    <p class="text-xs font-extrabold uppercase tracking-wide text-slate-500">${title}</p>
+                    <span class="h-2.5 w-2.5 rounded-full" style="background: ${c.accent}; box-shadow: 0 0 0 6px ${c.tint};"></span>
+                </div>
+                <p class="text-xl font-black" style="color: ${c.text};">${value}</p>
+                <p class="mt-2 text-xs font-semibold text-slate-500">${sub}</p>
+            </div>`;
         }
 
         function renderCharts() {
-            const days = getDaysFromFilter();
-            
-            // Destroy existing charts to prevent overlapping
-            Object.values(allCharts).forEach(chart => {
-                if (chart) chart.destroy();
+            Object.values(charts).forEach(c => c?.destroy?.());
+            charts = {};
+            loadMetricCards();
+
+            document.querySelectorAll('[data-chart-id].is-visible').forEach(loadVisibleChart);
+        }
+
+        function getChartConfig(id) {
+            const q = buildQuery();
+            const configs = {
+                profitLossChart: { url: `/api/profit-loss-data${q}`, type: 'line', summaryFn: loadProfitSummary },
+                stockChart: { url: `/api/stock-data${q}`, type: 'line', summaryFn: loadStockSummary },
+                stockByProductChart: { url: `/api/stock-data-by-product${q}`, type: 'bar' },
+                saleChart: { url: `/api/sale-data${q}`, type: 'line', summaryFn: loadSaleSummary },
+                saleByProductChart: { url: `/api/sale-data-by-product${q}`, type: 'bar' },
+                costChart: { url: `/api/cost-data${q}`, type: 'line', summaryFn: loadCostSummary },
+                costByConsumableChart: { url: `/api/cost-data-by-consumable${q}`, type: 'doughnut' },
+                vehicleChart: { url: `/api/vehicle-data${q}`, type: 'line', summaryFn: loadVehicleSummary },
+            };
+
+            return configs[id];
+        }
+
+        function loadVisibleChart(card) {
+            const id = card.dataset.chartId;
+            if (!id || charts[id]) return;
+
+            const cfg = getChartConfig(id);
+            if (!cfg) return;
+
+            loadChart(id, cfg.url, cfg.type, cfg.summaryFn);
+        }
+
+        function initRevealAnimations() {
+            const revealItems = document.querySelectorAll('.reveal');
+
+            if (!('IntersectionObserver' in window)) {
+                revealItems.forEach(item => {
+                    item.classList.add('is-visible');
+                    if (item.dataset.chartId) loadVisibleChart(item);
+                });
+                return;
+            }
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+
+                    entry.target.classList.add('is-visible');
+                    if (entry.target.dataset.chartId) loadVisibleChart(entry.target);
+                    observer.unobserve(entry.target);
+                });
+            }, {
+                rootMargin: '0px 0px -12% 0px',
+                threshold: 0.16,
             });
-            allCharts = {};
 
-            loadProfitLossChart(days);
-            loadStockChart(days);
-            loadStockByProductChart(days);
-            loadSalesChart(days);
-            loadSalesByProductChart(days);
-            loadCostChart(days);
-            loadCostByConsumableChart(days);
-            loadVehicleChart(days);
+            revealItems.forEach(item => observer.observe(item));
         }
 
-        // Profit Loss Chart
-        function loadProfitLossChart(days) {
-            fetch(`/api/profit-loss-data?days=${days}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        console.error('Error:', data.error);
-                        return;
-                    }
-                    
-                    const ctx = document.getElementById('profitLossChart').getContext('2d');
-                    allCharts.profitLoss = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: data.labels,
-                            datasets: data.datasets
-                        },
-                        options: {
-                            ...chartOptions,
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                }
-                            }
-                        }
-                    });
+        function loadChart(id, url, type, summaryFn) {
+            fetch(url).then(r => r.json()).then(data => {
+                if (data.error) return console.error(data.error);
+                const el = document.getElementById(id);
+                if (!el) return;
 
-                    // Update summary
-                    const summary = data.summary;
-                    document.getElementById('profitLossSummary').innerHTML = `
-                        <div class="p-3 bg-blue-50 rounded">
-                            <p class="text-gray-600 text-xs">Total Sales</p>
-                            <p class="font-bold text-blue-600">₹${summary.total_sales.toLocaleString()}</p>
-                        </div>
-                        <div class="p-3 bg-red-50 rounded">
-                            <p class="text-gray-600 text-xs">Total Cost</p>
-                            <p class="font-bold text-red-600">₹${summary.total_cost.toLocaleString()}</p>
-                        </div>
-                        <div class="p-3 bg-green-50 rounded">
-                            <p class="text-gray-600 text-xs">Total Profit</p>
-                            <p class="font-bold text-green-600">₹${summary.total_profit.toLocaleString()}</p>
-                        </div>
-                        <div class="p-3 bg-purple-50 rounded">
-                            <p class="text-gray-600 text-xs">Profit Margin</p>
-                            <p class="font-bold text-purple-600">${summary.profit_margin}%</p>
-                        </div>
-                    `;
-                })
-                .catch(error => console.error('Error loading profit loss chart:', error));
-        }
-
-        // Stock Chart
-        function loadStockChart(days) {
-            fetch(`/api/stock-data?days=${days}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        console.error('Error:', data.error);
-                        return;
-                    }
-                    
-                    const ctx = document.getElementById('stockChart').getContext('2d');
-                    allCharts.stock = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: data.labels,
-                            datasets: [{
-                                label: 'Stock Quantity',
-                                data: data.data,
-                                borderColor: colors.primary,
-                                backgroundColor: 'rgba(75, 192, 192, 0.1)',
-                                borderWidth: 2,
-                                fill: true,
-                                tension: 0.3,
-                                pointRadius: 4,
-                                pointBackgroundColor: colors.primary,
-                            }]
-                        },
-                        options: chartOptions
-                    });
-
-                    if (data.summary) {
-                        document.getElementById('stockSummary').innerHTML = `
-                            <div class="p-3 bg-blue-50 rounded">
-                                <p class="text-gray-600 text-xs">Total</p>
-                                <p class="font-bold text-blue-600">${data.summary.total.toLocaleString()}</p>
-                            </div>
-                            <div class="p-3 bg-green-50 rounded">
-                                <p class="text-gray-600 text-xs">Average</p>
-                                <p class="font-bold text-green-600">${data.summary.average.toLocaleString()}</p>
-                            </div>
-                            <div class="p-3 bg-purple-50 rounded">
-                                <p class="text-gray-600 text-xs">Maximum</p>
-                                <p class="font-bold text-purple-600">${data.summary.max.toLocaleString()}</p>
-                            </div>
-                            <div class="p-3 bg-yellow-50 rounded">
-                                <p class="text-gray-600 text-xs">Period</p>
-                                <p class="font-bold text-yellow-600">${days} Days</p>
-                            </div>
-                        `;
-                    }
-                })
-                .catch(error => console.error('Error loading stock chart:', error));
-        }
-
-        // Stock by Product Chart
-        function loadStockByProductChart(days) {
-            fetch(`/api/stock-data-by-product?days=${days}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        console.error('Error:', data.error);
-                        return;
-                    }
-                    
-                    const ctx = document.getElementById('stockByProductChart').getContext('2d');
-                    allCharts.stockByProduct = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: data.labels,
-                            datasets: [{
-                                label: 'Stock Quantity',
-                                data: data.data,
-                                backgroundColor: [
-                                    'rgba(255, 99, 132, 0.7)',
-                                    'rgba(54, 162, 235, 0.7)',
-                                    'rgba(255, 206, 86, 0.7)',
-                                    'rgba(75, 192, 192, 0.7)',
-                                    'rgba(153, 102, 255, 0.7)',
-                                    'rgba(255, 159, 64, 0.7)',
-                                    'rgba(255, 99, 132, 0.7)',
-                                    'rgba(54, 162, 235, 0.7)',
-                                    'rgba(255, 206, 86, 0.7)',
-                                    'rgba(75, 192, 192, 0.7)',
-                                ],
-                                borderColor: [
-                                    'rgba(255, 99, 132, 1)',
-                                    'rgba(54, 162, 235, 1)',
-                                    'rgba(255, 206, 86, 1)',
-                                    'rgba(75, 192, 192, 1)',
-                                    'rgba(153, 102, 255, 1)',
-                                    'rgba(255, 159, 64, 1)',
-                                ],
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            ...chartOptions,
-                            indexAxis: 'y',
-                        }
-                    });
-                })
-                .catch(error => console.error('Error loading stock by product chart:', error));
-        }
-
-        // Sales Chart
-        function loadSalesChart(days) {
-            fetch(`/api/sale-data?days=${days}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        console.error('Error:', data.error);
-                        return;
-                    }
-                    
-                    const ctx = document.getElementById('saleChart').getContext('2d');
-                    allCharts.sales = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: data.labels,
-                            datasets: [{
-                                label: 'Sales Amount (Rs.)',
-                                data: data.data,
-                                borderColor: colors.secondary,
-                                backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                                borderWidth: 2,
-                                fill: true,
-                                tension: 0.3,
-                                pointRadius: 4,
-                                pointBackgroundColor: colors.secondary,
-                            }]
-                        },
-                        options: chartOptions
-                    });
-
-                    if (data.summary) {
-                        document.getElementById('saleSummary').innerHTML = `
-                            <div class="p-3 bg-blue-50 rounded">
-                                <p class="text-gray-600 text-xs">Total Amount</p>
-                                <p class="font-bold text-blue-600">₹${data.summary.total_amount.toLocaleString()}</p>
-                            </div>
-                            <div class="p-3 bg-green-50 rounded">
-                                <p class="text-gray-600 text-xs">Average/Day</p>
-                                <p class="font-bold text-green-600">₹${data.summary.average_amount.toLocaleString()}</p>
-                            </div>
-                            <div class="p-3 bg-purple-50 rounded">
-                                <p class="text-gray-600 text-xs">Peak Day</p>
-                                <p class="font-bold text-purple-600">₹${data.summary.max_amount.toLocaleString()}</p>
-                            </div>
-                            <div class="p-3 bg-yellow-50 rounded">
-                                <p class="text-gray-600 text-xs">Transactions</p>
-                                <p class="font-bold text-yellow-600">${data.summary.transaction_count.toLocaleString()}</p>
-                            </div>
-                        `;
-                    }
-                })
-                .catch(error => console.error('Error loading sales chart:', error));
-        }
-
-        // Sales by Product Chart
-        function loadSalesByProductChart(days) {
-            fetch(`/api/sale-data-by-product?days=${days}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        console.error('Error:', data.error);
-                        return;
-                    }
-                    
-                    const ctx = document.getElementById('saleByProductChart').getContext('2d');
-                    allCharts.saleByProduct = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: data.labels,
-                            datasets: [{
-                                label: 'Sales Amount (Rs.)',
-                                data: data.data,
-                                backgroundColor: [
-                                    'rgba(255, 99, 132, 0.7)',
-                                    'rgba(54, 162, 235, 0.7)',
-                                    'rgba(255, 206, 86, 0.7)',
-                                    'rgba(75, 192, 192, 0.7)',
-                                    'rgba(153, 102, 255, 0.7)',
-                                    'rgba(255, 159, 64, 0.7)',
-                                    'rgba(255, 99, 132, 0.7)',
-                                    'rgba(54, 162, 235, 0.7)',
-                                    'rgba(255, 206, 86, 0.7)',
-                                    'rgba(75, 192, 192, 0.7)',
-                                ],
-                                borderColor: [
-                                    'rgba(255, 99, 132, 1)',
-                                    'rgba(54, 162, 235, 1)',
-                                    'rgba(255, 206, 86, 1)',
-                                    'rgba(75, 192, 192, 1)',
-                                    'rgba(153, 102, 255, 1)',
-                                    'rgba(255, 159, 64, 1)',
-                                ],
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            ...chartOptions,
-                            indexAxis: 'y',
-                        }
-                    });
-                })
-                .catch(error => console.error('Error loading sales by product chart:', error));
-        }
-
-        // Cost Chart
-        function loadCostChart(days) {
-            fetch(`/api/cost-data?days=${days}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        console.error('Error:', data.error);
-                        return;
-                    }
-                    
-                    const ctx = document.getElementById('costChart').getContext('2d');
-                    allCharts.cost = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: data.labels,
-                            datasets: [{
-                                label: 'Cost Amount (Rs.)',
-                                data: data.data,
-                                borderColor: colors.tertiary,
-                                backgroundColor: 'rgba(255, 206, 86, 0.1)',
-                                borderWidth: 2,
-                                fill: true,
-                                tension: 0.3,
-                                pointRadius: 4,
-                                pointBackgroundColor: colors.tertiary,
-                            }]
-                        },
-                        options: chartOptions
-                    });
-
-                    if (data.summary) {
-                        document.getElementById('costSummary').innerHTML = `
-                            <div class="p-3 bg-blue-50 rounded">
-                                <p class="text-gray-600 text-xs">Total Cost</p>
-                                <p class="font-bold text-blue-600">₹${data.summary.total_cost.toLocaleString()}</p>
-                            </div>
-                            <div class="p-3 bg-green-50 rounded">
-                                <p class="text-gray-600 text-xs">Average/Day</p>
-                                <p class="font-bold text-green-600">₹${data.summary.average_cost.toLocaleString()}</p>
-                            </div>
-                            <div class="p-3 bg-purple-50 rounded">
-                                <p class="text-gray-600 text-xs">Peak Day</p>
-                                <p class="font-bold text-purple-600">₹${data.summary.max_cost.toLocaleString()}</p>
-                            </div>
-                            <div class="p-3 bg-yellow-50 rounded">
-                                <p class="text-gray-600 text-xs">Items Quantity</p>
-                                <p class="font-bold text-yellow-600">${data.summary.total_items.toLocaleString()}</p>
-                            </div>
-                        `;
-                    }
-                })
-                .catch(error => console.error('Error loading cost chart:', error));
-        }
-
-        // Cost by Consumable Chart
-        function loadCostByConsumableChart(days) {
-            fetch(`/api/cost-data-by-consumable?days=${days}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        console.error('Error:', data.error);
-                        return;
-                    }
-                    
-                    const ctx = document.getElementById('costByConsumableChart').getContext('2d');
-                    allCharts.costByConsumable = new Chart(ctx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: data.labels,
-                            datasets: [{
-                                label: 'Cost (Rs.)',
-                                data: data.data,
-                                backgroundColor: [
-                                    'rgba(255, 99, 132, 0.7)',
-                                    'rgba(54, 162, 235, 0.7)',
-                                    'rgba(255, 206, 86, 0.7)',
-                                    'rgba(75, 192, 192, 0.7)',
-                                    'rgba(153, 102, 255, 0.7)',
-                                    'rgba(255, 159, 64, 0.7)',
-                                    'rgba(199, 199, 199, 0.7)',
-                                    'rgba(83, 102, 255, 0.7)',
-                                    'rgba(255, 183, 77, 0.7)',
-                                    'rgba(76, 175, 80, 0.7)',
-                                ],
-                                borderColor: [
-                                    'rgba(255, 99, 132, 1)',
-                                    'rgba(54, 162, 235, 1)',
-                                    'rgba(255, 206, 86, 1)',
-                                    'rgba(75, 192, 192, 1)',
-                                    'rgba(153, 102, 255, 1)',
-                                    'rgba(255, 159, 64, 1)',
-                                ],
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
+                const cfg = {
+                    type,
+                    data: {
+                        labels: data.labels,
+                        datasets: formatDatasets(data.datasets || [{ label: data.label, data: data.data }], type)
+                    },
+                    options: {
+                        ...chartOpts,
+                        ...(type === 'doughnut' ? {
+                            cutout: '64%',
+                            scales: {},
                             plugins: {
-                                legend: {
-                                    display: true,
-                                    position: 'right',
-                                }
+                                ...chartOpts.plugins,
+                                legend: { ...chartOpts.plugins.legend, position: 'right', align: 'center' }
                             }
-                        }
-                    });
-                })
-                .catch(error => console.error('Error loading cost by consumable chart:', error));
+                        } : {})
+                    }
+                };
+
+                charts[id] = new Chart(el.getContext('2d'), cfg);
+                summaryFn?.(data);
+            }).catch(e => console.error('Chart error:', e));
         }
 
-        // Vehicle Chart
-        function loadVehicleChart(days) {
-            fetch(`/api/vehicle-data?days=${days}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        console.error('Error:', data.error);
-                        return;
-                    }
-                    
-                    const ctx = document.getElementById('vehicleChart').getContext('2d');
-                    allCharts.vehicle = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: data.labels,
-                            datasets: [{
-                                label: 'Vehicle Running (km)',
-                                data: data.data,
-                                borderColor: colors.quaternary,
-                                backgroundColor: 'rgba(153, 102, 255, 0.1)',
-                                borderWidth: 2,
-                                fill: true,
-                                tension: 0.3,
-                                pointRadius: 4,
-                                pointBackgroundColor: colors.quaternary,
-                            }]
-                        },
-                        options: chartOptions
-                    });
+        function formatDatasets(datasets, type) {
+            return datasets.map((ds, i) => {
+                const lineColor = getDatasetColor(ds, i);
 
-                    if (data.summary) {
-                        document.getElementById('vehicleSummary').innerHTML = `
-                            <div class="p-3 bg-blue-50 rounded">
-                                <p class="text-gray-600 text-xs">Total KM</p>
-                                <p class="font-bold text-blue-600">${data.summary.total_km.toLocaleString()}</p>
-                            </div>
-                            <div class="p-3 bg-green-50 rounded">
-                                <p class="text-gray-600 text-xs">Average KM</p>
-                                <p class="font-bold text-green-600">${data.summary.average_km.toLocaleString()}</p>
-                            </div>
-                            <div class="p-3 bg-purple-50 rounded">
-                                <p class="text-gray-600 text-xs">Max KM</p>
-                                <p class="font-bold text-purple-600">${data.summary.max_km.toLocaleString()}</p>
-                            </div>
-                            <div class="p-3 bg-yellow-50 rounded">
-                                <p class="text-gray-600 text-xs">Trip Count</p>
-                                <p class="font-bold text-yellow-600">${data.summary.trip_count.toLocaleString()}</p>
-                            </div>
-                        `;
-                    }
-                })
-                .catch(error => console.error('Error loading vehicle chart:', error));
+                return {
+                    ...ds,
+                    borderWidth: type === 'bar' ? 0 : 3,
+                    borderRadius: type === 'bar' ? 10 : 0,
+                    borderSkipped: false,
+                    fill: type === 'line',
+                    tension: type === 'line' ? 0.38 : 0,
+                    pointRadius: type === 'line' ? 3 : 0,
+                    pointHoverRadius: type === 'line' ? 6 : 0,
+                    pointBorderWidth: type === 'line' ? 3 : 0,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: lineColor,
+                    backgroundColor: type === 'line'
+                        ? toRgba(lineColor, 0.065)
+                        : type === 'doughnut'
+                            ? getBarColors(.84)
+                            : getBarColors(.78),
+                    borderColor: type === 'doughnut' ? '#ffffff' : lineColor,
+                    hoverBackgroundColor: type === 'line' ? toRgba(lineColor, .12) : getBarColors(.92),
+                };
+            });
         }
 
-        // Initial render
+        function getDatasetColor(dataset, index) {
+            const normalizedLabel = String(dataset.label || '').toLowerCase();
+            const match = Object.keys(lineColorByLabel).find(key => normalizedLabel.includes(key));
+
+            return match ? lineColorByLabel[match] : getColorHex(index);
+        }
+
+        function getColorRgba(i, alpha) {
+            const c = palette[i % palette.length].match(/\d+/g);
+            return `rgba(${c[0]},${c[1]},${c[2]},${alpha})`;
+        }
+
+        function toRgba(color, alpha) {
+            const c = color.match(/\d+/g);
+            return `rgba(${c[0]},${c[1]},${c[2]},${alpha})`;
+        }
+
+        function getColorHex(i) {
+            return palette[i % palette.length];
+        }
+
+        function getBarColors(alpha = .74) {
+            return palette.map(color => {
+                const c = color.match(/\d+/g);
+                return `rgba(${c[0]},${c[1]},${c[2]},${alpha})`;
+            });
+        }
+
+        function loadProfitSummary(d) {
+            const s = d.summary;
+            document.getElementById('profitLossSummary').innerHTML =
+                createSumCard('Sales', `₹${s.total_sales.toLocaleString()}`, 'Total revenue in period', 'blue') +
+                createSumCard('Cost', `₹${s.total_cost.toLocaleString()}`, 'Total operating spend', 'orange') +
+                createSumCard('Profit', `₹${s.total_profit.toLocaleString()}`, 'Net gain after cost', 'green') +
+                createSumCard('Margin', `${s.profit_margin}%`, 'Profit efficiency', 'purple');
+        }
+
+        function loadStockSummary(d) {
+            if (!d.summary) return;
+            const s = d.summary;
+            document.getElementById('stockSummary').innerHTML =
+                createSumCard('Total', s.total.toLocaleString(), 'Units available', 'cyan') +
+                createSumCard('Average', s.average.toLocaleString(), 'Average per day', 'green') +
+                createSumCard('Max', s.max.toLocaleString(), 'Highest stock day', 'yellow') +
+                createSumCard('Period', getPeriodLabel(), 'Selected range', 'purple');
+        }
+
+        function loadSaleSummary(d) {
+            if (!d.summary) return;
+            const s = d.summary;
+            document.getElementById('saleSummary').innerHTML =
+                createSumCard('Total', `₹${s.total_amount.toLocaleString()}`, 'Revenue generated', 'green') +
+                createSumCard('Daily', `₹${s.average_amount.toLocaleString()}`, 'Daily average', 'blue') +
+                createSumCard('Peak', `₹${s.max_amount.toLocaleString()}`, 'Best day', 'yellow') +
+                createSumCard('Trans', s.transaction_count.toLocaleString(), 'Transaction count', 'purple');
+        }
+
+        function loadCostSummary(d) {
+            if (!d.summary) return;
+            const s = d.summary;
+            document.getElementById('costSummary').innerHTML =
+                createSumCard('Total', `₹${s.total_cost.toLocaleString()}`, 'Total cost', 'orange') +
+                createSumCard('Daily', `₹${s.average_cost.toLocaleString()}`, 'Average spend', 'red') +
+                createSumCard('Peak', `₹${s.max_cost.toLocaleString()}`, 'Highest spend day', 'yellow') +
+                createSumCard('Items', s.total_items.toLocaleString(), 'Quantity used', 'purple');
+        }
+
+        function loadVehicleSummary(d) {
+            if (!d.summary) return;
+            const s = d.summary;
+            document.getElementById('vehicleSummary').innerHTML =
+                createSumCard('Total', s.total_km.toLocaleString(), 'Fleet kilometers', 'blue') +
+                createSumCard('Daily', s.average_km.toLocaleString(), 'Daily average', 'green') +
+                createSumCard('Peak', s.max_km.toLocaleString(), 'Highest movement day', 'yellow') +
+                createSumCard('Trips', s.trip_count.toLocaleString(), 'Completed trips', 'purple');
+        }
+
+        document.getElementById('daysFilter').addEventListener('change', function() {
+            document.getElementById('dateRangeContainer').style.display = this.value === 'custom' ? 'flex' : 'none';
+            if (this.value !== 'custom') renderCharts();
+        });
+
+        document.getElementById('applyDateRange').addEventListener('click', renderCharts);
+
         document.addEventListener('DOMContentLoaded', function() {
+            initRevealAnimations();
             renderCharts();
-            
-            // Add event listener for filter change
-            document.getElementById('daysFilter').addEventListener('change', renderCharts);
         });
     </script>
 </x-app-layout>

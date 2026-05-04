@@ -4,113 +4,84 @@ namespace App\Http\Controllers;
 
 use App\Models\Unit;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
 
 class UnitController extends Controller
 {
     /**
-     * Display a listing of all units.
-     * GET /admin/units
+     * Display a listing of the resource.
      */
     public function index()
     {
-        $units = Unit::all();
-        return view('unitsmanagement', [
-            'units' => $units,
-            'activePage' => 'Units',
-            'titlePage' => 'Units',
+        $units = Unit::latest()->get();
+        return view('unit.index', compact('units'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        $relatedUnits = Unit::all();
+        return view('unit.create', compact('relatedUnits'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'related_unit_id' => ['nullable', 'exists:units,id'],
+            'related_unit_quantity' => ['nullable', 'numeric', 'min:0'],
         ]);
+
+        Unit::create($data);
+
+        return redirect()->route('units.index')->with('success', 'Unit created successfully.');
     }
 
     /**
-     * Show the form for creating or editing a unit.
-     * GET /admin/unit-form/{unit_id}
+     * Display the specified resource.
      */
-    public function addEditUnit($unit_id)
+    public function show(Unit $unit)
     {
-        if (!Auth::check() || !Auth::user()->is_admin) {
-            abort(403, 'Unauthorized');
-        }
+        return redirect()->route('units.edit', $unit);
+    }
 
-        $unit = $unit_id == 'new' ? new Unit() : Unit::find($unit_id);
-        $units = Unit::where('id', '!=', optional($unit)->id)->get();
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Unit $unit)
+    {
+        $relatedUnits = Unit::where('id', '!=', $unit->id)->get();
+        return view('unit.edit', compact('unit', 'relatedUnits'));
+    }
 
-        return view('unit-form', [
-            'unit' => $unit,
-            'units' => $units,
-            'activePage' => 'Unit',
-            'titlePage' => 'Unit',
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Unit $unit)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'related_unit_id' => ['nullable', 'exists:units,id'],
+            'related_unit_quantity' => ['nullable', 'numeric', 'min:0'],
         ]);
+
+        $unit->update($data);
+
+        return redirect()->route('units.index')->with('success', 'Unit updated successfully.');
     }
 
     /**
-     * Store a newly created unit or update an existing one.
-     * POST /admin/saveunit
+     * Remove the specified resource from storage.
      */
-    public function save(Request $request)
+    public function destroy(Unit $unit)
     {
-        if (!Auth::check() || !Auth::user()->is_admin) {
-            abort(403, 'Unauthorized');
-        }
-
-        try {
-            $unitId = $request->input('unit_id');
-
-            if ($unitId) {
-                $unit = Unit::find($unitId);
-            } else {
-                $unit = new Unit();
-            }
-
-            $unit->name = $request->input('name');
-            $unit->description = $request->input('description');
-            $unit->related_unit_id = $request->input('related_unit_id');
-            $unit->related_unit_quantity = $request->input('related_unit_quantity');
-
-            $unit->save();
-
-            Session::flash('alert-success', 'Unit saved successfully!');
-        } catch (\Exception $e) {
-            Session::flash('alert-danger', 'Error has occurred: ' . $e->getMessage());
-        }
-
-        return redirect('/admin/units');
-    }
-
-    /**
-     * Delete a unit.
-     * POST /admin/unit/delete
-     */
-    public function deleteUnit(Request $request)
-    {
-        if (!Auth::check() || !Auth::user()->is_admin) {
-            abort(403, 'Unauthorized');
-        }
-
-        try {
-            $unit = Unit::find($request->input('unit_id'));
-
-            if ($unit) {
-                $unit->delete();
-                Session::flash('alert-success', 'Unit deleted successfully!');
-            } else {
-                Session::flash('alert-danger', 'Unit not found...');
-            }
-        } catch (\Exception $e) {
-            Session::flash('alert-danger', 'Error has occurred: ' . $e->getMessage());
-        }
-
-        return redirect('/admin/units');
-    }
-
-    /**
-     * Display the specified unit details.
-     * GET /admin/unit/{unit_id}
-     */
-    public function viewUnit($unit_id)
-    {
-        $unit = Unit::find($unit_id);
-        return view('unitdetails', ['unit' => $unit]);
+        $unit->delete();
+        return redirect()->route('units.index')->with('success', 'Unit deleted successfully.');
     }
 }

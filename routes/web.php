@@ -68,6 +68,7 @@ Route::middleware('auth')->group(function () {
 
     // Charts Routes
     Route::get('/charts', [ChartController::class, 'index'])->name('charts.index');
+    Route::get('/api/chart-stats', [ChartController::class, 'statsData']);
     Route::get('/api/stock-data', [ChartController::class, 'stockData']);
     Route::get('/api/stock-data-by-product', [ChartController::class, 'stockDataByProduct']);
     Route::get('/api/sale-data', [ChartController::class, 'saleData']);
@@ -79,13 +80,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('admin')->group(function () {
         Route::resource('users', UserController::class)->except('show');
-
-        // Unit Management Routes
-        Route::get('/admin/units', [UnitController::class, 'index']);
-        Route::get('/admin/unit-form/{unit_id}', [UnitController::class, 'addEditUnit']);
-        Route::post('/admin/saveunit', [UnitController::class, 'save']);
-        Route::post('/admin/unit/delete', [UnitController::class, 'deleteUnit']);
-        Route::get('/admin/unit/{unit_id}', [UnitController::class, 'viewUnit']);
+        Route::resource('units', UnitController::class)->except('show');
     });
 });
 

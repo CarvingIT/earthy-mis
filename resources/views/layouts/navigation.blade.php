@@ -49,7 +49,7 @@
                                 {{ __('Consumables') }}
                             </x-dropdown-link>
                             @if (auth()->user()?->isAdmin())
-                                <x-dropdown-link href="/admin/units" :active="request()->is('admin/units*')">
+                                <x-dropdown-link :href="route('units.index')" :active="request()->routeIs('units.*')">
                                     {{ __('Units') }}
                                 </x-dropdown-link>
                             @endif
@@ -179,7 +179,7 @@
                                 {{ __('Consumables') }}
                             </x-dropdown-link>
                             @if (auth()->user()?->isAdmin())
-                                <x-dropdown-link href="/admin/units" :active="request()->is('admin/units*')">
+                                <x-dropdown-link :href="route('units.index')" :active="request()->routeIs('units.*')">
                                     {{ __('Units') }}
                                 </x-dropdown-link>
                             @endif

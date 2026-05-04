@@ -14,19 +14,18 @@ class ChartController extends Controller
 {
     public function index()
     {
-        $userId = auth()->id();
-        
-        // Get summary statistics
-        $stats = [
-            'total_sales' => Sale::sum('amount'),
-            'total_cost' => SupplyItem::sum('cost'),
-            'total_profit' => (Sale::sum('amount') ?? 0) - (SupplyItem::sum('cost') ?? 0),
-            'total_vehicles_km' => Trips::sum('km'),
-            'products_count' => Product::count(),
-            'consumables_count' => Consumable::count(),
-        ];
+        $stats = $this->getSummaryStats();
         
         return view('charts.index', compact('stats'));
+    }
+
+    public function statsData()
+    {
+        try {
+            return response()->json($this->getSummaryStats());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -35,25 +34,23 @@ class ChartController extends Controller
     public function stockData()
     {
         try {
-            $days = request()->query('days', 30);
-            $startDate = now()->subDays($days);
+            $range = $this->dateRange();
             
-            $data = Stock::where('Date', '>=', $startDate)
+            $data = $this->applyDateRange(Stock::query(), $range)
                 ->select('Date', DB::raw('SUM(quantity) as total_quantity'))
                 ->groupBy('Date')
                 ->orderBy('Date', 'asc')
                 ->get();
 
-            // Fill missing dates with 0
-            $result = $this->fillMissingDates($data, $days, 'Date', 'total_quantity');
+            $result = $this->formatDateSeries($data, $range, 'Date', 'total_quantity');
             
             return response()->json([
                 'labels' => $result['labels'],
                 'data' => $result['data'],
                 'summary' => [
                     'total' => $data->sum('total_quantity'),
-                    'average' => round($data->avg('total_quantity'), 2),
-                    'max' => $data->max('total_quantity'),
+                    'average' => round($data->avg('total_quantity') ?? 0, 2),
+                    'max' => $data->max('total_quantity') ?? 0,
                 ]
             ]);
         } catch (\Exception $e) {
@@ -67,10 +64,9 @@ class ChartController extends Controller
     public function stockDataByProduct()
     {
         try {
-            $days = request()->query('days', 30);
-            $startDate = now()->subDays($days);
+            $range = $this->dateRange();
             
-            $data = Stock::where('Date', '>=', $startDate)
+            $data = $this->applyDateRange(Stock::query(), $range)
                 ->with('product')
                 ->select('product_id', DB::raw('SUM(quantity) as total_quantity'))
                 ->groupBy('product_id')
@@ -94,24 +90,23 @@ class ChartController extends Controller
     public function saleData()
     {
         try {
-            $days = request()->query('days', 30);
-            $startDate = now()->subDays($days);
+            $range = $this->dateRange();
             
-            $data = Sale::where('Date', '>=', $startDate)
+            $data = $this->applyDateRange(Sale::query(), $range)
                 ->select('Date', DB::raw('SUM(amount) as total_amount'), DB::raw('COUNT(*) as count'), DB::raw('SUM(quantity) as total_quantity'))
                 ->groupBy('Date')
                 ->orderBy('Date', 'asc')
                 ->get();
 
-            $result = $this->fillMissingDates($data, $days, 'Date', 'total_amount');
+            $result = $this->formatDateSeries($data, $range, 'Date', 'total_amount');
             
             return response()->json([
                 'labels' => $result['labels'],
                 'data' => $result['data'],
                 'summary' => [
                     'total_amount' => $data->sum('total_amount'),
-                    'average_amount' => round($data->avg('total_amount'), 2),
-                    'max_amount' => $data->max('total_amount'),
+                    'average_amount' => round($data->avg('total_amount') ?? 0, 2),
+                    'max_amount' => $data->max('total_amount') ?? 0,
                     'total_quantity' => $data->sum('total_quantity'),
                     'transaction_count' => $data->sum('count'),
                 ]
@@ -127,10 +122,9 @@ class ChartController extends Controller
     public function saleDataByProduct()
     {
         try {
-            $days = request()->query('days', 30);
-            $startDate = now()->subDays($days);
+            $range = $this->dateRange();
             
-            $data = Sale::where('Date', '>=', $startDate)
+            $data = $this->applyDateRange(Sale::query(), $range)
                 ->with('product')
                 ->select('product_id', DB::raw('SUM(amount) as total_amount'), DB::raw('SUM(quantity) as total_quantity'))
                 ->groupBy('product_id')
@@ -154,24 +148,23 @@ class ChartController extends Controller
     public function costData()
     {
         try {
-            $days = request()->query('days', 30);
-            $startDate = now()->subDays($days);
+            $range = $this->dateRange();
             
-            $data = SupplyItem::where('Date', '>=', $startDate)
+            $data = $this->applyDateRange(SupplyItem::query(), $range)
                 ->select('Date', DB::raw('SUM(cost) as total_cost'), DB::raw('SUM(quantity) as total_quantity'))
                 ->groupBy('Date')
                 ->orderBy('Date', 'asc')
                 ->get();
 
-            $result = $this->fillMissingDates($data, $days, 'Date', 'total_cost');
+            $result = $this->formatDateSeries($data, $range, 'Date', 'total_cost');
             
             return response()->json([
                 'labels' => $result['labels'],
                 'data' => $result['data'],
                 'summary' => [
                     'total_cost' => $data->sum('total_cost'),
-                    'average_cost' => round($data->avg('total_cost'), 2),
-                    'max_cost' => $data->max('total_cost'),
+                    'average_cost' => round($data->avg('total_cost') ?? 0, 2),
+                    'max_cost' => $data->max('total_cost') ?? 0,
                     'total_items' => $data->sum('total_quantity'),
                 ]
             ]);
@@ -186,10 +179,9 @@ class ChartController extends Controller
     public function costDataByConsumable()
     {
         try {
-            $days = request()->query('days', 30);
-            $startDate = now()->subDays($days);
+            $range = $this->dateRange();
             
-            $data = SupplyItem::where('Date', '>=', $startDate)
+            $data = $this->applyDateRange(SupplyItem::query(), $range)
                 ->with('consumable')
                 ->select('consumable_id', DB::raw('SUM(cost) as total_cost'), DB::raw('COUNT(*) as count'))
                 ->groupBy('consumable_id')
@@ -213,24 +205,23 @@ class ChartController extends Controller
     public function vehicleData()
     {
         try {
-            $days = request()->query('days', 30);
-            $startDate = now()->subDays($days);
+            $range = $this->dateRange();
             
-            $data = Trips::where('Date', '>=', $startDate)
+            $data = $this->applyDateRange(Trips::query(), $range)
                 ->select('Date', DB::raw('SUM(km) as total_km'), DB::raw('COUNT(*) as count'))
                 ->groupBy('Date')
                 ->orderBy('Date', 'asc')
                 ->get();
 
-            $result = $this->fillMissingDates($data, $days, 'Date', 'total_km');
+            $result = $this->formatDateSeries($data, $range, 'Date', 'total_km');
             
             return response()->json([
                 'labels' => $result['labels'],
                 'data' => $result['data'],
                 'summary' => [
                     'total_km' => $data->sum('total_km'),
-                    'average_km' => round($data->avg('total_km'), 2),
-                    'max_km' => $data->max('total_km'),
+                    'average_km' => round($data->avg('total_km') ?? 0, 2),
+                    'max_km' => $data->max('total_km') ?? 0,
                     'trip_count' => $data->sum('count'),
                 ]
             ]);
@@ -245,17 +236,16 @@ class ChartController extends Controller
     public function profitLossData()
     {
         try {
-            $days = request()->query('days', 30);
-            $startDate = now()->subDays($days);
+            $range = $this->dateRange();
             
-            $sales = Sale::where('Date', '>=', $startDate)
+            $sales = $this->applyDateRange(Sale::query(), $range)
                 ->select('Date', DB::raw('SUM(amount) as total_amount'))
                 ->groupBy('Date')
                 ->orderBy('Date', 'asc')
                 ->get()
                 ->keyBy('Date');
                 
-            $costs = SupplyItem::where('Date', '>=', $startDate)
+            $costs = $this->applyDateRange(SupplyItem::query(), $range)
                 ->select('Date', DB::raw('SUM(cost) as total_cost'))
                 ->groupBy('Date')
                 ->orderBy('Date', 'asc')
@@ -312,20 +302,85 @@ class ChartController extends Controller
         }
     }
 
-    /**
-     * Helper function to fill missing dates with 0
-     */
-    private function fillMissingDates($data, $days, $dateColumn = 'Date', $dataColumn = 'data')
+    private function getSummaryStats()
+    {
+        $range = $this->dateRange();
+        $sales = $this->applyDateRange(Sale::query(), $range)->sum('amount') ?? 0;
+        $cost = $this->applyDateRange(SupplyItem::query(), $range)->sum('cost') ?? 0;
+
+        return [
+            'total_sales' => $sales,
+            'total_cost' => $cost,
+            'total_profit' => $sales - $cost,
+            'total_vehicles_km' => $this->applyDateRange(Trips::query(), $range)->sum('km') ?? 0,
+            'products_count' => Product::count(),
+            'consumables_count' => Consumable::count(),
+        ];
+    }
+
+    private function dateRange()
+    {
+        $days = request()->query('days', 'all');
+        $start = request()->query('start');
+        $end = request()->query('end');
+
+        if ($start && $end) {
+            return [
+                'type' => 'custom',
+                'start' => date('Y-m-d', strtotime($start)),
+                'end' => date('Y-m-d', strtotime($end)),
+            ];
+        }
+
+        if ($days !== 'all' && is_numeric($days)) {
+            $days = max(1, (int) $days);
+
+            return [
+                'type' => 'days',
+                'days' => $days,
+                'start' => now()->subDays($days - 1)->format('Y-m-d'),
+                'end' => now()->format('Y-m-d'),
+            ];
+        }
+
+        return ['type' => 'all'];
+    }
+
+    private function applyDateRange($query, array $range)
+    {
+        if (($range['type'] ?? 'all') === 'all') {
+            return $query;
+        }
+
+        return $query->whereBetween('Date', [$range['start'], $range['end']]);
+    }
+
+    private function formatDateSeries($data, array $range, $dateColumn = 'Date', $dataColumn = 'data')
+    {
+        if (($range['type'] ?? 'all') === 'all') {
+            return [
+                'labels' => $data->pluck($dateColumn)->map(fn($date) => date('M d', strtotime($date)))->toArray(),
+                'data' => $data->pluck($dataColumn)->toArray(),
+            ];
+        }
+
+        return $this->fillMissingDates($data, $range['start'], $range['end'], $dateColumn, $dataColumn);
+    }
+
+    private function fillMissingDates($data, $startDate, $endDate, $dateColumn = 'Date', $dataColumn = 'data')
     {
         $labels = [];
         $values = [];
-        
-        for ($i = $days - 1; $i >= 0; $i--) {
-            $date = now()->subDays($i)->format('Y-m-d');
-            $labels[] = now()->subDays($i)->format('M d');
+        $current = strtotime($startDate);
+        $end = strtotime($endDate);
+
+        while ($current <= $end) {
+            $date = date('Y-m-d', $current);
+            $labels[] = date('M d', $current);
             
             $record = $data->firstWhere($dateColumn, $date);
             $values[] = $record?->$dataColumn ?? 0;
+            $current = strtotime('+1 day', $current);
         }
         
         return [
