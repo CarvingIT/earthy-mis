@@ -319,7 +319,7 @@
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>SKU</th>
+                                {{-- <th>SKU</th> --}}
                                 <th>Base Unit</th>
                                 <th>Price in Rs.</th>
                                 <th>Created</th>
@@ -344,7 +344,7 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="font-semibold text-slate-600">{{ $product->sku ?: 'Not set' }}</td>
+                                    {{-- <td class="font-semibold text-slate-600">{{ $product->sku ?: 'Not set' }}</td> --}}
                                     <td>
                                         <span class="inline-flex rounded-full bg-sky-50 px-3 py-1 text-xs font-extrabold text-sky-700">
                                             {{ $product->baseUnit->name ?? 'Not set' }}
