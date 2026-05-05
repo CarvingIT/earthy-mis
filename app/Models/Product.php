@@ -18,6 +18,7 @@ class Product extends Model
         'price',
         'description',
         'base_unit_id',
+        'sales_unit_id',
     ];
 
     public function user(): BelongsTo
@@ -28,5 +29,10 @@ class Product extends Model
     public function baseUnit(): BelongsTo
     {
         return $this->belongsTo(Unit::class, 'base_unit_id');
+    }
+
+    public function salesUnit(): BelongsTo
+    {
+        return $this->belongsTo(Unit::class, 'sales_unit_id');
     }
 }
