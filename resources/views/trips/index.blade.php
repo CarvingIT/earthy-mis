@@ -14,14 +14,14 @@
             @endif
 
             <div class="bg-white shadow-sm sm:rounded-lg overflow-hidden p-4" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-                <table id="logistics-table" data-datatable class="min-w-full divide-y divide-gray-200">
+                <table id="logistics-table" class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Vehicle</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Purpose</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Kilometers</th>
-                            <th class="px-4 py-2"></th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">

@@ -14,13 +14,13 @@
             @endif
 
             <div class="bg-white shadow-sm sm:rounded-lg overflow-hidden p-4" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-                <table id="turning-table" data-datatable class="min-w-full divide-y divide-gray-200">
+                <table id="turning-table" class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Windrow Number</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>
-                            <th class="px-4 py-2"></th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
