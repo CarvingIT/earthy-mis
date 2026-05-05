@@ -15,6 +15,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Seed base data
+        $this->call([
+            ConsumableSeeder::class,
+            ProductSeeder::class,
+        ]);
+
         // Create admin user
         $adminUser = User::factory()->create([
             'name' => 'Admin User',
