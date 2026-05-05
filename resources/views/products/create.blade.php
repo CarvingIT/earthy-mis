@@ -187,6 +187,18 @@
                                         </select>
                                         <x-input-error class="mt-2" :messages="$errors->get('base_unit_id')" />
                                     </div>
+
+                                    <div>
+                                        <label for="sales_unit_id" class="form-label">Sales unit</label>
+                                        <select id="sales_unit_id" name="sales_unit_id" class="form-field mt-2 block w-full px-4 py-2.5 shadow-sm">
+                                            <option value="">Select Sales Unit</option>
+                                            @foreach($units as $unit)
+                                                <option value="{{ $unit->id }}" {{ old('sales_unit_id') == $unit->id ? 'selected' : '' }}>{{ $unit->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <p class="mt-2 text-xs font-medium text-slate-500">Use a derived selling unit like Sac25 or Dozen. Stock stays in the base unit.</p>
+                                        <x-input-error class="mt-2" :messages="$errors->get('sales_unit_id')" />
+                                    </div>
                                 </div>
                             </div>
                         </section>
