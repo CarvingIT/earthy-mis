@@ -321,6 +321,7 @@
                                 <th>Name</th>
                                 {{-- <th>SKU</th> --}}
                                 <th>Base Unit</th>
+                                <th>Sales Unit</th>
                                 <th>Price in Rs.</th>
                                 <th>Created</th>
                                 <th class="text-right">Actions</th>
@@ -349,6 +350,17 @@
                                         <span class="inline-flex rounded-full bg-sky-50 px-3 py-1 text-xs font-extrabold text-sky-700">
                                             {{ $product->baseUnit->name ?? 'Not set' }}
                                         </span>
+                                    </td>
+                                    <td>
+                                        @if (filled($product->sales_unit_id))
+                                            <span class="inline-flex rounded-full bg-purple-50 px-3 py-1 text-xs font-extrabold text-purple-700">
+                                                {{ $product->salesUnit->name ?? 'Not set' }}
+                                            </span>
+                                        @else
+                                            <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-extrabold text-slate-500">
+                                                Not set
+                                            </span>
+                                        @endif
                                     </td>
                                     <td>
                                         <span class="font-extrabold text-slate-900">{{ number_format((float) $product->price, 2) }}</span>

@@ -167,7 +167,7 @@
                                     </div>
                                     <div>
                                         <h3 class="text-lg font-extrabold text-slate-900">Pricing and unit</h3>
-                                        <p class="text-sm font-medium text-slate-500">Selling price and base measurement unit.</p>
+                                        <p class="text-sm font-medium text-slate-500">Base-unit price and sales-unit setup. The sale screen will derive the sales-unit rate automatically.</p>
                                     </div>
                                 </div>
 
@@ -187,6 +187,18 @@
                                             @endforeach
                                         </select>
                                         <x-input-error class="mt-2" :messages="$errors->get('base_unit_id')" />
+                                    </div>
+
+                                    <div>
+                                        <label for="sales_unit_id" class="form-label">Sales unit</label>
+                                        <select id="sales_unit_id" name="sales_unit_id" class="form-field mt-2 block w-full px-4 py-2.5 shadow-sm">
+                                            <option value="">Select Sales Unit</option>
+                                            @foreach($units as $unit)
+                                                <option value="{{ $unit->id }}" {{ old('sales_unit_id', $product->sales_unit_id) == $unit->id ? 'selected' : '' }}>{{ $unit->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <p class="mt-2 text-xs font-medium text-slate-500">Use a derived selling unit like Sac25 or Dozen. Stock stays in the base unit.</p>
+                                        <x-input-error class="mt-2" :messages="$errors->get('sales_unit_id')" />
                                     </div>
                                 </div>
                             </div>
@@ -222,7 +234,7 @@
                             </svg>
                         </div>
                         <h3 class="text-lg font-extrabold text-slate-900">Save changes</h3>
-                        <p class="mt-2 text-sm font-medium leading-6 text-slate-500">Review catalog identity, price, base unit, and description before updating this product.</p>
+                        <p class="mt-2 text-sm font-medium leading-6 text-slate-500">Review catalog identity, price, base unit, sales unit, and description before updating this product.</p>
 
                         <div class="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
                             <p class="text-xs font-extrabold uppercase tracking-wide text-slate-500">Current record</p>

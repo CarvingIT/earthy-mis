@@ -24,7 +24,7 @@ class SaleController extends Controller
      */
     public function create()
     {
-        $products = Product::all();
+        $products = Product::with('salesUnit')->get();
         $customers = Customer::all();
         return view('sales.create', compact('products','customers'));
     }
@@ -36,11 +36,11 @@ class SaleController extends Controller
     {
         $data = $request->validate([
             'Date' => ['nullable', 'date'],
-            'product_id' => ['nullable','integer'],
-            'quantity' => ['nullable', 'integer'],
-            'customer_id' => ['nullable','integer'],
-            'rate' => ['nullable', 'numeric'],
-            'amount' => ['nullable', 'numeric'],
+            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'quantity' => ['required', 'numeric', 'min:0'],
+            'customer_id' => ['required', 'integer', 'exists:customers,id'],
+            'rate' => ['required', 'numeric', 'min:0'],
+            'amount' => ['required', 'numeric', 'min:0'],
         ]);
 
         Sale::create($data);
@@ -73,7 +73,7 @@ class SaleController extends Controller
      */
     public function edit(Sale $sale)
     {
-        $products = Product::all();
+        $products = Product::with('salesUnit')->get();
         $customers = Customer::all();
         return view('sales.edit', compact('sale','products','customers'));
     }
@@ -86,11 +86,11 @@ class SaleController extends Controller
         $old_quantity = $sale->quantity;
         $data = $request->validate([
             'Date' => ['nullable', 'date'],
-            'product_id' => ['nullable','integer'],
-            'quantity' => ['nullable', 'integer'],
-            'customer_id' => ['nullable','integer'],
-            'rate' => ['nullable', 'numeric'],
-            'amount' => ['nullable', 'numeric'],
+            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'quantity' => ['required', 'numeric', 'min:0'],
+            'customer_id' => ['required', 'integer', 'exists:customers,id'],
+            'rate' => ['required', 'numeric', 'min:0'],
+            'amount' => ['required', 'numeric', 'min:0'],
         ]);
 
         $sale->update($data);
