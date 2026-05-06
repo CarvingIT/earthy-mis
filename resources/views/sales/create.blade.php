@@ -1,15 +1,28 @@
 <script>
+    function formatAmount(value) {
+        return Number.isFinite(value) ? value.toFixed(2) : '';
+    }
+
     function calculateAmount(){
-        const quantity = document.getElementById('quantity').value;
-        const rate = document.getElementById('rate').value;
-        const amount = quantity * rate;
-        document.getElementById('amount').value = amount;
+        const quantity = parseFloat(document.getElementById('quantity').value);
+        const rate = parseFloat(document.getElementById('rate').value);
+
+        if (Number.isNaN(quantity) || Number.isNaN(rate)) {
+            return;
+        }
+
+        document.getElementById('amount').value = formatAmount(quantity * rate);
     }
 
     function getRate(productId){
+        const unitBadge = document.getElementById('product-unit-badge');
+
         if (!productId) {
             document.getElementById('rate').value = '';
             document.getElementById('amount').value = '';
+            if (unitBadge) {
+                unitBadge.textContent = 'Select a product to see its sales unit';
+            }
             return;
         }
 
@@ -18,11 +31,21 @@
             .then(data => {
                 if (data.rate !== undefined) {
                     document.getElementById('rate').value = data.rate;
+                    if (unitBadge) {
+                        unitBadge.textContent = data.sales_unit_name ? `Sales unit: ${data.sales_unit_name}` : 'Sales unit not set';
+                    }
                     calculateAmount();
                 }
             })
             .catch(error => console.error('Error:', error));
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const productSelect = document.getElementById('product_id');
+        if (productSelect && productSelect.value) {
+            getRate(productSelect.value);
+        }
+    });
 </script>
 <x-app-layout>
     <x-slot name="header">
@@ -57,28 +80,33 @@
                         <select id="product_id" name="product_id" class="mt-1 block w-full" onchange="getRate(this.value)">
                             <option value="">Select Product</option>
                             @foreach($products as $product)
-                                <option value="{{ $product->id }}">{{ $product->name }}</option>
+                                <option value="{{ $product->id }}" {{ old('product_id') == $product->id ? 'selected' : '' }}>
+                                    {{ $product->name }}{{ $product->salesUnit ? ' (' . $product->salesUnit->name . ')' : '' }}
+                                </option>
                             @endforeach
                         </select>
                         <x-input-error class="mt-2" :messages="$errors->get('product_id')" />
+                        <p id="product-unit-badge" class="mt-2 text-sm font-semibold text-gray-600">Select a product to see its sales unit</p>
                     </div>
 
                     <div>
                         <x-input-label for="quantity" value="Quantity" />
-                        <x-text-input id="quantity" name="quantity" type="number" class="mt-1 block w-full" :value="old('quantity')" onchange="calculateAmount();" oninput="calculateAmount();"/>
+                        <x-text-input id="quantity" name="quantity" type="number" step="0.01" min="0" class="mt-1 block w-full" :value="old('quantity')" onchange="calculateAmount();" oninput="calculateAmount();"/>
                         <x-input-error class="mt-2" :messages="$errors->get('quantity')" />
                     </div>
 
 
                     <div>
-                        <x-input-label for="rate" value="Rate in Rs." />
-                        <x-text-input id="rate" name="rate" type="number" step="0.01" class="mt-1 block w-full" :value="old('rate')" readonly/>
+                        <x-input-label for="rate" value="Rate per unit in Rs." />
+                        <x-text-input id="rate" name="rate" type="number" step="0.01" min="0" class="mt-1 block w-full" :value="old('rate')" oninput="calculateAmount();"/>
+                        <p class="mt-2 text-xs text-gray-500">Adjust this when the charge changes for smaller quantities or special pricing.</p>
                         <x-input-error class="mt-2" :messages="$errors->get('rate')" />
                     </div>
 
                     <div>
                         <x-input-label for="amount" value="Amount in Rs." />
-                        <x-text-input id="amount" name="amount" type="number" step="0.01" class="mt-1 block w-full" :value="old('amount')" readonly/>
+                        <x-text-input id="amount" name="amount" type="number" step="0.01" min="0" class="mt-1 block w-full" :value="old('amount')"/>
+                        <p class="mt-2 text-xs text-gray-500">You can override the total if the final billed amount differs from quantity × rate.</p>
                         <x-input-error class="mt-2" :messages="$errors->get('amount')" />
                     </div>
 

@@ -86,7 +86,12 @@ class ProductController extends Controller
     }
 
     public function getProductRate($product_id){
-        $product_details = Product::find($product_id);
-        return json_encode(['rate'=>$product_details->price]);
+        $product_details = Product::with(['salesUnit', 'baseUnit'])->findOrFail($product_id);
+
+        return response()->json([
+            'rate' => $product_details->price,
+            'sales_unit_name' => $product_details->salesUnit->name ?? $product_details->baseUnit->name ?? null,
+            'base_unit_name' => $product_details->baseUnit->name ?? null,
+        ]);
     }
 }
