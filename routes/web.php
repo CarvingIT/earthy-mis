@@ -34,6 +34,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
 
+// Dashboard redirects to charts
+Route::redirect('/dashboard', '/charts', 301);
+
 Route::get('/dashboard', function () {
     $userId = auth()->id();
 

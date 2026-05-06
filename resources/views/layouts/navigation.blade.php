@@ -367,7 +367,7 @@
         <div class="flex justify-between items-center h-16">
             <!-- Logo -->
             <div class="flex items-center">
-                <a href="{{ route('dashboard') }}" class="flex items-center gap-3 transition-opacity hover:opacity-75">
+                <a href="{{ route('charts.index') }}" class="flex items-center gap-3 transition-opacity hover:opacity-75">
                     <x-application-logo class="block h-8 w-auto max-w-[100px]" />
                 </a>
             </div>
@@ -375,9 +375,9 @@
             <!-- Desktop Navigation -->
             <div class="desktop-nav flex items-center gap-6">
                 <!-- Main Links -->
-                <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                {{-- <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     Dashboard
-                </a>
+                </a> --}}
 
                 <a href="{{ route('charts.index') }}" class="nav-link {{ request()->routeIs('charts.*') ? 'active' : '' }}">
                     Analytics
@@ -516,9 +516,9 @@
     <!-- Mobile Navigation Menu -->
     <div class="mobile-menu" :class="{ 'open': open }">
         <div class="mobile-menu-section">
-            <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            {{-- <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 Dashboard
-            </a>
+            </a> --}}
             <a href="{{ route('charts.index') }}" class="nav-link {{ request()->routeIs('charts.*') ? 'active' : '' }}">
                 Analytics
             </a>
