@@ -3,6 +3,38 @@
         return Number.isFinite(value) ? value.toFixed(2) : '';
     }
 
+    function formatMoney(value) {
+        return Number.isFinite(value) ? `Rs. ${value.toFixed(2)}` : 'Rs. 0.00';
+    }
+
+    function renderPricingBreakdown(data) {
+        const panel = document.getElementById('pricing-breakdown');
+        if (!panel) {
+            return;
+        }
+
+        if (!data || data.rate === undefined) {
+            panel.classList.add('hidden');
+            return;
+        }
+
+        const baseRate = parseFloat(data.base_rate);
+        const salesRate = parseFloat(data.rate);
+        const salesUnitName = data.sales_unit_name || 'sales unit';
+        const baseUnitName = data.base_unit_name || 'base unit';
+        const salesUnitQuantity = parseFloat(data.sales_unit_quantity);
+
+        panel.classList.remove('hidden');
+        panel.querySelector('[data-base-rate]').textContent = `${formatMoney(baseRate)} / ${baseUnitName}`;
+        panel.querySelector('[data-conversion]').textContent = Number.isFinite(salesUnitQuantity) && salesUnitQuantity > 1
+            ? `1 ${salesUnitName} = ${salesUnitQuantity} ${baseUnitName}`
+            : `1 ${salesUnitName} = 1 ${baseUnitName}`;
+        panel.querySelector('[data-sales-rate]').textContent = `${formatMoney(salesRate)} / ${salesUnitName}`;
+        panel.querySelector('[data-formula]').textContent = Number.isFinite(salesUnitQuantity)
+            ? `${formatMoney(baseRate)} × ${salesUnitQuantity} = ${formatMoney(salesRate)}`
+            : `${formatMoney(baseRate)} × conversion = ${formatMoney(salesRate)}`;
+    }
+
     function calculateAmount(){
         const quantity = parseFloat(document.getElementById('quantity').value);
         const rate = parseFloat(document.getElementById('rate').value);
@@ -15,14 +47,10 @@
     }
 
     function getRate(productId){
-        const unitBadge = document.getElementById('product-unit-badge');
-
         if (!productId) {
             document.getElementById('rate').value = '';
             document.getElementById('amount').value = '';
-            if (unitBadge) {
-                unitBadge.textContent = 'Select a product to see its sales unit';
-            }
+            renderPricingBreakdown(null);
             return;
         }
 
@@ -31,9 +59,7 @@
             .then(data => {
                 if (data.rate !== undefined) {
                     document.getElementById('rate').value = data.rate;
-                    if (unitBadge) {
-                        unitBadge.textContent = data.sales_unit_name ? `Sales unit: ${data.sales_unit_name}` : 'Sales unit not set';
-                    }
+                    renderPricingBreakdown(data);
                     calculateAmount();
                 }
             })
@@ -77,7 +103,23 @@
                             @endforeach
                         </select>
                         <x-input-error class="mt-2" :messages="$errors->get('product_id')" />
-                        <p id="product-unit-badge" class="mt-2 text-sm font-semibold text-gray-600">Select a product to see its sales unit</p>
+                        <div id="pricing-breakdown" class="hidden mt-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                            <div class="grid gap-3 text-sm sm:grid-cols-3">
+                                <div>
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Base price</p>
+                                    <p class="mt-1 font-bold text-gray-900" data-base-rate>Rs. 0.00 / base unit</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Conversion</p>
+                                    <p class="mt-1 font-bold text-gray-900" data-conversion>1 sales unit = 1 base unit</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Sales price</p>
+                                    <p class="mt-1 font-bold text-gray-900" data-sales-rate>Rs. 0.00 / sales unit</p>
+                                </div>
+                            </div>
+                            <p class="mt-3 text-xs text-gray-500" data-formula>Rs. 0.00 × conversion = Rs. 0.00</p>
+                        </div>
                     </div>
 
                     <div>
@@ -98,9 +140,9 @@
                     </div>
 
                     <div>
-                        <x-input-label for="rate" value="Rate per unit" />
+                        <x-input-label for="rate" value="Derived sales-unit rate (editable)" />
                         <x-text-input id="rate" name="rate" type="number" step="0.01" min="0" class="mt-1 block w-full" :value="old('rate', $sale->rate)" oninput="calculateAmount();" />
-                        <p class="mt-2 text-xs text-gray-500">Edit this when the selling price changes based on quantity or negotiation.</p>
+                        <p class="mt-2 text-xs text-gray-500">Auto-calculated from the product’s base price and sales-unit conversion. You can override it for special pricing.</p>
                         <x-input-error class="mt-2" :messages="$errors->get('rate')" />
                     </div>
 

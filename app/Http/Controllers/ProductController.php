@@ -89,9 +89,11 @@ class ProductController extends Controller
         $product_details = Product::with(['salesUnit', 'baseUnit'])->findOrFail($product_id);
 
         return response()->json([
-            'rate' => $product_details->price,
+            'rate' => $product_details->salesUnitRate(),
+            'base_rate' => $product_details->price,
             'sales_unit_name' => $product_details->salesUnit->name ?? $product_details->baseUnit->name ?? null,
             'base_unit_name' => $product_details->baseUnit->name ?? null,
+            'sales_unit_quantity' => $product_details->salesUnit?->related_unit_quantity,
         ]);
     }
 }

@@ -166,7 +166,7 @@
                                     </div>
                                     <div>
                                         <h3 class="text-lg font-extrabold text-slate-900">Pricing and unit</h3>
-                                        <p class="text-sm font-medium text-slate-500">Selling price and base measurement unit.</p>
+                                        <p class="text-sm font-medium text-slate-500">Base-unit price and sales-unit setup. The sale screen will derive the sales-unit rate automatically.</p>
                                     </div>
                                 </div>
 

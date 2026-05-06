@@ -35,4 +35,11 @@ class Product extends Model
     {
         return $this->belongsTo(Unit::class, 'sales_unit_id');
     }
+
+    public function salesUnitRate(): float
+    {
+        $salesUnitQuantity = (float) ($this->salesUnit?->related_unit_quantity ?? 1);
+
+        return round(((float) $this->price) * max($salesUnitQuantity, 1), 2);
+    }
 }

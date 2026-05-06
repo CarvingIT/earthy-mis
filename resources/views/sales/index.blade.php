@@ -21,7 +21,7 @@
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Rate</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Rate / Sales Unit</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                         </tr>
@@ -33,7 +33,12 @@
                                 <td class="px-4 py-2">{{ @$sale->product->name }}</td>
                                 <td class="px-4 py-2">{{ $sale->quantity }}</td>
                                 <td class="px-4 py-2">{{ $sale->customer->name }}</td>
-                                <td class="px-4 py-2">{{ $sale->rate }}</td>
+                                <td class="px-4 py-2">
+                                    {{ $sale->rate }}
+                                    @if ($sale->product?->salesUnit)
+                                        <span class="text-xs text-gray-500">/ {{ $sale->product->salesUnit->name }}</span>
+                                    @endif
+                                </td>
                                 <td class="px-4 py-2">{{ $sale->amount }}</td>
                                 <td class="px-4 py-2 text-right space-x-3">
                                     <a class="text-green-600" href="{{ route('sale.edit', $sale) }}">Edit</a>
