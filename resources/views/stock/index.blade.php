@@ -146,9 +146,9 @@
                 $product = $stocks->firstWhere('product_id', $productId)?->product;
                 if ($product && $product->salesUnit) {
                     $conversionFactor = $product->salesUnit->related_unit_quantity ?? 1;
-                    $totalInSalesUnits += $baseQuantity / $conversionFactor;
+                    $totalInSalesUnits += round($baseQuantity / $conversionFactor);
                 } else {
-                    $totalInSalesUnits += $baseQuantity; // Fallback to base unit
+                    $totalInSalesUnits += round($baseQuantity); // Fallback to base unit
                 }
             }
         }
@@ -163,8 +163,8 @@
             ],
             [
                 'label' => 'Total Stock',
-                'value_base' => number_format($totalBags),
-                'value_sales' => number_format($totalInSalesUnits, 2),
+                'value_base' => number_format(round($totalBags)),
+                'value_sales' => number_format(round($totalInSalesUnits)),
                 'note_base' => 'In base units (kg, ml, etc.)',
                 'note_sales' => 'In sales units (bags, liters, etc.)',
                 'icon' => 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
@@ -325,11 +325,11 @@
                                                         $qtyInSales = $qtyInBase / $conversionFactor;
                                                     @endphp
                                                     <p class="mt-1 text-xs font-medium text-slate-500">
-                                                        {{ number_format($qtyInSales, 2) }} {{ $stock->product->salesUnit->name }} 
-                                                        ({{ number_format($qtyInBase, 2) }} {{ $stock->product->baseUnit->name }})
+                                                        {{ number_format(round($qtyInSales)) }} {{ $stock->product->salesUnit->name }} 
+                                                        ({{ number_format(round($qtyInBase)) }} {{ $stock->product->baseUnit->name }})
                                                     </p>
                                                 @else
-                                                    <p class="mt-1 text-xs font-medium text-slate-500">{{ number_format(abs($stock->quantity), 2) }} {{ $stock->product->baseUnit->name ?? 'units' }}</p>
+                                                    <p class="mt-1 text-xs font-medium text-slate-500">{{ number_format(round(abs($stock->quantity))) }} {{ $stock->product->baseUnit->name ?? 'units' }}</p>
                                                 @endif
                                             </div>
                                         </div>
@@ -363,9 +363,9 @@
                                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                                         </svg>
-                                                        {{ $sign }}{{ number_format($qtyInSales, 2) }} {{ $stock->product->salesUnit->name }}
+                                                        {{ $sign }}{{ number_format(round($qtyInSales)) }} {{ $stock->product->salesUnit->name }}
                                                     </span>
-                                                    <p class="text-xs font-semibold text-slate-500 pl-5">({{ $sign }}{{ number_format($qtyInBase, 2) }} {{ $stock->product->baseUnit->name }})</p>
+                                                    <p class="text-xs font-semibold text-slate-500 pl-5">({{ $sign }}{{ number_format(round($qtyInBase)) }} {{ $stock->product->baseUnit->name }})</p>
                                                 </div>
                                             @else
                                                 <div class="space-y-1">
@@ -373,9 +373,9 @@
                                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
                                                         </svg>
-                                                        {{ $sign }}{{ number_format($qtyInSales, 2) }} {{ $stock->product->salesUnit->name }}
+                                                        {{ $sign }}{{ number_format(round($qtyInSales)) }} {{ $stock->product->salesUnit->name }}
                                                     </span>
-                                                    <p class="text-xs font-semibold text-slate-500 pl-5">({{ $sign }}{{ number_format($qtyInBase, 2) }} {{ $stock->product->baseUnit->name }})</p>
+                                                    <p class="text-xs font-semibold text-slate-500 pl-5">({{ $sign }}{{ number_format(round($qtyInBase)) }} {{ $stock->product->baseUnit->name }})</p>
                                                 </div>
                                             @endif
                                         @else
@@ -384,14 +384,14 @@
                                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                                     </svg>
-                                                    +{{ number_format($stock->quantity) }}
+                                                    +{{ number_format(round($stock->quantity)) }}
                                                 </span>
                                             @else
                                                 <span class="inline-flex items-center gap-1 font-extrabold text-rose-700">
                                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
                                                     </svg>
-                                                    {{ number_format($stock->quantity) }}
+                                                    {{ number_format(round($stock->quantity)) }}
                                                 </span>
                                             @endif
                                         @endif
@@ -403,11 +403,11 @@
                                                 $cumulativeInSales = $cumulativeTotal / $conversionFactor;
                                             @endphp
                                             <div class="space-y-1">
-                                                <span class="font-black text-slate-900">{{ number_format($cumulativeInSales, 2) }} {{ $stock->product->salesUnit->name }}</span>
-                                                <p class="text-xs font-semibold text-slate-500">({{ number_format($cumulativeTotal, 2) }} {{ $stock->product->baseUnit->name }})</p>
+                                                <span class="font-black text-slate-900">{{ number_format(round($cumulativeInSales)) }} {{ $stock->product->salesUnit->name }}</span>
+                                                <p class="text-xs font-semibold text-slate-500">({{ number_format(round($cumulativeTotal)) }} {{ $stock->product->baseUnit->name }})</p>
                                             </div>
                                         @else
-                                            <span class="font-black text-slate-900">{{ number_format($cumulativeTotal, 2) }} {{ $stock->product->baseUnit->name ?? 'units' }}</span>
+                                            <span class="font-black text-slate-900">{{ number_format(round($cumulativeTotal)) }} {{ $stock->product->baseUnit->name ?? 'units' }}</span>
                                         @endif
                                     </td>
                                     <td class="text-sm text-slate-600">{{ $stock->notes ?: '—' }}</td>
