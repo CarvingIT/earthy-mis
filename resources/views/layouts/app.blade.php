@@ -39,6 +39,13 @@
         <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
         <script src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
         <script>
+            // Prevent number inputs from changing on scroll
+            document.addEventListener("wheel", function(e) {
+                if (document.activeElement.type === "number") {
+                    document.activeElement.blur();
+                }
+            });
+
             document.addEventListener('DOMContentLoaded', () => {
                 document.querySelectorAll('[data-datatable]').forEach((table) => {
                     if (!window.DataTable || table.dataset.datatableInitialized === 'true') {
