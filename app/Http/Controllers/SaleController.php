@@ -37,27 +37,54 @@ class SaleController extends Controller
         $data = $request->validate([
             'Date' => ['nullable', 'date'],
             'product_id' => ['required', 'integer', 'exists:products,id'],
-            'quantity' => ['required', 'numeric', 'min:0'],
+            'quantity' => ['required', 'numeric', 'min:0'], // This is in SALES UNIT
             'customer_id' => ['required', 'integer', 'exists:customers,id'],
             'rate' => ['required', 'numeric', 'min:0'],
             'amount' => ['required', 'numeric', 'min:0'],
         ]);
 
-        Sale::create($data);
-        $stock = Stock::where('product_id', $request->product_id)->latest()->first();
-        if(!empty($stock->id)){
-        $quantity = $stock->quantity;
-        $new_quantity = $quantity - $request->quantity;
-
-        $new_stock = new Stock();
-        $new_stock->product_id = $request->product_id;
-        $new_stock->quantity = $new_quantity;
-        $new_stock->new_adjustment_in_stock = $request->quantity;
-        $new_stock->action = 'sold';
-        $new_stock->save();
+        // Get product with unit information
+        $product = Product::with(['baseUnit', 'salesUnit'])->findOrFail($data['product_id']);
+        
+        // Convert sales quantity (in sales unit) to base units for stock tracking
+        $quantityInBaseUnits = $product->convertSalesToBase($data['quantity']);
+        
+        // Check if sufficient stock is available (stock is tracked in base units)
+        $currentStock = $product->getCurrentStock();
+        if ($currentStock < $quantityInBaseUnits) {
+            $availableInSalesUnit = $product->getCurrentStockInSalesUnit();
+            $salesUnitName = $product->salesUnit->name ?? 'units';
+            $baseUnitName = $product->baseUnit->name ?? 'units';
+            
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['quantity' => "Insufficient stock! Available: {$availableInSalesUnit} {$salesUnitName} ({$currentStock} {$baseUnitName})"]); 
         }
 
-        return redirect()->route('sale.index')->with('success', 'Sale created successfully.');
+        // Create the sale record (quantity stored in sales unit)
+        $sale = Sale::create($data);
+
+        // Create stock transaction (quantity stored in base units)
+        $stock = new Stock();
+        $stock->product_id = $data['product_id'];
+        $stock->Date = $data['Date'] ?? now()->toDateString();
+        $stock->quantity = -$quantityInBaseUnits; // Negative because it's a sale (in base units)
+        $stock->new_adjustment_in_stock = $quantityInBaseUnits;
+        $stock->action = 'sold';
+        $stock->transaction_type = 'sale';
+        $stock->reference_id = $sale->id;
+        
+        // Create descriptive notes showing both units
+        $salesUnitName = $product->salesUnit->name ?? 'units';
+        $baseUnitName = $product->baseUnit->name ?? 'units';
+        $stock->notes = "Sale #{$sale->id} - {$data['quantity']} {$salesUnitName} ({$quantityInBaseUnits} {$baseUnitName})";
+        $stock->save();
+
+        $salesUnitName = $product->salesUnit->name ?? 'units';
+        $baseUnitName = $product->baseUnit->name ?? 'units';
+        
+        return redirect()->route('sale.index')->with('success', 
+            "Sale created successfully. Stock reduced by {$quantityInBaseUnits} {$baseUnitName} ({$data['quantity']} {$salesUnitName})");
     }
 
     /**
@@ -83,7 +110,9 @@ class SaleController extends Controller
      */
     public function update(Request $request, Sale $sale)
     {
-        $old_quantity = $sale->quantity;
+        $oldQuantity = $sale->quantity;
+        $oldProductId = $sale->product_id;
+        
         $data = $request->validate([
             'Date' => ['nullable', 'date'],
             'product_id' => ['required', 'integer', 'exists:products,id'],
@@ -93,21 +122,58 @@ class SaleController extends Controller
             'amount' => ['required', 'numeric', 'min:0'],
         ]);
 
-        $sale->update($data);
-        $stock = Stock::where('product_id', $request->product_id)->latest()->first();
-        if(!empty($stock->id) && $old_quantity != $request->quantity){
-        $quantity = $stock->quantity;
-        $new_quantity = $quantity - $request->quantity;
-
-        $new_stock = new Stock();
-        $new_stock->product_id = $request->product_id;
-        $new_stock->quantity = $new_quantity;
-        $new_stock->new_adjustment_in_stock = $request->quantity;
-        $new_stock->action = 'sold';
-        $new_stock->save();
+        // Get product with unit information
+        $product = Product::with(['baseUnit', 'salesUnit'])->findOrFail($data['product_id']);
+        
+        // Convert quantities to base units
+        $oldQuantityInBase = $sale->product->convertSalesToBase($oldQuantity);
+        $newQuantityInBase = $product->convertSalesToBase($data['quantity']);
+        
+        // Calculate the difference
+        $quantityDifference = $newQuantityInBase - $oldQuantityInBase;
+        
+        // If quantity changed, update stock
+        if ($quantityDifference != 0) {
+            // Check if sufficient stock is available (only if increasing sale quantity)
+            if ($quantityDifference > 0) {
+                $currentStock = $product->getCurrentStock();
+                // Add back old stock first since we're calculating from current state
+                $availableStock = $currentStock + $oldQuantityInBase;
+                
+                if ($availableStock < $newQuantityInBase) {
+                    $availableBags = $product->getCurrentStockInSalesUnit();
+                    return redirect()->back()
+                        ->withInput()
+                        ->withErrors(['quantity' => "Insufficient stock! Available: {$availableBags} {$product->salesUnit->name}"]); 
+                }
+            }
+            
+            // Find and delete the old stock transaction for this sale
+            $oldStockTransaction = Stock::where('reference_id', $sale->id)
+                ->where('transaction_type', 'sale')
+                ->first();
+            
+            if ($oldStockTransaction) {
+                $oldStockTransaction->delete();
+            }
+            
+            // Create new stock transaction with updated quantity
+            $stock = new Stock();
+            $stock->product_id = $data['product_id'];
+            $stock->Date = $data['Date'] ?? now()->toDateString();
+            $stock->quantity = -$newQuantityInBase; // Negative because it's a sale
+            $stock->new_adjustment_in_stock = $newQuantityInBase;
+            $stock->action = 'sold';
+            $stock->transaction_type = 'sale';
+            $stock->reference_id = $sale->id;
+            $stock->notes = "Sale #{$sale->id} (Updated) - {$data['quantity']} {$product->salesUnit->name} ({$newQuantityInBase} {$product->baseUnit->name})";
+            $stock->save();
         }
 
-        return redirect()->route('sale.index')->with('success', 'Sale updated successfully.');
+        $sale->update($data);
+
+        return redirect()->route('sale.index')->with('success', 
+            "Sale updated successfully. Stock adjusted by " . abs($quantityDifference) . " {$product->baseUnit->name}");
     }
 
     /**
@@ -115,7 +181,16 @@ class SaleController extends Controller
      */
     public function destroy(Sale $sale)
     {
+        // Find and delete the associated stock transaction
+        $stockTransaction = Stock::where('reference_id', $sale->id)
+            ->where('transaction_type', 'sale')
+            ->first();
+        
+        if ($stockTransaction) {
+            $stockTransaction->delete();
+        }
+        
         $sale->delete();
-        return redirect()->route('sale.index')->with('success', 'Sale deleted successfully.');
+        return redirect()->route('sale.index')->with('success', 'Sale deleted successfully. Stock has been restored.');
     }
 }

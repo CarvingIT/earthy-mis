@@ -13,12 +13,23 @@ class StockController extends Controller
      */
     public function index()
     {
-        $stocks = Stock::latest()->get();
-        $sum = [];
-        foreach($stocks as $stock){
-            $sum[$stock->product_id] = ($sum[$stock->product_id] ?? 0) + $stock->quantity;
+        $stocks = Stock::with(['product.baseUnit', 'product.salesUnit'])->latest()->get();
+        
+        // Calculate current stock for each product
+        $currentStocks = Stock::selectRaw('product_id, SUM(quantity) as total_quantity')
+            ->groupBy('product_id')
+            ->pluck('total_quantity', 'product_id');
+        
+        // Pre-calculate cumulative totals for each stock transaction
+        $cumulativeTotals = [];
+        foreach ($stocks as $stock) {
+            $key = "{$stock->product_id}_{$stock->id}";
+            $cumulativeTotals[$key] = Stock::where('product_id', $stock->product_id)
+                ->where('id', '<=', $stock->id)
+                ->sum('quantity');
         }
-        return view('stock.index', compact('stocks','sum'));
+        
+        return view('stock.index', compact('stocks', 'currentStocks', 'cumulativeTotals'));
     }
 
     /**
@@ -26,7 +37,7 @@ class StockController extends Controller
      */
     public function create()
     {
-        $products = Product::all();
+        $products = Product::with(['baseUnit', 'salesUnit'])->get();
         return view('stock.create', compact('products'));
     }
 
@@ -37,23 +48,45 @@ class StockController extends Controller
     {
         $data = $request->validate([
             'Date' => ['nullable', 'date'],
-            'product_id' => ['nullable','integer'],
-            'quantity' => ['nullable', 'integer'],
+            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'quantity' => ['required', 'numeric', 'min:0.01'],
+            'unit_type' => ['required', 'in:base,sales'], // User chooses which unit they're using
+            'transaction_type' => ['required', 'in:purchase,adjustment,return,opening_stock'],
+            'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $previous_stock = Stock::where('product_id',$request->product_id)->latest()->first();
-        $new_stock = $previous_stock->quantity + $request->quantity; 
+        // Get product with unit information
+        $product = Product::with(['baseUnit', 'salesUnit'])->findOrFail($data['product_id']);
+        
+        // Convert quantity to base units based on user's selection
+        $quantityInBaseUnits = 0;
+        if ($data['unit_type'] === 'sales') {
+            // User entered quantity in sales unit, convert to base
+            $quantityInBaseUnits = $product->convertSalesToBase($data['quantity']);
+        } else {
+            // User entered quantity in base unit, use as-is
+            $quantityInBaseUnits = $data['quantity'];
+        }
+        
+        // Get current stock for this product (already in base units)
+        $currentStock = Stock::where('product_id', $data['product_id'])
+            ->sum('quantity');
+        
+        // Calculate new cumulative total
+        $newCumulativeStock = $currentStock + $quantityInBaseUnits;
 
         $stock = new Stock();
         $stock->product_id = $data['product_id'];
-        $stock->Date = $data['Date'];
-        $stock->quantity=$new_stock;
-        $stock->new_adjustment_in_stock = $request->quantity;
+        $stock->Date = $data['Date'] ?? now()->toDateString();
+        $stock->quantity = $quantityInBaseUnits; // Always stored in base units
+        $stock->new_adjustment_in_stock = $quantityInBaseUnits;
         $stock->action = 'added';
+        $stock->transaction_type = $data['transaction_type'];
+        $stock->notes = $data['notes'] ?? null;
+        
         $stock->save();
 
-        return redirect()->route('stock.index')->with('success', 'Stock created successfully.');
-
+        return redirect()->route('stock.index')->with('success', 'Stock added successfully.');
     }
 
     /**
@@ -69,7 +102,7 @@ class StockController extends Controller
      */
     public function edit(Stock $stock)
     {
-        $products = Product::all();
+        $products = Product::with(['baseUnit', 'salesUnit'])->get();
         return view('stock.edit', compact('stock','products'));
     }
 
@@ -80,14 +113,36 @@ class StockController extends Controller
     {
         $data = $request->validate([
             'Date' => ['nullable', 'date'],
-            'product_id' => ['nullable','integer'],
-            'quantity' => ['nullable', 'integer'],
+            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'quantity' => ['required', 'numeric', 'min:0.01'],
+            'unit_type' => ['required', 'in:base,sales'],
+            'transaction_type' => ['required', 'in:purchase,adjustment,return,opening_stock'],
+            'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $stock->update($data);
+        // Get product with unit information
+        $product = Product::with(['baseUnit', 'salesUnit'])->findOrFail($data['product_id']);
+        
+        // Convert quantity to base units based on user's selection
+        $quantityInBaseUnits = 0;
+        if ($data['unit_type'] === 'sales') {
+            // User entered quantity in sales unit, convert to base
+            $quantityInBaseUnits = $product->convertSalesToBase($data['quantity']);
+        } else {
+            // User entered quantity in base unit, use as-is
+            $quantityInBaseUnits = $data['quantity'];
+        }
 
-        return redirect()->route('stock.index')->with('success', 'Stock updated successfully.');
+        $stock->Date = $data['Date'] ?? now()->toDateString();
+        $stock->product_id = $data['product_id'];
+        $stock->quantity = $quantityInBaseUnits; // Always stored in base units
+        $stock->new_adjustment_in_stock = $quantityInBaseUnits;
+        $stock->transaction_type = $data['transaction_type'];
+        $stock->notes = $data['notes'] ?? null;
+        
+        $stock->save();
 
+        return redirect()->route('stock.index')->with('success', 'Stock transaction updated successfully.');
     }
 
     /**
