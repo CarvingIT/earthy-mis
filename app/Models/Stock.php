@@ -11,6 +11,11 @@ class Stock extends Model
         'Date',
         'product_id',
         'quantity',
+        'new_adjustment_in_stock',
+        'action',
+        'transaction_type',
+        'reference_id',
+        'notes',
     ];
 
     public function product(): BelongsTo

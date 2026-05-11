@@ -245,24 +245,23 @@
                             </div>
                         </section>
 
-                        <section class="form-section reveal rounded-2xl p-5" style="--reveal-delay: 350ms;">
-                            <div class="relative z-10">
-                                <p class="mb-3 text-sm font-bold text-slate-700">Delete Option</p>
-                                <form method="POST" action="{{ route('units.destroy', $unit) }}" onsubmit="return confirm('Are you sure you want to delete this unit? This action cannot be undone.');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-extrabold text-rose-700 shadow-sm transition hover:bg-rose-100 focus:outline-none focus:ring-4 focus:ring-rose-100">
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.87 12.14A2 2 0 0116.14 21H7.86a2 2 0 01-1.99-1.86L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-8 0h10"/>
-                                        </svg>
-                                        Delete Unit
-                                    </button>
-                                </form>
-                            </div>
-                        </section>
-                    </aside>
-                </div>
             </form>
+
+            <section class="form-section reveal rounded-2xl p-5" style="--reveal-delay: 350ms;">
+                <div class="relative z-10">
+                    <p class="mb-3 text-sm font-bold text-slate-700">Delete Option</p>
+                    <form method="POST" action="{{ route('units.destroy', $unit) }}" onsubmit="return confirm('Are you sure you want to delete this unit? This action cannot be undone.');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-extrabold text-rose-700 shadow-sm transition hover:bg-rose-100 focus:outline-none focus:ring-4 focus:ring-rose-100">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.87 12.14A2 2 0 0116.14 21H7.86a2 2 0 01-1.99-1.86L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-8 0h10"/>
+                            </svg>
+                            Delete Unit
+                        </button>
+                    </form>
+                </div>
+            </section>
         </div>
     </div>
 
