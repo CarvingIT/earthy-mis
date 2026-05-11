@@ -156,21 +156,15 @@
 
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_20rem]">
                     <div class="space-y-6">
+                        <!-- Main Form Card - Unified -->
+                        <section class="form-panel reveal rounded-2xl p-6 sm:p-8" style="--reveal-delay: 70ms;">
+                            <div class="mb-6">
+                                <h3 class="text-xl font-extrabold text-slate-900">Stock Entry Details</h3>
+                                <p class="mt-1 text-sm font-medium text-slate-500">Fill in the details below to add stock to your inventory.</p>
+                            </div>
 
-                        <section class="form-section reveal rounded-2xl p-5 sm:p-6" style="--reveal-delay: 70ms;">
-                            <div class="relative z-10">
-                                <div class="mb-5 flex items-center gap-3">
-                                    <div class="section-mark flex h-10 w-10 items-center justify-center rounded-xl text-white">
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h3 class="text-lg font-extrabold text-slate-900">Transaction basics</h3>
-                                        <p class="text-sm font-medium text-slate-500">When and what product you're adding stock for.</p>
-                                    </div>
-                                </div>
-
+                            <!-- Group 1: When & What -->
+                            <div class="space-y-5">
                                 <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
                                     <div>
                                         <label for="Date" class="form-label">Transaction date <span class="text-rose-500">*</span></label>
@@ -197,23 +191,13 @@
                                     </div>
                                 </div>
                             </div>
-                        </section>
 
-                        <section class="form-section reveal rounded-2xl p-5 sm:p-6" style="--reveal-delay: 120ms;">
-                            <div class="relative z-10">
-                                <div class="mb-5 flex items-center gap-3">
-                                    <div class="section-mark flex h-10 w-10 items-center justify-center rounded-xl text-white">
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h3 class="text-lg font-extrabold text-slate-900">How much stock?</h3>
-                                        <p class="text-sm font-medium text-slate-500">Enter quantity and choose your unit. We'll handle the conversion.</p>
-                                    </div>
-                                </div>
+                            <!-- Divider -->
+                            <div class="my-6 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
 
-                                <div class="quick-tip mb-5 rounded-lg">
+                            <!-- Group 2: How Much -->
+                            <div class="space-y-5">
+                                <div class="quick-tip mb-4 rounded-lg">
                                     <p class="text-xs font-semibold text-emerald-900">💡 Quick tip:</p>
                                     <p class="mt-1 text-xs font-medium text-emerald-800">Select a product first to see its available units. You can enter quantity in either base or sales unit—we convert automatically!</p>
                                 </div>
@@ -237,7 +221,8 @@
                                     </div>
                                 </div>
 
-                                <div class="mt-5 rounded-xl border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 to-teal-50 px-5 py-4 shadow-sm" id="product-info" style="display: none;">
+                                <!-- Dynamic Product Info -->
+                                <div class="rounded-xl border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 to-teal-50 px-5 py-4 shadow-sm" id="product-info" style="display: none;">
                                     <div class="flex items-start gap-3">
                                         <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
                                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -265,62 +250,50 @@
                                     </div>
                                 </div>
                             </div>
-                        </section>
 
-                        <section class="form-section reveal rounded-2xl p-5 sm:p-6" style="--reveal-delay: 150ms;">
-                            <div class="relative z-10">
-                                <div class="mb-5 flex items-center gap-3">
-                                    <div class="section-mark flex h-10 w-10 items-center justify-center rounded-xl text-white">
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h3 class="text-lg font-extrabold text-slate-900">Why are you adding stock?</h3>
-                                        <p class="text-sm font-medium text-slate-500">Tell us the reason so we can categorize it correctly.</p>
-                                    </div>
+                            <!-- Divider -->
+                            <div class="my-6 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+
+                            <!-- Group 3: Why & Notes -->
+                            <div class="space-y-5">
+                                <div>
+                                    <label for="transaction_type" class="form-label">Why are you adding stock? <span class="text-rose-500">*</span></label>
+                                    <select name="transaction_type" id="transaction_type" class="form-field mt-2 block w-full px-4 py-2.5 shadow-sm" required>
+                                        <option value="">— Select the reason —</option>
+                                        <option value="purchase" {{ old('transaction_type') == 'purchase' ? 'selected' : '' }}>🛒 Purchase (bought new stock from supplier)</option>
+                                        <option value="opening_stock" {{ old('transaction_type') == 'opening_stock' ? 'selected' : '' }}>📋 Opening Stock (initial inventory setup)</option>
+                                        <option value="return" {{ old('transaction_type') == 'return' ? 'selected' : '' }}>↩️ Return (customer returned products)</option>
+                                        <option value="adjustment" {{ old('transaction_type') == 'adjustment' ? 'selected' : '' }}>🔧 Adjustment (correcting inventory count)</option>
+                                    </select>
+                                    <p class="mt-1 text-xs font-medium text-slate-500">What's the source of this stock?</p>
+                                    <x-input-error class="mt-2" :messages="$errors->get('transaction_type')" />
                                 </div>
 
-                                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-                                    <div class="md:col-span-2">
-                                        <label for="transaction_type" class="form-label">Transaction type <span class="text-rose-500">*</span></label>
-                                        <select name="transaction_type" id="transaction_type" class="form-field mt-2 block w-full px-4 py-2.5 shadow-sm" required>
-                                            <option value="">— Why is stock being added? —</option>
-                                            <option value="purchase" {{ old('transaction_type') == 'purchase' ? 'selected' : '' }}>🛒 Purchase (bought new stock from supplier)</option>
-                                            <option value="opening_stock" {{ old('transaction_type') == 'opening_stock' ? 'selected' : '' }}>📋 Opening Stock (initial inventory setup)</option>
-                                            <option value="return" {{ old('transaction_type') == 'return' ? 'selected' : '' }}>↩️ Return (customer returned products)</option>
-                                            <option value="adjustment" {{ old('transaction_type') == 'adjustment' ? 'selected' : '' }}>🔧 Adjustment (correcting inventory count)</option>
-                                        </select>
-                                        <p class="mt-1 text-xs font-medium text-slate-500">What's the source of this stock?</p>
-                                        <x-input-error class="mt-2" :messages="$errors->get('transaction_type')" />
-                                    </div>
-                                </div>
-
-                                <div class="mt-5">
+                                <div>
                                     <label for="notes" class="form-label">Additional notes (Optional)</label>
-                                    <textarea id="notes" name="notes" rows="4" class="form-field mt-2 block w-full px-4 py-3 shadow-sm" placeholder="Examples: Supplier name, PO number, batch details, or reason for adjustment...">{{ old('notes') }}</textarea>
+                                    <textarea id="notes" name="notes" rows="3" class="form-field mt-2 block w-full px-4 py-3 shadow-sm" placeholder="Examples: Supplier name, PO number, batch details...">{{ old('notes') }}</textarea>
                                     <p class="mt-1 text-xs font-medium text-slate-500">💬 Helpful for tracking: supplier info, purchase orders, or special circumstances.</p>
                                     <x-input-error class="mt-2" :messages="$errors->get('notes')" />
                                 </div>
+                            </div>
 
-                                <!-- Bottom Save Buttons - For easy access after filling all fields -->
-                                <div class="mt-8 flex flex-col gap-3 border-t-2 border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
-                                    <div class="order-2 sm:order-1">
-                                        <a href="{{ route('stock.index') }}" class="inline-flex w-full items-center justify-center gap-2 rounded-xl border-2 border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 sm:w-auto">
-                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                            </svg>
-                                            Cancel
-                                        </a>
-                                    </div>
-                                    <div class="order-1 sm:order-2">
-                                        <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-6 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-emerald-500/30 transition-all hover:from-emerald-700 hover:to-emerald-600 hover:shadow-emerald-600/40 focus:outline-none focus:ring-4 focus:ring-emerald-200 sm:w-auto">
-                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                            </svg>
-                                            Save Stock Entry
-                                        </button>
-                                    </div>
+                            <!-- Bottom Save Buttons -->
+                            <div class="mt-8 flex flex-col gap-3 border-t-2 border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                                <div class="order-2 sm:order-1">
+                                    <a href="{{ route('stock.index') }}" class="inline-flex w-full items-center justify-center gap-2 rounded-xl border-2 border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 sm:w-auto">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                        Cancel
+                                    </a>
+                                </div>
+                                <div class="order-1 sm:order-2">
+                                    <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-6 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-emerald-500/30 transition-all hover:from-emerald-700 hover:to-emerald-600 hover:shadow-emerald-600/40 focus:outline-none focus:ring-4 focus:ring-emerald-200 sm:w-auto">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                        Save Stock Entry
+                                    </button>
                                 </div>
                             </div>
                         </section>
