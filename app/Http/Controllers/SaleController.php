@@ -15,8 +15,25 @@ class SaleController extends Controller
      */
     public function index()
     {
-        $sales = Sale::latest()->get();
-        return view('sales.index', compact('sales'));
+        $sales = Sale::with(['product.salesUnit', 'customer'])
+            ->orderBy('Date', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
+        
+        // Calculate statistics
+        $totalSales = $sales->count();
+        $totalRevenue = $sales->sum('amount');
+        $totalQuantity = 0;
+        $uniqueCustomers = $sales->pluck('customer_id')->unique()->count();
+        
+        // Calculate total quantity in sales units
+        foreach ($sales as $sale) {
+            if ($sale->product && $sale->product->salesUnit) {
+                $totalQuantity += $sale->quantity;
+            }
+        }
+        
+        return view('sales.index', compact('sales', 'totalSales', 'totalRevenue', 'totalQuantity', 'uniqueCustomers'));
     }
 
     /**
