@@ -200,15 +200,29 @@
                         <div>
                             <h3 class="text-base font-extrabold text-slate-900">Stock transactions</h3>
                             <p class="text-sm font-medium text-slate-500">View all stock movements, current levels, and transaction history.</p>
+                            <p class="mt-1 text-xs font-medium text-emerald-600">💡 Tip: Use "Sync Sales" if you added sales before setting up stock management.</p>
                         </div>
                     </div>
 
-                    <a href="{{ route('stock.create') }}" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-slate-900/15 transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 sm:w-auto">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"/>
-                        </svg>
-                        Add Stock
-                    </a>
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <!-- Sync Sales Button -->
+                        <form method="POST" action="{{ route('stock.sync-sales') }}" onsubmit="return confirm('This will sync all historical sales with stock transactions. Continue?');">
+                            @csrf
+                            <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-emerald-600/15 transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 sm:w-auto">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                </svg>
+                                Sync Sales
+                            </button>
+                        </form>
+
+                        <a href="{{ route('stock.create') }}" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-slate-900/15 transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 sm:w-auto">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"/>
+                            </svg>
+                            Add Stock
+                        </a>
+                    </div>
                 </div>
             </section>
 

@@ -13,7 +13,10 @@ class StockController extends Controller
      */
     public function index()
     {
-        $stocks = Stock::with(['product.baseUnit', 'product.salesUnit'])->latest()->get();
+        $stocks = Stock::with(['product.baseUnit', 'product.salesUnit'])
+            ->orderBy('Date', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
         
         // Calculate current stock for each product
         $currentStocks = Stock::selectRaw('product_id, SUM(quantity) as total_quantity')
@@ -152,5 +155,69 @@ class StockController extends Controller
     {
         $stock->delete();
         return redirect()->route('stock.index')->with('success', 'Stock deleted successfully.');
+    }
+
+    /**
+     * Sync Sales with stock transactions.
+     */
+    public function syncSales()
+    {
+        $sales = \App\Models\Sale::all();
+        $syncedCount = 0;
+        $skippedCount = 0;
+        $errorCount = 0;
+
+        foreach ($sales as $sale) {
+            try {
+                // Check if this sale already has a stock transaction
+                $existingStock = \App\Models\Stock::where('reference_id', $sale->id)
+                    ->where('transaction_type', 'sale')
+                    ->first();
+
+                if ($existingStock) {
+                    $skippedCount++;
+                    continue;
+                }
+
+                // Get product with unit information
+                $product = \App\Models\Product::with(['baseUnit', 'salesUnit'])->find($sale->product_id);
+                
+                if (!$product) {
+                    $errorCount++;
+                    continue;
+                }
+
+                // Convert sales quantity to base units
+                $quantityInBaseUnits = $product->convertSalesToBase($sale->quantity);
+
+                // Create stock transaction
+                $stock = new \App\Models\Stock();
+                $stock->product_id = $sale->product_id;
+                $stock->Date = $sale->Date ?? now()->toDateString();
+                $stock->quantity = -$quantityInBaseUnits; // Negative because it's a sale
+                $stock->new_adjustment_in_stock = $quantityInBaseUnits;
+                $stock->action = 'sold';
+                $stock->transaction_type = 'sale';
+                $stock->reference_id = $sale->id;
+                
+                // Create descriptive notes showing both units
+                $salesUnitName = $product->salesUnit->name ?? 'units';
+                $baseUnitName = $product->baseUnit->name ?? 'units';
+                $stock->notes = "Sale #{$sale->id} - {$sale->quantity} {$salesUnitName} ({$quantityInBaseUnits} {$baseUnitName}) [Historical Sync]";
+                $stock->save();
+
+                $syncedCount++;
+
+            } catch (\Exception $e) {
+                $errorCount++;
+            }
+        }
+
+        $message = "Sync complete! Synced: {$syncedCount}, Already synced: {$skippedCount}";
+        if ($errorCount > 0) {
+            $message .= ", Errors: {$errorCount}";
+        }
+
+        return redirect()->route('stock.index')->with('success', $message);
     }
 }

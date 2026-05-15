@@ -17,15 +17,52 @@
         }
 
         .sales-panel,
+        .sales-stat,
         .sales-table-card {
             border: 1px solid rgba(15, 23, 42, .08);
             background: #ffffff;
             box-shadow: 0 10px 28px rgba(15, 23, 42, .07);
         }
 
+        .sales-stat {
+            position: relative;
+            overflow: hidden;
+            transition: box-shadow .18s ease, border-color .18s ease;
+        }
+
+        .sales-stat::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--stat-tint), transparent 50%);
+            opacity: .95;
+            pointer-events: none;
+        }
+
+        .sales-stat::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--stat-accent);
+        }
+
         .sales-panel:hover,
+        .sales-stat:hover,
         .sales-table-card:hover {
             box-shadow: 0 14px 34px rgba(15, 23, 42, .1);
+        }
+
+        .stat-icon {
+            background: var(--stat-accent);
+            box-shadow: 0 12px 28px var(--stat-shadow);
+        }
+
+        .stat-value {
+            color: var(--stat-text);
+            letter-spacing: 0;
         }
 
         .reveal {
@@ -97,6 +134,39 @@
         }
     </style>
 
+    @php
+        $stats = [
+            [
+                'label' => 'Total Sales',
+                'value' => number_format($totalSales ?? 0),
+                'note' => 'All transactions',
+                'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2',
+                'style' => '--stat-accent: linear-gradient(135deg, #4f46e5, #06b6d4); --stat-tint: rgba(99, 102, 241, .14); --stat-shadow: rgba(79, 70, 229, .28); --stat-text: #4338ca;',
+            ],
+            [
+                'label' => 'Total Revenue',
+                'value' => 'Rs. ' . number_format($totalRevenue ?? 0, 2),
+                'note' => 'Total earnings',
+                'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+                'style' => '--stat-accent: linear-gradient(135deg, #059669, #84cc16); --stat-tint: rgba(16, 185, 129, .16); --stat-shadow: rgba(16, 185, 129, .3); --stat-text: #047857;',
+            ],
+            [
+                'label' => 'Units Sold',
+                'value' => number_format(round($totalQuantity ?? 0)),
+                'note' => 'In sales units',
+                'icon' => 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z',
+                'style' => '--stat-accent: linear-gradient(135deg, #f59e0b, #f97316); --stat-tint: rgba(245, 158, 11, .16); --stat-shadow: rgba(245, 158, 11, .3); --stat-text: #b45309;',
+            ],
+            [
+                'label' => 'Customers',
+                'value' => number_format($uniqueCustomers ?? 0),
+                'note' => 'Unique buyers',
+                'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
+                'style' => '--stat-accent: linear-gradient(135deg, #0284c7, #22d3ee); --stat-tint: rgba(14, 165, 233, .15); --stat-shadow: rgba(14, 165, 233, .3); --stat-text: #0369a1;',
+            ],
+        ];
+    @endphp
+
     <div class="sales-shell min-h-screen py-10">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
             <section class="sales-panel reveal rounded-2xl p-5">
@@ -139,6 +209,25 @@
                     </div>
                 </div>
             @endif
+
+            <section class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                @foreach ($stats as $index => $stat)
+                    <article class="sales-stat reveal rounded-2xl p-5" style="{{ $stat['style'] }} --reveal-delay: {{ $index * 70 }}ms;">
+                        <div class="relative z-10">
+                            <div class="mb-5 flex items-start justify-between gap-3">
+                                <div class="stat-icon flex h-12 w-12 items-center justify-center rounded-xl text-white">
+                                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $stat['icon'] }}"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <p class="stat-value text-3xl font-black">{{ $stat['value'] }}</p>
+                            <p class="mt-2 text-sm font-bold text-slate-500">{{ $stat['label'] }}</p>
+                            <p class="text-xs font-medium text-slate-400">{{ $stat['note'] }}</p>
+                        </div>
+                    </article>
+                @endforeach
+            </section>
 
             <section class="sales-table-card reveal rounded-2xl p-4 sm:p-6">
                 <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
