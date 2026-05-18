@@ -424,7 +424,7 @@
 
                 <!-- Operations Dropdown -->
                 <div class="relative group">
-                    <button class="dropdown-trigger group-hover:text-blue-600 {{ request()->routeIs('logistics.*', 'weights.*', 'trips.*', 'windrow.*', 'turning.*', 'supplyitems.*', 'stock.*', 'sale.*') ? 'active' : '' }}" x-data="{ open: false }" @click="open = !open" :class="{ 'open': open }">
+                    <button class="dropdown-trigger group-hover:text-blue-600 {{ request()->routeIs('logistics.*', 'weights.*', 'trips.*', 'windrow.*', 'turning.*', 'jcb.*', 'supplyitems.*', 'stock.*', 'sale.*') ? 'active' : '' }}" x-data="{ open: false }" @click="open = !open" :class="{ 'open': open }">
                         <span>Operations
                             @if (request()->routeIs('logistics.*'))
                                 - Logistics
@@ -436,6 +436,8 @@
                                 - Windrow
                             @elseif (request()->routeIs('turning.*'))
                                 - Turnings
+                            @elseif (request()->routeIs('jcb.*'))
+                                - JCB
                             @elseif (request()->routeIs('supplyitems.*'))
                                 - Supply Items
                             @elseif (request()->routeIs('stock.*'))
@@ -454,6 +456,7 @@
                         <a href="{{ route('trips.index') }}" class="{{ request()->routeIs('trips.*') ? 'active' : '' }}">Trips</a>
                         <a href="{{ route('windrow.index') }}" class="{{ request()->routeIs('windrow.*') ? 'active' : '' }}">Windrow</a>
                         <a href="{{ route('turning.index') }}" class="{{ request()->routeIs('turning.*') ? 'active' : '' }}">Turnings</a>
+                        <a href="{{ route('jcb.index') }}" class="{{ request()->routeIs('jcb.*') ? 'active' : '' }}">JCB</a>
                         <a href="{{ route('supplyitems.index') }}" class="{{ request()->routeIs('supplyitems.*') ? 'active' : '' }}">Supply Items</a>
                         <a href="{{ route('stock.index') }}" class="{{ request()->routeIs('stock.*') ? 'active' : '' }}">Stock</a>
                         <a href="{{ route('sale.index') }}" class="{{ request()->routeIs('sale.*') ? 'active' : '' }}">Sales</a>
@@ -557,7 +560,7 @@
         </div>
 
         <div class="mobile-menu-section">
-            <div class="mobile-menu-section-title {{ request()->routeIs('logistics.*', 'weights.*', 'trips.*', 'windrow.*', 'turning.*', 'supplyitems.*', 'stock.*', 'sale.*') ? 'active' : '' }}">
+            <div class="mobile-menu-section-title {{ request()->routeIs('logistics.*', 'weights.*', 'trips.*', 'windrow.*', 'turning.*', 'jcb.*', 'supplyitems.*', 'stock.*', 'sale.*') ? 'active' : '' }}">
                 Operations
                 @if (request()->routeIs('logistics.*'))
                     <span> - Logistics</span>
@@ -569,6 +572,8 @@
                     <span> - Windrow</span>
                 @elseif (request()->routeIs('turning.*'))
                     <span> - Turnings</span>
+                @elseif (request()->routeIs('jcb.*'))
+                    <span> - JCB</span>
                 @elseif (request()->routeIs('supplyitems.*'))
                     <span> - Supply Items</span>
                 @elseif (request()->routeIs('stock.*'))
@@ -582,6 +587,7 @@
             <a href="{{ route('trips.index') }}" class="{{ request()->routeIs('trips.*') ? 'active' : '' }}">Trips</a>
             <a href="{{ route('windrow.index') }}" class="{{ request()->routeIs('windrow.*') ? 'active' : '' }}">Windrow</a>
             <a href="{{ route('turning.index') }}" class="{{ request()->routeIs('turning.*') ? 'active' : '' }}">Turnings</a>
+            <a href="{{ route('jcb.index') }}" class="{{ request()->routeIs('jcb.*') ? 'active' : '' }}">JCB</a>
             <a href="{{ route('supplyitems.index') }}" class="{{ request()->routeIs('supplyitems.*') ? 'active' : '' }}">Supply Items</a>
             <a href="{{ route('stock.index') }}" class="{{ request()->routeIs('stock.*') ? 'active' : '' }}">Stock</a>
             <a href="{{ route('sale.index') }}" class="{{ request()->routeIs('sale.*') ? 'active' : '' }}">Sales</a>
