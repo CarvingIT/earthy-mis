@@ -272,22 +272,22 @@ class ChartController extends Controller
                 'labels' => $dates->toArray(),
                 'datasets' => [
                     [
-                        'label' => 'Sales (Rs.)',
+                        'label' => 'Revenue',
                         'data' => $salesData,
-                        'borderColor' => 'rgb(75, 192, 192)',
-                        'backgroundColor' => 'rgba(75, 192, 192, 0.1)',
+                        'borderColor' => 'rgb(14, 165, 233)',
+                        'backgroundColor' => 'rgba(14, 165, 233, 0.1)',
                     ],
                     [
-                        'label' => 'Costs (Rs.)',
+                        'label' => 'Costs',
                         'data' => $costsData,
-                        'borderColor' => 'rgb(255, 99, 132)',
-                        'backgroundColor' => 'rgba(255, 99, 132, 0.1)',
+                        'borderColor' => 'rgb(245, 158, 11)',
+                        'backgroundColor' => 'rgba(245, 158, 11, 0.1)',
                     ],
                     [
-                        'label' => 'Profit (Rs.)',
+                        'label' => 'Profit',
                         'data' => $profitData,
-                        'borderColor' => 'rgb(76, 175, 80)',
-                        'backgroundColor' => 'rgba(76, 175, 80, 0.1)',
+                        'borderColor' => 'rgb(16, 185, 129)',
+                        'backgroundColor' => 'rgba(16, 185, 129, 0.1)',
                     ],
                 ],
                 'summary' => [
@@ -302,16 +302,132 @@ class ChartController extends Controller
         }
     }
 
+    /**
+     * Get vehicle time data (start/end times) grouped by date and vehicle
+     */
+    public function vehicleTimeData()
+    {
+        try {
+            $range = $this->dateRange();
+            $vehicleId = request()->query('vehicle_id');
+            
+            $query = $this->applyDateRange(Trips::query(), $range)
+                ->with('vehicle')
+                ->whereNotNull('start_time')
+                ->whereNotNull('end_time')
+                ->select('Date', 'vehicle_id', 'start_time', 'end_time')
+                ->orderBy('Date', 'asc');
+            
+            if ($vehicleId) {
+                $query->where('vehicle_id', $vehicleId);
+            }
+            
+            $trips = $query->get();
+            
+            // Group by vehicle
+            $vehicles = $trips->groupBy('vehicle_id');
+            
+            $datasets = [];
+            foreach ($vehicles as $vehicleId => $vehicleTrips) {
+                $vehicle = $vehicleTrips->first()->vehicle;
+                $vehicleName = $vehicle ? $vehicle->registration_number : "Vehicle {$vehicleId}";
+                
+                $startTimes = [];
+                $endTimes = [];
+                $labels = [];
+                
+                foreach ($vehicleTrips as $trip) {
+                    $labels[] = date('M d', strtotime($trip->Date));
+                    $startTimes[] = $trip->start_time;
+                    $endTimes[] = $trip->end_time;
+                }
+                
+                $datasets[] = [
+                    'label' => $vehicleName,
+                    'vehicle_id' => $vehicleId,
+                    'start_times' => $startTimes,
+                    'end_times' => $endTimes,
+                    'labels' => $labels,
+                ];
+            }
+            
+            return response()->json([
+                'datasets' => $datasets,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Get vehicle distance comparison data
+     */
+    public function vehicleDistanceComparison()
+    {
+        try {
+            $range = $this->dateRange();
+            
+            $data = $this->applyDateRange(Trips::query(), $range)
+                ->with('vehicle')
+                ->select('Date', 'vehicle_id', DB::raw('SUM(km) as total_km'))
+                ->groupBy('Date', 'vehicle_id')
+                ->orderBy('Date', 'asc')
+                ->get();
+            
+            // Group by vehicle
+            $vehicles = $data->groupBy('vehicle_id');
+            
+            $allDates = $data->pluck('Date')->unique()->sort()->values();
+            $labels = $allDates->map(fn($date) => date('M d', strtotime($date)))->toArray();
+            
+            $datasets = [];
+            $colors = [
+                ['border' => 'rgb(14, 165, 233)', 'bg' => 'rgba(14, 165, 233, 0.1)'],
+                ['border' => 'rgb(245, 158, 11)', 'bg' => 'rgba(245, 158, 11, 0.1)'],
+                ['border' => 'rgb(16, 185, 129)', 'bg' => 'rgba(16, 185, 129, 0.1)'],
+                ['border' => 'rgb(239, 68, 68)', 'bg' => 'rgba(239, 68, 68, 0.1)'],
+            ];
+            
+            foreach ($vehicles as $index => $vehicleTrips) {
+                $vehicle = $vehicleTrips->first()->vehicle;
+                $vehicleName = $vehicle ? $vehicle->registration_number : "Vehicle {$vehicleTrips->first()->vehicle_id}";
+                
+                $kmData = [];
+                foreach ($allDates as $date) {
+                    $trip = $vehicleTrips->firstWhere('Date', $date);
+                    $kmData[] = $trip ? $trip->total_km : 0;
+                }
+                
+                $colorIndex = $index % count($colors);
+                $datasets[] = [
+                    'label' => $vehicleName,
+                    'data' => $kmData,
+                    'borderColor' => $colors[$colorIndex]['border'],
+                    'backgroundColor' => $colors[$colorIndex]['bg'],
+                ];
+            }
+            
+            return response()->json([
+                'labels' => $labels,
+                'datasets' => $datasets,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     private function getSummaryStats()
     {
         $range = $this->dateRange();
         $sales = $this->applyDateRange(Sale::query(), $range)->sum('amount') ?? 0;
         $cost = $this->applyDateRange(SupplyItem::query(), $range)->sum('cost') ?? 0;
+        $profit = $sales - $cost;
 
         return [
             'total_sales' => $sales,
             'total_cost' => $cost,
-            'total_profit' => $sales - $cost,
+            'total_profit' => $profit,
+            'profit_margin' => $sales > 0 ? round(($profit / $sales) * 100, 2) : 0,
             'total_vehicles_km' => $this->applyDateRange(Trips::query(), $range)->sum('km') ?? 0,
             'products_count' => Product::count(),
             'consumables_count' => Consumable::count(),

@@ -38,6 +38,20 @@
                         <x-input-error class="mt-2" :messages="$errors->get('km')" />
                     </div>
 
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <x-input-label for="start_time" value="Start Time" />
+                            <x-text-input id="start_time" name="start_time" type="time" class="mt-1 block w-full" :value="old('start_time')" />
+                            <x-input-error class="mt-2" :messages="$errors->get('start_time')" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="end_time" value="End Time" />
+                            <x-text-input id="end_time" name="end_time" type="time" class="mt-1 block w-full" :value="old('end_time')" />
+                            <x-input-error class="mt-2" :messages="$errors->get('end_time')" />
+                        </div>
+                    </div>
+
                     <div class="flex justify-end gap-2">
                         <a href="{{ route('trips.index') }}" class="px-4 py-2 border rounded-md">Cancel</a>
                         <x-primary-button>Save</x-primary-button>

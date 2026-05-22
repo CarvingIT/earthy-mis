@@ -36,6 +36,8 @@ class TripsController extends Controller
             'vehicle_id' => ['nullable','max:255'],
             'purpose' => ['nullable', 'string', 'max:255'],
             'km' => ['nullable', 'numeric', 'min:0'],
+            'start_time' => ['nullable', 'date_format:H:i'],
+            'end_time' => ['nullable', 'date_format:H:i'],
         ]);
 
         Trips::create($data);
@@ -71,6 +73,8 @@ class TripsController extends Controller
             'vehicle_id' => ['nullable','max:255'],
             'purpose' => ['nullable', 'string', 'max:255'],
             'km' => ['nullable', 'numeric', 'min:0'],
+            'start_time' => ['nullable', 'date_format:H:i'],
+            'end_time' => ['nullable', 'date_format:H:i'],
         ]);
 
         $trip->update($data);
