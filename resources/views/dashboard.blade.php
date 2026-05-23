@@ -553,8 +553,8 @@
                                 <div class="flex min-w-0 items-center gap-3">
                                     <div class="chart-mark h-11 w-2 shrink-0 rounded-full"></div>
                                     <div class="min-w-0">
-                                        <h3 class="truncate text-lg font-extrabold text-slate-900">${vehicleData.label} - Operating Hours</h3>
-                                        <p class="text-sm font-medium text-slate-500">Start and end times</p>
+                                        <h3 class="truncate text-lg font-extrabold text-slate-900">${vehicleData.label} - Operating Duration</h3>
+                                        <p class="text-sm font-medium text-slate-500">Green: Work hours | Blue ▲: Start | Orange ◆: End</p>
                                     </div>
                                 </div>
                                 <span class="chart-badge w-fit rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide">Schedule</span>
@@ -596,44 +596,153 @@
             // Convert time strings to hours for plotting
             const startHours = vehicleData.start_times.map(t => timeToHours(t));
             const endHours = vehicleData.end_times.map(t => timeToHours(t));
+            
+            // Calculate duration in hours
+            const durations = startHours.map((start, i) => {
+                const end = endHours[i];
+                return end > start ? (end - start) : 0;
+            });
 
             charts[canvasId] = new Chart(el.getContext('2d'), {
-                type: 'bar',
+                type: 'line',
                 data: {
                     labels: vehicleData.labels,
                     datasets: [
                         {
+                            label: 'Operating Duration',
+                            data: durations,
+                            borderColor: 'rgb(16, 185, 129)',
+                            backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.38,
+                            pointRadius: 5,
+                            pointHoverRadius: 8,
+                            pointBorderWidth: 3,
+                            pointBackgroundColor: '#ffffff',
+                            yAxisID: 'y-duration',
+                        },
+                        {
                             label: 'Start Time',
                             data: startHours,
-                            backgroundColor: 'rgba(14, 165, 233, 0.7)',
                             borderColor: 'rgb(14, 165, 233)',
+                            backgroundColor: 'rgba(14, 165, 233, 0.1)',
                             borderWidth: 2,
-                            borderRadius: 6,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.38,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            pointStyle: 'triangle',
+                            yAxisID: 'y-time',
                         },
                         {
                             label: 'End Time',
                             data: endHours,
-                            backgroundColor: 'rgba(245, 158, 11, 0.7)',
                             borderColor: 'rgb(245, 158, 11)',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
                             borderWidth: 2,
-                            borderRadius: 6,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.38,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            pointStyle: 'rectRot',
+                            yAxisID: 'y-time',
                         }
                     ]
                 },
                 options: {
                     ...getChartOptions(),
+                    plugins: {
+                        ...getChartOptions().plugins,
+                        tooltip: {
+                            ...getChartOptions().plugins.tooltip,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        if (context.dataset.yAxisID === 'y-duration') {
+                                            // Show duration in hours and minutes
+                                            const hours = Math.floor(context.parsed.y);
+                                            const minutes = Math.round((context.parsed.y - hours) * 60);
+                                            label += `${hours}h ${minutes}m`;
+                                        } else {
+                                            // Show time of day
+                                            label += hoursToTime(context.parsed.y);
+                                        }
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        legend: {
+                            ...getChartOptions().plugins.legend,
+                            labels: {
+                                ...getChartOptions().plugins.legend.labels,
+                                generateLabels: function(chart) {
+                                    const datasets = chart.data.datasets;
+                                    return datasets.map((dataset, i) => ({
+                                        text: dataset.label,
+                                        fillStyle: dataset.borderColor,
+                                        strokeStyle: dataset.borderColor,
+                                        lineWidth: dataset.borderWidth,
+                                        hidden: !chart.isDatasetVisible(i),
+                                        index: i,
+                                        pointStyle: dataset.pointStyle || 'circle',
+                                    }));
+                                }
+                            }
+                        }
+                    },
                     scales: {
-                        ...getChartOptions().scales,
-                        y: {
-                            ...getChartOptions().scales.y,
+                        x: getChartOptions().scales.x,
+                        'y-duration': {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Time (hours)',
-                                font: { size: 11, weight: '700' },
-                                color: '#64748b'
+                                text: 'Duration (hours)',
+                                font: { size: 12, weight: '700' },
+                                color: '#10b981'
+                            },
+                            grid: {
+                                color: 'rgba(16, 185, 129, 0.1)'
                             },
                             ticks: {
-                                ...getChartOptions().scales.y.ticks,
+                                font: { size: 10, weight: '600' },
+                                color: '#10b981',
+                                callback: function(value) {
+                                    const hours = Math.floor(value);
+                                    const minutes = Math.round((value - hours) * 60);
+                                    return `${hours}h${minutes > 0 ? minutes + 'm' : ''}`;
+                                }
+                            }
+                        },
+                        'y-time': {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            min: 0,
+                            max: 24,
+                            title: {
+                                display: true,
+                                text: 'Time of Day',
+                                font: { size: 12, weight: '700' },
+                                color: '#64748b'
+                            },
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: { size: 10, weight: '600' },
+                                color: '#64748b',
+                                stepSize: 4,
                                 callback: function(value) {
                                     return hoursToTime(value);
                                 }
