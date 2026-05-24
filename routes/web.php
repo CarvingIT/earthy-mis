@@ -36,9 +36,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
 
-// Dashboard redirects to charts
-Route::redirect('/dashboard', '/charts', 301);
-
+// Dashboard route - shows the main dashboard
 Route::get('/dashboard', function () {
     $userId = auth()->id();
 
@@ -84,6 +82,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/cost-data-by-consumable', [ChartController::class, 'costDataByConsumable']);
     Route::get('/api/vehicle-data', [ChartController::class, 'vehicleData']);
     Route::get('/api/profit-loss-data', [ChartController::class, 'profitLossData']);
+    Route::get('/api/vehicle-time-data', [ChartController::class, 'vehicleTimeData']);
+    Route::get('/api/vehicle-distance-comparison', [ChartController::class, 'vehicleDistanceComparison']);
 
     Route::middleware('admin')->group(function () {
         Route::resource('users', UserController::class)->except('show');

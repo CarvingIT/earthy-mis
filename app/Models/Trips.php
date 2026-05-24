@@ -13,6 +13,8 @@ class Trips extends Model
         'vehicle_id',
         'purpose',
         'km',
+        'start_time',
+        'end_time',
         ];
 
     public function vehicle(): BelongsTo
