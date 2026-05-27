@@ -84,6 +84,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/profit-loss-data', [ChartController::class, 'profitLossData']);
     Route::get('/api/vehicle-time-data', [ChartController::class, 'vehicleTimeData']);
     Route::get('/api/vehicle-distance-comparison', [ChartController::class, 'vehicleDistanceComparison']);
+    Route::get('/api/stock-product-qty-value', [ChartController::class, 'stockProductListQtyValue']);
+    Route::get('/api/consumables-cost-by-month', [ChartController::class, 'consumablesCostByMonth']);
 
     Route::middleware('admin')->group(function () {
         Route::resource('users', UserController::class)->except('show');

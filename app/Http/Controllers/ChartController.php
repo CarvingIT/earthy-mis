@@ -8,6 +8,7 @@ use App\Models\SupplyItem;
 use App\Models\Trips;
 use App\Models\Product;
 use App\Models\Consumable;
+use App\Models\Logistics;
 use Illuminate\Support\Facades\DB;
 
 class ChartController extends Controller
@@ -207,9 +208,14 @@ class ChartController extends Controller
         try {
             $range = $this->dateRange();
             
-            $data = $this->applyDateRange(Trips::query(), $range)
-                ->select('Date', DB::raw('SUM(km) as total_km'), DB::raw('COUNT(*) as count'))
-                ->groupBy('Date')
+            $data = $this->applyDateRange(Logistics::query(), $range, 'start_time')
+                ->whereNotNull('start_time')
+                ->select(
+                    DB::raw('DATE(start_time) as Date'),
+                    DB::raw('SUM(CAST(running_kms AS DECIMAL(10,2))) as total_km'),
+                    DB::raw('COUNT(*) as count')
+                )
+                ->groupBy(DB::raw('DATE(start_time)'))
                 ->orderBy('Date', 'asc')
                 ->get();
 
@@ -311,12 +317,11 @@ class ChartController extends Controller
             $range = $this->dateRange();
             $vehicleId = request()->query('vehicle_id');
             
-            $query = $this->applyDateRange(Trips::query(), $range)
+            $query = $this->applyDateRange(Logistics::query(), $range, 'start_time')
                 ->with('vehicle')
                 ->whereNotNull('start_time')
                 ->whereNotNull('end_time')
-                ->select('Date', 'vehicle_id', 'start_time', 'end_time')
-                ->orderBy('Date', 'asc');
+                ->orderBy('start_time', 'asc');
             
             if ($vehicleId) {
                 $query->where('vehicle_id', $vehicleId);
@@ -337,9 +342,9 @@ class ChartController extends Controller
                 $labels = [];
                 
                 foreach ($vehicleTrips as $trip) {
-                    $labels[] = date('M d', strtotime($trip->Date));
-                    $startTimes[] = $trip->start_time;
-                    $endTimes[] = $trip->end_time;
+                    $labels[] = date('M d', strtotime($trip->start_time));
+                    $startTimes[] = date('H:i:s', strtotime($trip->start_time));
+                    $endTimes[] = date('H:i:s', strtotime($trip->end_time));
                 }
                 
                 $datasets[] = [
@@ -367,10 +372,15 @@ class ChartController extends Controller
         try {
             $range = $this->dateRange();
             
-            $data = $this->applyDateRange(Trips::query(), $range)
+            $data = $this->applyDateRange(Logistics::query(), $range, 'start_time')
                 ->with('vehicle')
-                ->select('Date', 'vehicle_id', DB::raw('SUM(km) as total_km'))
-                ->groupBy('Date', 'vehicle_id')
+                ->whereNotNull('start_time')
+                ->select(
+                    DB::raw('DATE(start_time) as Date'),
+                    'vehicle_id',
+                    DB::raw('SUM(CAST(running_kms AS DECIMAL(10,2))) as total_km')
+                )
+                ->groupBy(DB::raw('DATE(start_time)'), 'vehicle_id')
                 ->orderBy('Date', 'asc')
                 ->get();
             
@@ -395,7 +405,7 @@ class ChartController extends Controller
                 $kmData = [];
                 foreach ($allDates as $date) {
                     $trip = $vehicleTrips->firstWhere('Date', $date);
-                    $kmData[] = $trip ? $trip->total_km : 0;
+                    $kmData[] = $trip ? (float)$trip->total_km : 0;
                 }
                 
                 $colorIndex = $index % count($colors);
@@ -416,6 +426,71 @@ class ChartController extends Controller
         }
     }
 
+    /**
+     * Get stock product list with quantity and value
+     */
+    public function stockProductListQtyValue()
+    {
+        try {
+            $products = Product::get();
+            
+            $labels = [];
+            $quantities = [];
+            $values = [];
+            
+            foreach ($products as $product) {
+                $labels[] = $product->name;
+                $qty = (float)$product->getCurrentStock();
+                $quantities[] = $qty;
+                $values[] = round($qty * (float)$product->price, 2);
+            }
+            
+            return response()->json([
+                'labels' => $labels,
+                'quantities' => $quantities,
+                'values' => $values,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Get consumable costs grouped by month
+     */
+    public function consumablesCostByMonth()
+    {
+        try {
+            $range = $this->dateRange();
+            
+            $query = SupplyItem::query();
+            $query = $this->applyDateRange($query, $range);
+            
+            $data = $query->select('Date', 'cost')
+                ->orderBy('Date', 'asc')
+                ->get();
+            
+            $grouped = $data->groupBy(function($item) {
+                return date('Y-m', strtotime($item->Date));
+            });
+            
+            $labels = [];
+            $costs = [];
+            
+            foreach ($grouped as $month => $items) {
+                $labels[] = date('M Y', strtotime($month . '-01'));
+                $costs[] = round($items->sum('cost'), 2);
+            }
+            
+            return response()->json([
+                'labels' => $labels,
+                'costs' => $costs,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     private function getSummaryStats()
     {
         $range = $this->dateRange();
@@ -428,7 +503,7 @@ class ChartController extends Controller
             'total_cost' => $cost,
             'total_profit' => $profit,
             'profit_margin' => $sales > 0 ? round(($profit / $sales) * 100, 2) : 0,
-            'total_vehicles_km' => $this->applyDateRange(Trips::query(), $range)->sum('km') ?? 0,
+            'total_vehicles_km' => $this->applyDateRange(Logistics::query(), $range, 'start_time')->sum(DB::raw('CAST(running_kms AS DECIMAL(10,2))')) ?? 0,
             'products_count' => Product::count(),
             'consumables_count' => Consumable::count(),
         ];
@@ -462,13 +537,17 @@ class ChartController extends Controller
         return ['type' => 'all'];
     }
 
-    private function applyDateRange($query, array $range)
+    private function applyDateRange($query, array $range, $column = 'Date')
     {
         if (($range['type'] ?? 'all') === 'all') {
             return $query;
         }
 
-        return $query->whereBetween('Date', [$range['start'], $range['end']]);
+        if ($column === 'start_time') {
+            return $query->whereBetween($column, [$range['start'] . ' 00:00:00', $range['end'] . ' 23:59:59']);
+        }
+
+        return $query->whereBetween($column, [$range['start'], $range['end']]);
     }
 
     private function formatDateSeries($data, array $range, $dateColumn = 'Date', $dataColumn = 'data')
