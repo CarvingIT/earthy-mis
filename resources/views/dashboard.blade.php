@@ -292,6 +292,59 @@
                     <!-- Vehicle time charts will be dynamically loaded here -->
                 </div>
             </div>
+
+            <!-- Inventory & Consumables Section -->
+            <div class="space-y-6 pt-4">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-100 text-teal-700">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-extrabold text-slate-900">Inventory & Consumables</h3>
+                        <p class="text-sm font-medium text-slate-500">Stock quantities, values, and operational consumable costs</p>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Stock - Product List Qty & Value Chart -->
+                    <section class="chart-card reveal rounded-2xl p-5 sm:p-6" style="--chart-accent: linear-gradient(135deg, #0ea5e9, #84cc16); --chart-shadow: rgba(14, 165, 233, .22); --chart-text: #0369a1; --chart-tint: rgba(14, 165, 233, .1); --chart-border: rgba(14, 165, 233, .18); --reveal-delay: 200ms;">
+                        <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex min-w-0 items-center gap-3">
+                                <div class="chart-mark h-11 w-2 shrink-0 rounded-full"></div>
+                                <div class="min-w-0">
+                                    <h3 class="truncate text-lg font-extrabold text-slate-900">Stock Quantity & Value</h3>
+                                    <p class="text-sm font-medium text-slate-500">Real-time overview of current warehouse stock levels and cumulative market valuation (Base Units)</p>
+                                </div>
+                            </div>
+                            <span class="chart-badge w-fit rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide">Stock Value</span>
+                        </div>
+
+                        <div class="chart-canvas-wrap">
+                            <canvas id="stockProductQtyValueChart"></canvas>
+                        </div>
+                    </section>
+
+                    <!-- Consumables - Costs vs Month Chart -->
+                    <section class="chart-card reveal rounded-2xl p-5 sm:p-6" style="--chart-accent: linear-gradient(135deg, #f97316, #ef4444); --chart-shadow: rgba(249, 115, 22, .25); --chart-text: #c2410c; --chart-tint: rgba(249, 115, 22, .1); --chart-border: rgba(249, 115, 22, .18); --reveal-delay: 250ms;">
+                        <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex min-w-0 items-center gap-3">
+                                <div class="chart-mark h-11 w-2 shrink-0 rounded-full"></div>
+                                <div class="min-w-0">
+                                    <h3 class="truncate text-lg font-extrabold text-slate-900">Consumables Costs vs Month</h3>
+                                    <p class="text-sm font-medium text-slate-500">Monthly breakdown of operating expenses on consumables</p>
+                                </div>
+                            </div>
+                            <span class="chart-badge w-fit rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide">Spend Trend</span>
+                        </div>
+
+                        <div class="chart-canvas-wrap">
+                            <canvas id="consumablesCostByMonthChart"></canvas>
+                        </div>
+                    </section>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -404,6 +457,8 @@
             loadProfitLossChart();
             loadVehicleDistanceChart();
             loadVehicleTimeCharts();
+            loadStockProductQtyValueChart();
+            loadConsumablesCostByMonthChart();
         }
 
         function loadProfitLossChart() {
@@ -418,7 +473,7 @@
                         labels: data.labels,
                         datasets: data.datasets.map((ds, i) => ({
                             ...ds,
-                            borderWidth: 3,
+                            borderWidth: 1.5,
                             borderRadius: 0,
                             fill: true,
                             tension: 0.38,
@@ -481,6 +536,178 @@
             }).catch(e => console.error('Chart error:', e));
         }
 
+        function loadStockProductQtyValueChart() {
+            fetch(`/api/stock-product-qty-value${buildQuery()}`).then(r => r.json()).then(data => {
+                if (data.error) return console.error(data.error);
+                const el = document.getElementById('stockProductQtyValueChart');
+                if (!el) return;
+
+                charts.stockProductQtyValueChart = new Chart(el.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [
+                            {
+                                label: 'Stock Quantity',
+                                data: data.quantities,
+                                backgroundColor: 'rgba(14, 165, 233, 0.7)',
+                                borderColor: 'rgb(14, 165, 233)',
+                                borderWidth: 1,
+                                borderRadius: 6,
+                                yAxisID: 'y-qty',
+                            },
+                            {
+                                label: 'Stock Value (₹)',
+                                data: data.values,
+                                backgroundColor: 'rgba(132, 204, 22, 0.7)',
+                                borderColor: 'rgb(132, 204, 22)',
+                                borderWidth: 1,
+                                borderRadius: 6,
+                                yAxisID: 'y-val',
+                            }
+                        ]
+                    },
+                    options: {
+                        ...getChartOptions(),
+                        plugins: {
+                            ...getChartOptions().plugins,
+                            tooltip: {
+                                ...getChartOptions().plugins.tooltip,
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            if (context.dataset.yAxisID === 'y-val') {
+                                                label += '₹' + formatIndianNumber(context.parsed.y);
+                                            } else {
+                                                label += formatIndianNumber(context.parsed.y);
+                                            }
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: getChartOptions().scales.x,
+                            'y-qty': {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Quantity',
+                                    font: { size: 11, weight: '700' },
+                                    color: '#0ea5e9'
+                                },
+                                grid: {
+                                    color: 'rgba(14, 165, 233, 0.1)'
+                                },
+                                ticks: {
+                                    font: { size: 10, weight: '600' },
+                                    color: '#0ea5e9'
+                                }
+                            },
+                            'y-val': {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Value (₹)',
+                                    font: { size: 11, weight: '700' },
+                                    color: '#84cc16'
+                                },
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    font: { size: 10, weight: '600' },
+                                    color: '#84cc16',
+                                    callback: function(value) {
+                                        return '₹' + formatIndianNumber(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }).catch(e => console.error('Stock Qty/Val Chart error:', e));
+        }
+
+        function loadConsumablesCostByMonthChart() {
+            fetch(`/api/consumables-cost-by-month${buildQuery()}`).then(r => r.json()).then(data => {
+                if (data.error) return console.error(data.error);
+                const el = document.getElementById('consumablesCostByMonthChart');
+                if (!el) return;
+
+                charts.consumablesCostByMonthChart = new Chart(el.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Consumables Cost',
+                            data: data.costs,
+                            borderColor: 'rgb(249, 115, 22)',
+                            backgroundColor: 'rgba(249, 115, 22, 0.15)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.38,
+                            pointRadius: 4,
+                            pointHoverRadius: 7,
+                            pointBorderWidth: 3,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: 'rgb(249, 115, 22)',
+                        }]
+                    },
+                    options: {
+                        ...getChartOptions(),
+                        plugins: {
+                            ...getChartOptions().plugins,
+                            tooltip: {
+                                ...getChartOptions().plugins.tooltip,
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += '₹' + formatIndianNumber(context.parsed.y);
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            ...getChartOptions().scales,
+                            y: {
+                                ...getChartOptions().scales.y,
+                                title: {
+                                    display: true,
+                                    text: 'Cost (₹)',
+                                    font: { size: 11, weight: '700' },
+                                    color: '#f97316'
+                                },
+                                ticks: {
+                                    ...getChartOptions().scales.y.ticks,
+                                    callback: function(value) {
+                                        return '₹' + formatIndianNumber(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }).catch(e => console.error('Consumables cost by month chart error:', e));
+        }
+
         function loadVehicleDistanceChart() {
             fetch(`/api/vehicle-distance-comparison${buildQuery()}`).then(r => r.json()).then(data => {
                 if (data.error) return console.error(data.error);
@@ -493,7 +720,7 @@
                         labels: data.labels,
                         datasets: data.datasets.map(ds => ({
                             ...ds,
-                            borderWidth: 3,
+                            borderWidth: 1.5,
                             fill: true,
                             tension: 0.38,
                             pointRadius: 3,
@@ -582,7 +809,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H3v11h2m8 0h2m4 0h2v-5l-3-4h-5"/>
                             </svg>
                             <p class="mt-4 text-lg font-semibold text-gray-500">No vehicle time data available</p>
-                            <p class="mt-2 text-sm text-gray-400">Add trips with start and end times to see operating hours here</p>
+                            <p class="mt-2 text-sm text-gray-400">Add logistics logs with start and end times to see operating hours here</p>
                         </div>
                     `;
                 }
@@ -613,12 +840,12 @@
                             data: durations,
                             borderColor: 'rgb(16, 185, 129)',
                             backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                            borderWidth: 3,
+                            borderWidth: 2,
                             fill: true,
                             tension: 0.38,
-                            pointRadius: 5,
-                            pointHoverRadius: 8,
-                            pointBorderWidth: 3,
+                            pointRadius: 3,
+                            pointHoverRadius: 5,
+                            pointBorderWidth: 2,
                             pointBackgroundColor: '#ffffff',
                             yAxisID: 'y-duration',
                         },
@@ -627,7 +854,7 @@
                             data: startHours,
                             borderColor: 'rgb(14, 165, 233)',
                             backgroundColor: 'rgba(14, 165, 233, 0.1)',
-                            borderWidth: 2,
+                            borderWidth: 1,
                             borderDash: [5, 5],
                             fill: false,
                             tension: 0.38,
@@ -641,7 +868,7 @@
                             data: endHours,
                             borderColor: 'rgb(245, 158, 11)',
                             backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                            borderWidth: 2,
+                            borderWidth: 1,
                             borderDash: [5, 5],
                             fill: false,
                             tension: 0.38,

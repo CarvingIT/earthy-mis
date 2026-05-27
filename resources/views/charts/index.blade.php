@@ -543,7 +543,7 @@
 
                 return {
                     ...ds,
-                    borderWidth: type === 'bar' ? 0 : 3,
+                    borderWidth: type === 'bar' ? 0 : 1.5,
                     borderRadius: type === 'bar' ? 10 : 0,
                     borderSkipped: false,
                     fill: type === 'line',
@@ -638,7 +638,7 @@
                 createSumCard('Total', s.total_km.toLocaleString(), 'Fleet kilometers', 'blue') +
                 createSumCard('Daily', s.average_km.toLocaleString(), 'Daily average', 'green') +
                 createSumCard('Peak', s.max_km.toLocaleString(), 'Highest movement day', 'yellow') +
-                createSumCard('Trips', s.trip_count.toLocaleString(), 'Completed trips', 'purple');
+                createSumCard('Logs', s.trip_count.toLocaleString(), 'Logistics entries', 'purple');
         }
 
         document.getElementById('daysFilter').addEventListener('change', function() {
