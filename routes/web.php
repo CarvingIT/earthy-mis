@@ -86,6 +86,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/vehicle-distance-comparison', [ChartController::class, 'vehicleDistanceComparison']);
     Route::get('/api/stock-product-qty-value', [ChartController::class, 'stockProductListQtyValue']);
     Route::get('/api/consumables-cost-by-month', [ChartController::class, 'consumablesCostByMonth']);
+    Route::get('/api/turning-data', [ChartController::class, 'turningData']);
+    Route::get('/api/windrow-data', [ChartController::class, 'windrowData']);
+    Route::get('/api/jcb-data', [ChartController::class, 'jcbData']);
+    Route::get('/api/weight-data', [ChartController::class, 'weightData']);
 
     Route::middleware('admin')->group(function () {
         Route::resource('users', UserController::class)->except('show');

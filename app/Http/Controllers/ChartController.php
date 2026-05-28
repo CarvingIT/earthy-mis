@@ -9,6 +9,10 @@ use App\Models\Trips;
 use App\Models\Product;
 use App\Models\Consumable;
 use App\Models\Logistics;
+use App\Models\Turning;
+use App\Models\Jcb;
+use App\Models\Weight;
+use App\Models\Windrow;
 use Illuminate\Support\Facades\DB;
 
 class ChartController extends Controller
@@ -485,6 +489,207 @@ class ChartController extends Controller
             return response()->json([
                 'labels' => $labels,
                 'costs' => $costs,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Parse duration string to hours (float)
+     */
+    private function parseDurationToHours($str)
+    {
+        if (empty($str)) return 0;
+        $str = strtolower($str);
+        if (is_numeric($str)) return (float)$str;
+        
+        $hours = 0;
+        $minutes = 0;
+        
+        if (preg_match('/(\d+(?:\.\d+)?)\s*(?:hour|hr)/', $str, $matches)) {
+            $hours = (float)$matches[1];
+        }
+        if (preg_match('/(\d+(?:\.\d+)?)\s*(?:minute|min)/', $str, $matches)) {
+            $minutes = (float)$matches[1];
+        }
+        
+        if ($hours == 0 && $minutes == 0) {
+            if (preg_match('/(\d+(?:\.\d+)?)/', $str, $matches)) {
+                return (float)$matches[1];
+            }
+        }
+        
+        return $hours + ($minutes / 60);
+    }
+
+    /**
+     * Get turning duration vs date
+     */
+    public function turningData()
+    {
+        try {
+            $range = $this->dateRange();
+            
+            $query = Turning::query();
+            $query = $this->applyDateRange($query, $range, 'Date');
+            
+            $turnings = $query->orderBy('Date', 'asc')->get();
+            
+            $grouped = $turnings->groupBy('Date');
+            $data = collect();
+            
+            foreach ($grouped as $date => $records) {
+                $totalDuration = 0;
+                foreach ($records as $record) {
+                    $totalDuration += $this->parseDurationToHours($record->duration);
+                }
+                $data->push([
+                    'Date' => $date,
+                    'total_duration' => round($totalDuration, 2)
+                ]);
+            }
+            
+            $result = $this->formatDateSeries($data, $range, 'Date', 'total_duration');
+            
+            return response()->json([
+                'labels' => $result['labels'],
+                'data' => $result['data'],
+                'summary' => [
+                    'total' => round($data->sum('total_duration'), 2),
+                    'average' => round($data->avg('total_duration') ?? 0, 2),
+                    'max' => round($data->max('total_duration') ?? 0, 2),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Get active windrows count vs date
+     */
+    public function windrowData()
+    {
+        try {
+            $range = $this->dateRange();
+            
+            if (($range['type'] ?? 'all') === 'all') {
+                $minDate = Windrow::min('start_date') ?? now()->subDays(30)->format('Y-m-d');
+                $maxDate = Windrow::max('out_date') ?? now()->format('Y-m-d');
+                $startDate = $minDate;
+                $endDate = $maxDate;
+            } else {
+                $startDate = $range['start'];
+                $endDate = $range['end'];
+            }
+            
+            $windrows = Windrow::whereNotNull('start_date')->get();
+            
+            $labels = [];
+            $counts = [];
+            
+            $current = strtotime($startDate);
+            $end = strtotime($endDate);
+            
+            while ($current <= $end) {
+                $dateStr = date('Y-m-d', $current);
+                $labels[] = date('M d', $current);
+                
+                $activeCount = 0;
+                foreach ($windrows as $w) {
+                    $started = strtotime($w->start_date);
+                    $ended = $w->out_date ? strtotime($w->out_date) : null;
+                    if ($started <= $current && ($ended === null || $ended >= $current)) {
+                        $activeCount++;
+                    }
+                }
+                $counts[] = $activeCount;
+                $current = strtotime('+1 day', $current);
+            }
+            
+            return response()->json([
+                'labels' => $labels,
+                'data' => $counts,
+                'summary' => [
+                    'current_active' => Windrow::whereNotNull('start_date')
+                        ->whereNull('out_date')
+                        ->count(),
+                    'total_recorded' => Windrow::count(),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Get JCB duration vs date
+     */
+    public function jcbData()
+    {
+        try {
+            $range = $this->dateRange();
+            
+            $query = Jcb::query();
+            $query = $this->applyDateRange($query, $range, 'Date');
+            
+            $jcbs = $query->orderBy('Date', 'asc')->get();
+            
+            $grouped = $jcbs->groupBy('Date');
+            $data = collect();
+            
+            foreach ($grouped as $date => $records) {
+                $totalDuration = 0;
+                foreach ($records as $record) {
+                    $totalDuration += $this->parseDurationToHours($record->duration);
+                }
+                $data->push([
+                    'Date' => $date,
+                    'total_duration' => round($totalDuration, 2)
+                ]);
+            }
+            
+            $result = $this->formatDateSeries($data, $range, 'Date', 'total_duration');
+            
+            return response()->json([
+                'labels' => $result['labels'],
+                'data' => $result['data'],
+                'summary' => [
+                    'total' => round($data->sum('total_duration'), 2),
+                    'average' => round($data->avg('total_duration') ?? 0, 2),
+                    'max' => round($data->max('total_duration') ?? 0, 2),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Get tare weight transported vs date
+     */
+    public function weightData()
+    {
+        try {
+            $range = $this->dateRange();
+            
+            $data = $this->applyDateRange(Weight::query(), $range, 'Date')
+                ->select('Date', DB::raw('SUM(tare_weight) as total_tare_weight'))
+                ->groupBy('Date')
+                ->orderBy('Date', 'asc')
+                ->get();
+                
+            $result = $this->formatDateSeries($data, $range, 'Date', 'total_tare_weight');
+            
+            return response()->json([
+                'labels' => $result['labels'],
+                'data' => $result['data'],
+                'summary' => [
+                    'total' => $data->sum('total_tare_weight'),
+                    'average' => round($data->avg('total_tare_weight') ?? 0, 2),
+                    'max' => $data->max('total_tare_weight') ?? 0,
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);

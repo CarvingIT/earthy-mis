@@ -293,6 +293,95 @@
                 </div>
             </div>
 
+            <!-- Operations & Equipment Section -->
+            <div class="space-y-6 pt-4">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-extrabold text-slate-900">Operations & Equipment</h3>
+                        <p class="text-sm font-medium text-slate-500">Composting cycles, windrow status, JCB usage, and weight logistics</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <!-- Turning Duration Chart -->
+                    <section class="chart-card reveal rounded-2xl p-5 sm:p-6" style="--chart-accent: linear-gradient(135deg, #10b981, #059669); --chart-shadow: rgba(16, 185, 129, .22); --chart-text: #047857; --chart-tint: rgba(16, 185, 129, .1); --chart-border: rgba(16, 185, 129, .18); --reveal-delay: 200ms;">
+                        <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex min-w-0 items-center gap-3">
+                                <div class="chart-mark h-11 w-2 shrink-0 rounded-full"></div>
+                                <div class="min-w-0">
+                                    <h3 class="truncate text-lg font-extrabold text-slate-900">Turning - Duration vs Date</h3>
+                                    <p class="text-sm font-medium text-slate-500">Cumulative composting windrow turning duration (Hours)</p>
+                                </div>
+                            </div>
+                            <span class="chart-badge w-fit rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide">Compost Turning</span>
+                        </div>
+
+                        <div class="chart-canvas-wrap">
+                            <canvas id="turningChart"></canvas>
+                        </div>
+                    </section>
+
+                    <!-- Active Windrows Chart -->
+                    <section class="chart-card reveal rounded-2xl p-5 sm:p-6" style="--chart-accent: linear-gradient(135deg, #0ea5e9, #6366f1); --chart-shadow: rgba(14, 165, 233, .22); --chart-text: #0369a1; --chart-tint: rgba(14, 165, 233, .1); --chart-border: rgba(14, 165, 233, .18); --reveal-delay: 250ms;">
+                        <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex min-w-0 items-center gap-3">
+                                <div class="chart-mark h-11 w-2 shrink-0 rounded-full"></div>
+                                <div class="min-w-0">
+                                    <h3 class="truncate text-lg font-extrabold text-slate-900">Active Windrows</h3>
+                                    <p class="text-sm font-medium text-slate-500">Total active composting windrows undergoing processing</p>
+                                </div>
+                            </div>
+                            <span class="chart-badge w-fit rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide">Active Count</span>
+                        </div>
+
+                        <div class="chart-canvas-wrap">
+                            <canvas id="windrowChart"></canvas>
+                        </div>
+                    </section>
+
+                    <!-- JCB Duration Chart -->
+                    <section class="chart-card reveal rounded-2xl p-5 sm:p-6" style="--chart-accent: linear-gradient(135deg, #f59e0b, #d97706); --chart-shadow: rgba(245, 158, 11, .22); --chart-text: #b45309; --chart-tint: rgba(245, 158, 11, .1); --chart-border: rgba(245, 158, 11, .18); --reveal-delay: 300ms;">
+                        <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex min-w-0 items-center gap-3">
+                                <div class="chart-mark h-11 w-2 shrink-0 rounded-full"></div>
+                                <div class="min-w-0">
+                                    <h3 class="truncate text-lg font-extrabold text-slate-900">JCB - Duration vs Date</h3>
+                                    <p class="text-sm font-medium text-slate-500">Cumulative machinery utilization duration (Hours)</p>
+                                </div>
+                            </div>
+                            <span class="chart-badge w-fit rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide">JCB Operation</span>
+                        </div>
+
+                        <div class="chart-canvas-wrap">
+                            <canvas id="jcbChart"></canvas>
+                        </div>
+                    </section>
+
+                    <!-- Weight Chart -->
+                    <section class="chart-card reveal rounded-2xl p-5 sm:p-6" style="--chart-accent: linear-gradient(135deg, #6366f1, #a855f7); --chart-shadow: rgba(99, 102, 241, .22); --chart-text: #4f46e5; --chart-tint: rgba(99, 102, 241, .1); --chart-border: rgba(99, 102, 241, .18); --reveal-delay: 350ms;">
+                        <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex min-w-0 items-center gap-3">
+                                <div class="chart-mark h-11 w-2 shrink-0 rounded-full"></div>
+                                <div class="min-w-0">
+                                    <h3 class="truncate text-lg font-extrabold text-slate-900">Weight - Tare Weight vs Date</h3>
+                                    <p class="text-sm font-medium text-slate-500">Total logistics tare weight incoming to facility (Kgs)</p>
+                                </div>
+                            </div>
+                            <span class="chart-badge w-fit rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide">Tare Weight</span>
+                        </div>
+
+                        <div class="chart-canvas-wrap">
+                            <canvas id="weightChart"></canvas>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
             <!-- Inventory & Consumables Section -->
             <div class="space-y-6 pt-4">
                 <div class="flex items-center gap-3">
@@ -459,6 +548,10 @@
             loadVehicleTimeCharts();
             loadStockProductQtyValueChart();
             loadConsumablesCostByMonthChart();
+            loadTurningChart();
+            loadWindrowChart();
+            loadJcbChart();
+            loadWeightChart();
         }
 
         function loadProfitLossChart() {
@@ -706,6 +799,197 @@
                     }
                 });
             }).catch(e => console.error('Consumables cost by month chart error:', e));
+        }
+
+        function loadTurningChart() {
+            fetch(`/api/turning-data${buildQuery()}`).then(r => r.json()).then(data => {
+                if (data.error) return console.error(data.error);
+                const el = document.getElementById('turningChart');
+                if (!el) return;
+
+                charts.turningChart = new Chart(el.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Duration (hours)',
+                            data: data.data,
+                            borderColor: 'rgb(16, 185, 129)',
+                            backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.38,
+                            pointRadius: 4,
+                            pointHoverRadius: 7,
+                            pointBorderWidth: 3,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: 'rgb(16, 185, 129)',
+                        }]
+                    },
+                    options: {
+                        ...getChartOptions(),
+                        scales: {
+                            ...getChartOptions().scales,
+                            y: {
+                                ...getChartOptions().scales.y,
+                                title: {
+                                    display: true,
+                                    text: 'Duration (hours)',
+                                    font: { size: 11, weight: '700' },
+                                    color: '#059669'
+                                }
+                            }
+                        }
+                    }
+                });
+            }).catch(e => console.error('Turning chart error:', e));
+        }
+
+        function loadWindrowChart() {
+            fetch(`/api/windrow-data${buildQuery()}`).then(r => r.json()).then(data => {
+                if (data.error) return console.error(data.error);
+                const el = document.getElementById('windrowChart');
+                if (!el) return;
+
+                charts.windrowChart = new Chart(el.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Active Windrows',
+                            data: data.data,
+                            backgroundColor: 'rgba(14, 165, 233, 0.75)',
+                            borderColor: 'rgb(14, 165, 233)',
+                            borderWidth: 1,
+                            borderRadius: 6,
+                        }]
+                    },
+                    options: {
+                        ...getChartOptions(),
+                        scales: {
+                            ...getChartOptions().scales,
+                            y: {
+                                ...getChartOptions().scales.y,
+                                ticks: {
+                                    ...getChartOptions().scales.y.ticks,
+                                    stepSize: 1,
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Number of Windrows',
+                                    font: { size: 11, weight: '700' },
+                                    color: '#0ea5e9'
+                                }
+                            }
+                        }
+                    }
+                });
+            }).catch(e => console.error('Windrow chart error:', e));
+        }
+
+        function loadJcbChart() {
+            fetch(`/api/jcb-data${buildQuery()}`).then(r => r.json()).then(data => {
+                if (data.error) return console.error(data.error);
+                const el = document.getElementById('jcbChart');
+                if (!el) return;
+
+                charts.jcbChart = new Chart(el.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Duration (hours)',
+                            data: data.data,
+                            borderColor: 'rgb(245, 158, 11)',
+                            backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.38,
+                            pointRadius: 4,
+                            pointHoverRadius: 7,
+                            pointBorderWidth: 3,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: 'rgb(245, 158, 11)',
+                        }]
+                    },
+                    options: {
+                        ...getChartOptions(),
+                        scales: {
+                            ...getChartOptions().scales,
+                            y: {
+                                ...getChartOptions().scales.y,
+                                title: {
+                                    display: true,
+                                    text: 'Duration (hours)',
+                                    font: { size: 11, weight: '700' },
+                                    color: '#d97706'
+                                }
+                            }
+                        }
+                    }
+                });
+            }).catch(e => console.error('JCB chart error:', e));
+        }
+
+        function loadWeightChart() {
+            fetch(`/api/weight-data${buildQuery()}`).then(r => r.json()).then(data => {
+                if (data.error) return console.error(data.error);
+                const el = document.getElementById('weightChart');
+                if (!el) return;
+
+                charts.weightChart = new Chart(el.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Tare Weight (Kgs)',
+                            data: data.data,
+                            borderColor: 'rgb(99, 102, 241)',
+                            backgroundColor: 'rgba(99, 102, 241, 0.12)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.38,
+                            pointRadius: 4,
+                            pointHoverRadius: 7,
+                            pointBorderWidth: 3,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: 'rgb(99, 102, 241)',
+                        }]
+                    },
+                    options: {
+                        ...getChartOptions(),
+                        plugins: {
+                            ...getChartOptions().plugins,
+                            tooltip: {
+                                ...getChartOptions().plugins.tooltip,
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Tare Weight: ${formatIndianNumber(context.parsed.y)} Kgs`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            ...getChartOptions().scales,
+                            y: {
+                                ...getChartOptions().scales.y,
+                                ticks: {
+                                    ...getChartOptions().scales.y.ticks,
+                                    callback: function(value) {
+                                        return formatIndianNumber(value) + ' Kgs';
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Weight (Kgs)',
+                                    font: { size: 11, weight: '700' },
+                                    color: '#4f46e5'
+                                }
+                            }
+                        }
+                    }
+                });
+            }).catch(e => console.error('Weight chart error:', e));
         }
 
         function loadVehicleDistanceChart() {
