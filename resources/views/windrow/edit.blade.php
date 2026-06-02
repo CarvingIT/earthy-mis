@@ -261,8 +261,8 @@
                         </div>
 
                         <div class="form-field">
-                            <label for="weight_in" class="form-label">Weight IN *</label>
-                            <input id="weight_in" name="weight_in" type="text" class="form-input" value="{{ old('weight_in', $windrow->weight_in) }}" placeholder="e.g., 5000 kg" required />
+                            <label for="weight_in" class="form-label">Weight IN</label>
+                            <input id="weight_in" name="weight_in" type="text" class="form-input" value="{{ old('weight_in', $windrow->weight_in) }}" placeholder="e.g., 5000 kg" />
                             @error('weight_in')
                                 <p class="form-error">{{ $message }}</p>
                             @enderror
