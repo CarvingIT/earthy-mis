@@ -18,6 +18,7 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\ChartController;
+use App\Http\Controllers\TaskController;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Society;
@@ -67,6 +68,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('supplyitems', SupplyItemController::class)->except('show');
     Route::resource('sale', SaleController::class)->except('show');
     Route::resource('stock', StockController::class)->except('show');
+    Route::resource('tasks', TaskController::class)->except('show');
     Route::post('/stock/sync-sales', [StockController::class, 'syncSales'])->name('stock.sync-sales');
 
     Route::get('/get_product_rate/ajax/{product_id}',[ProductController::class, 'getProductRate']);

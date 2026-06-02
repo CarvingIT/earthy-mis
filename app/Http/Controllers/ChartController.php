@@ -575,44 +575,57 @@ class ChartController extends Controller
             $range = $this->dateRange();
             
             if (($range['type'] ?? 'all') === 'all') {
-                $minDate = Windrow::min('start_date') ?? now()->subDays(30)->format('Y-m-d');
-                $maxDate = Windrow::max('out_date') ?? now()->format('Y-m-d');
-                $startDate = $minDate;
-                $endDate = $maxDate;
+                $startDate = Windrow::min('start_date') ?? now()->subDays(30)->format('Y-m-d');
+                $endDate = now()->format('Y-m-d');
             } else {
                 $startDate = $range['start'];
                 $endDate = $range['end'];
             }
             
-            $windrows = Windrow::whereNotNull('start_date')->get();
+            // Fetch windrows overlapping with the date range
+            $windrows = Windrow::whereNotNull('start_date')
+                ->where('start_date', '<=', $endDate)
+                ->where(function($q) use ($startDate) {
+                    $q->where('end_date', '>=', $startDate)
+                      ->orWhere('out_date', '>=', $startDate)
+                      ->orWhere(function($sq) {
+                          $sq->whereNull('end_date')->whereNull('out_date');
+                      });
+                })
+                ->orderBy('windrow_number', 'asc')
+                ->orderBy('start_date', 'asc')
+                ->get();
             
-            $labels = [];
-            $counts = [];
-            
-            $current = strtotime($startDate);
-            $end = strtotime($endDate);
-            
-            while ($current <= $end) {
-                $dateStr = date('Y-m-d', $current);
-                $labels[] = date('M d', $current);
+            $data = [];
+            foreach ($windrows as $w) {
+                $start = $w->start_date;
+                $end = $w->end_date ?: ($w->out_date ?: date('Y-m-d'));
                 
-                $activeCount = 0;
-                foreach ($windrows as $w) {
-                    $started = strtotime($w->start_date);
-                    $ended = $w->out_date ? strtotime($w->out_date) : null;
-                    if ($started <= $current && ($ended === null || $ended >= $current)) {
-                        $activeCount++;
-                    }
-                }
-                $counts[] = $activeCount;
-                $current = strtotime('+1 day', $current);
+                $data[] = [
+                    'y' => 'Windrow ' . $w->windrow_number,
+                    'x' => [$start, $end],
+                    'start_date' => date('M d, Y', strtotime($start)),
+                    'end_date' => date('M d, Y', strtotime($end)),
+                    'is_active' => empty($w->end_date) && empty($w->out_date),
+                ];
             }
+            
+            // Get unique windrow labels sorted numerically
+            $labels = $windrows->pluck('windrow_number')
+                ->unique()
+                ->sort()
+                ->values()
+                ->map(fn($num) => 'Windrow ' . $num)
+                ->toArray();
             
             return response()->json([
                 'labels' => $labels,
-                'data' => $counts,
+                'data' => $data,
+                'min_date' => $startDate,
+                'max_date' => $endDate,
                 'summary' => [
                     'current_active' => Windrow::whereNotNull('start_date')
+                        ->whereNull('end_date')
                         ->whereNull('out_date')
                         ->count(),
                     'total_recorded' => Windrow::count(),
