@@ -680,7 +680,7 @@ class ChartController extends Controller
     }
 
     /**
-     * Get tare weight transported vs date
+     * Get net weight transported vs date
      */
     public function weightData()
     {
@@ -688,20 +688,20 @@ class ChartController extends Controller
             $range = $this->dateRange();
             
             $data = $this->applyDateRange(Weight::query(), $range, 'Date')
-                ->select('Date', DB::raw('SUM(tare_weight) as total_tare_weight'))
+                ->select('Date', DB::raw('SUM(net_weight) as total_net_weight'))
                 ->groupBy('Date')
                 ->orderBy('Date', 'asc')
                 ->get();
                 
-            $result = $this->formatDateSeries($data, $range, 'Date', 'total_tare_weight');
+            $result = $this->formatDateSeries($data, $range, 'Date', 'total_net_weight');
             
             return response()->json([
                 'labels' => $result['labels'],
                 'data' => $result['data'],
                 'summary' => [
-                    'total' => $data->sum('total_tare_weight'),
-                    'average' => round($data->avg('total_tare_weight') ?? 0, 2),
-                    'max' => $data->max('total_tare_weight') ?? 0,
+                    'total' => $data->sum('total_net_weight'),
+                    'average' => round($data->avg('total_net_weight') ?? 0, 2),
+                    'max' => $data->max('total_net_weight') ?? 0,
                 ]
             ]);
         } catch (\Exception $e) {

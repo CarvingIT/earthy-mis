@@ -368,11 +368,11 @@
                             <div class="flex min-w-0 items-center gap-3">
                                 <div class="chart-mark h-11 w-2 shrink-0 rounded-full"></div>
                                 <div class="min-w-0">
-                                    <h3 class="truncate text-lg font-extrabold text-slate-900">Weight - Tare Weight vs Date</h3>
-                                    <p class="text-sm font-medium text-slate-500">Total logistics tare weight incoming to facility (Kgs)</p>
+                                    <h3 class="truncate text-lg font-extrabold text-slate-900">Weight - Net Weight vs Date</h3>
+                                    <p class="text-sm font-medium text-slate-500">Total logistics net weight incoming to facility (Kgs)</p>
                                 </div>
                             </div>
-                            <span class="chart-badge w-fit rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide">Tare Weight</span>
+                            <span class="chart-badge w-fit rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide">Net Weight</span>
                         </div>
 
                         <div class="chart-canvas-wrap">
@@ -991,7 +991,7 @@
                     data: {
                         labels: data.labels,
                         datasets: [{
-                            label: 'Tare Weight (Kgs)',
+                            label: 'Net Weight (Kgs)',
                             data: data.data,
                             borderColor: 'rgb(99, 102, 241)',
                             backgroundColor: 'rgba(99, 102, 241, 0.12)',
@@ -1013,7 +1013,7 @@
                                 ...getChartOptions().plugins.tooltip,
                                 callbacks: {
                                     label: function(context) {
-                                        return `Tare Weight: ${formatIndianNumber(context.parsed.y)} Kgs`;
+                                        return `Net Weight: ${formatIndianNumber(context.parsed.y)} Kgs`;
                                     }
                                 }
                             }
