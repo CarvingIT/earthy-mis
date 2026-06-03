@@ -326,17 +326,17 @@
                         </div>
                     </section>
 
-                    <!-- Active Windrows Chart -->
+                    <!-- Windrow Cycles Chart -->
                     <section class="chart-card reveal rounded-2xl p-5 sm:p-6" style="--chart-accent: linear-gradient(135deg, #0ea5e9, #6366f1); --chart-shadow: rgba(14, 165, 233, .22); --chart-text: #0369a1; --chart-tint: rgba(14, 165, 233, .1); --chart-border: rgba(14, 165, 233, .18); --reveal-delay: 250ms;">
                         <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div class="flex min-w-0 items-center gap-3">
                                 <div class="chart-mark h-11 w-2 shrink-0 rounded-full"></div>
                                 <div class="min-w-0">
-                                    <h3 class="truncate text-lg font-extrabold text-slate-900">Active Windrows</h3>
-                                    <p class="text-sm font-medium text-slate-500">Total active composting windrows undergoing processing</p>
+                                    <h3 class="truncate text-lg font-extrabold text-slate-900">Windrow Timeline</h3>
+                                    <p class="text-sm font-medium text-slate-500">Loading & unloading duration cycles per windrow number</p>
                                 </div>
                             </div>
-                            <span class="chart-badge w-fit rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide">Active Count</span>
+                            <span class="chart-badge w-fit rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide">Windrow Cycles</span>
                         </div>
 
                         <div class="chart-canvas-wrap">
@@ -368,11 +368,11 @@
                             <div class="flex min-w-0 items-center gap-3">
                                 <div class="chart-mark h-11 w-2 shrink-0 rounded-full"></div>
                                 <div class="min-w-0">
-                                    <h3 class="truncate text-lg font-extrabold text-slate-900">Weight - Tare Weight vs Date</h3>
-                                    <p class="text-sm font-medium text-slate-500">Total logistics tare weight incoming to facility (Kgs)</p>
+                                    <h3 class="truncate text-lg font-extrabold text-slate-900">Weight - Net Weight vs Date</h3>
+                                    <p class="text-sm font-medium text-slate-500">Total logistics net weight incoming to facility (Kgs)</p>
                                 </div>
                             </div>
-                            <span class="chart-badge w-fit rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide">Tare Weight</span>
+                            <span class="chart-badge w-fit rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide">Net Weight</span>
                         </div>
 
                         <div class="chart-canvas-wrap">
@@ -851,34 +851,83 @@
                 const el = document.getElementById('windrowChart');
                 if (!el) return;
 
+                const chartData = data.data.map(item => ({
+                    y: item.y,
+                    x: [Date.parse(item.x[0]), Date.parse(item.x[1])],
+                    startStr: item.start_date,
+                    endStr: item.end_date,
+                    isActive: item.is_active
+                }));
+
+                const minTime = Date.parse(data.min_date);
+                const maxTime = Date.parse(data.max_date);
+
                 charts.windrowChart = new Chart(el.getContext('2d'), {
                     type: 'bar',
                     data: {
-                        labels: data.labels,
                         datasets: [{
-                            label: 'Active Windrows',
-                            data: data.data,
-                            backgroundColor: 'rgba(14, 165, 233, 0.75)',
+                            label: 'Loading Duration',
+                            data: chartData,
+                            backgroundColor: 'rgba(14, 165, 233, 0.8)',
                             borderColor: 'rgb(14, 165, 233)',
                             borderWidth: 1,
-                            borderRadius: 6,
+                            borderRadius: 4,
+                            borderSkipped: false
                         }]
                     },
                     options: {
                         ...getChartOptions(),
+                        indexAxis: 'y',
+                        interaction: { mode: 'nearest', intersect: true },
+                        plugins: {
+                            ...getChartOptions().plugins,
+                            legend: { display: false },
+                            tooltip: {
+                                ...getChartOptions().plugins.tooltip,
+                                callbacks: {
+                                    title: (context) => context[0].raw.y,
+                                    label: (context) => {
+                                        const raw = context.raw;
+                                        return `Duration: ${raw.startStr} to ${raw.endStr}${raw.isActive ? ' (Active)' : ''}`;
+                                    }
+                                }
+                            }
+                        },
                         scales: {
-                            ...getChartOptions().scales,
-                            y: {
-                                ...getChartOptions().scales.y,
+                            x: {
+                                type: 'linear',
+                                min: minTime,
+                                max: maxTime,
+                                border: { display: false },
+                                grid: { color: 'rgba(148, 163, 184, 0.12)', display: true },
                                 ticks: {
-                                    ...getChartOptions().scales.y.ticks,
-                                    stepSize: 1,
+                                    callback: function(value) {
+                                        return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                    },
+                                    color: '#94A3B8',
+                                    font: { size: 10, weight: '600' }
                                 },
                                 title: {
                                     display: true,
-                                    text: 'Number of Windrows',
+                                    text: 'Timeline',
                                     font: { size: 11, weight: '700' },
-                                    color: '#0ea5e9'
+                                    color: '#64748b'
+                                }
+                            },
+                            y: {
+                                type: 'category',
+                                labels: data.labels,
+                                border: { display: false },
+                                grid: { display: false },
+                                ticks: {
+                                    color: '#94A3B8',
+                                    font: { size: 10, weight: '600' }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Windrow Number',
+                                    font: { size: 11, weight: '700' },
+                                    color: '#64748b'
                                 }
                             }
                         }
@@ -942,7 +991,7 @@
                     data: {
                         labels: data.labels,
                         datasets: [{
-                            label: 'Tare Weight (Kgs)',
+                            label: 'Net Weight (Kgs)',
                             data: data.data,
                             borderColor: 'rgb(99, 102, 241)',
                             backgroundColor: 'rgba(99, 102, 241, 0.12)',
@@ -964,7 +1013,7 @@
                                 ...getChartOptions().plugins.tooltip,
                                 callbacks: {
                                     label: function(context) {
-                                        return `Tare Weight: ${formatIndianNumber(context.parsed.y)} Kgs`;
+                                        return `Net Weight: ${formatIndianNumber(context.parsed.y)} Kgs`;
                                     }
                                 }
                             }

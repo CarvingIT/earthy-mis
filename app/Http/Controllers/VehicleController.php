@@ -78,6 +78,10 @@ class VehicleController extends Controller
 
     private function authorizeOwnership(Vehicle $vehicle): void
     {
+        if (auth()->user()?->isAdmin()) {
+            return;
+        }
+
         abort_if($vehicle->user_id !== auth()->id(), 403);
     }
 }

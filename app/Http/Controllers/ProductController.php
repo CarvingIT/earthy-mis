@@ -82,6 +82,10 @@ class ProductController extends Controller
 
     private function authorizeOwnership(Product $product, ?int $userId): void
     {
+        if (auth()->user()?->isAdmin()) {
+            return;
+        }
+
         abort_if($product->user_id !== $userId, 403);
     }
 

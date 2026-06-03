@@ -74,6 +74,10 @@ class CustomerController extends Controller
 
     private function authorizeOwnership(Customer $customer): void
     {
+        if (auth()->user()?->isAdmin()) {
+            return;
+        }
+
         abort_if($customer->user_id !== auth()->id(), 403);
     }
 }

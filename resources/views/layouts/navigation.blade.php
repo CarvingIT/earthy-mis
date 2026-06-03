@@ -383,6 +383,10 @@
                     Analytics
                 </a>
 
+                <a href="{{ route('tasks.index') }}" class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}">
+                    Tasks
+                </a>
+
                 <!-- Master Data Dropdown -->
                 <div class="relative group">
                     <button class="dropdown-trigger group-hover:text-blue-600 {{ request()->routeIs('users.*', 'societies.*', 'vehicles.*', 'customers.*', 'products.*', 'consumables.*', 'units.*') ? 'active' : '' }}" x-data="{ open: false }" @click="open = !open" :class="{ 'open': open }">
@@ -524,6 +528,9 @@
             </a>
             <a href="{{ route('charts.index') }}" class="nav-link {{ request()->routeIs('charts.*') ? 'active' : '' }}">
                 Analytics
+            </a>
+            <a href="{{ route('tasks.index') }}" class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}">
+                Tasks
             </a>
         </div>
 
