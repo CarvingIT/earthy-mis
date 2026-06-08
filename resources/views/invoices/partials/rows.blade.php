@@ -89,26 +89,36 @@
         <!-- Actions -->
         <td>
             <div class="flex justify-end gap-1.5">
-                @if ($invoice && $invoice->status === 'sent')
-                    <a class="inline-flex h-9 items-center justify-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-600 hover:text-white" 
-                       href="{{ route('invoices.pdf', $invoice) }}" target="_blank" title="View PDF">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        PDF
-                    </a>
-                @endif
+                @php
+                    $actionType = 'send';
+                    $btnLabel = 'Send';
+                    if ($invoice) {
+                        if ($invoice->status === 'sent') {
+                            $actionType = 'resend';
+                            $btnLabel = 'Re-send';
+                        } elseif ($invoice->status === 'failed') {
+                            $actionType = 'retry';
+                            $btnLabel = 'Retry';
+                        }
+                    }
+                @endphp
 
-                <form method="POST" action="{{ route('invoices.retry-single', $society) }}">
-                    @csrf
-                    <input type="hidden" name="month" value="{{ $month }}">
-                    <button type="submit" class="inline-flex h-9 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-slate-100 px-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-900 hover:text-white">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3 3L22 4"/>
-                        </svg>
-                        {{ $invoice ? 'Retry' : 'Send' }}
-                    </button>
-                </form>
+                <a class="inline-flex h-9 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-900 hover:text-white" 
+                   href="{{ route('invoices.society-pdf', [$society, 'month' => $month]) }}" target="_blank" title="View PDF">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    PDF
+                </a>
+
+                <button type="button" 
+                        onclick="confirmSingleDispatch('{{ $society->id }}', '{{ addslashes($society->name) }}', '{{ $society->contact_person_email }}', '{{ $actionType }}')" 
+                        class="inline-flex h-9 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-slate-100 px-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-900 hover:text-white">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3 3L22 4"/>
+                    </svg>
+                    {{ $btnLabel }}
+                </button>
             </div>
         </td>
     </tr>

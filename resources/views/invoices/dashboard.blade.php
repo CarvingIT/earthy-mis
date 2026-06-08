@@ -137,6 +137,7 @@
     @php
         $stats = [
             [
+                'key' => 'total',
                 'label' => 'Total Societies',
                 'value' => number_format($totalSocieties),
                 'note' => 'Active billing targets',
@@ -144,6 +145,7 @@
                 'style' => '--stat-accent: linear-gradient(135deg, #0284c7, #22d3ee); --stat-tint: rgba(14, 165, 233, .15); --stat-shadow: rgba(14, 165, 233, .3); --stat-text: #0369a1;',
             ],
             [
+                'key' => 'sent',
                 'label' => 'Successful Sent',
                 'value' => number_format($sentCount),
                 'note' => 'Invoices dispatched via mail',
@@ -151,6 +153,7 @@
                 'style' => '--stat-accent: linear-gradient(135deg, #059669, #84cc16); --stat-tint: rgba(16, 185, 129, .16); --stat-shadow: rgba(16, 185, 129, .3); --stat-text: #047857;',
             ],
             [
+                'key' => 'pending',
                 'label' => 'Pending Queue',
                 'value' => number_format($pendingCount),
                 'note' => 'Awaiting generation/send',
@@ -158,6 +161,7 @@
                 'style' => '--stat-accent: linear-gradient(135deg, #4f46e5, #06b6d4); --stat-tint: rgba(99, 102, 241, .14); --stat-shadow: rgba(79, 70, 229, .28); --stat-text: #4338ca;',
             ],
             [
+                'key' => 'failed',
                 'label' => 'Failed Jobs',
                 'value' => number_format($failedCount),
                 'note' => 'Jobs with delivery errors',
@@ -194,29 +198,44 @@
                                    class="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
                         </form>
 
-                        <form method="POST" action="{{ route('invoices.global-dispatch') }}" class="inline-block">
-                            @csrf
-                            <input type="hidden" name="month" value="{{ $month }}">
-                            <button type="submit" class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-slate-900 px-3.5 text-xs font-bold text-white transition hover:bg-emerald-700">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                                </svg>
-                                Global Dispatch
-                            </button>
-                        </form>
+                        <button type="button" onclick="confirmGlobalDispatch()" class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-slate-900 px-3.5 text-xs font-bold text-white transition hover:bg-emerald-700">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            Global Dispatch
+                        </button>
+
+                        <button type="button" onclick="confirmGlobalGenerate()" class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-emerald-600 bg-emerald-50 px-3.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-600 hover:text-white">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6M12 9v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Generate Invoices
+                        </button>
 
                         @if ($failedCount > 0)
-                            <form method="POST" action="{{ route('invoices.retry-failed') }}" class="inline-block">
-                                @csrf
-                                <input type="hidden" name="month" value="{{ $month }}">
-                                <button type="submit" class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3.5 text-xs font-bold text-rose-700 transition hover:bg-rose-600 hover:text-white">
-                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3 3L22 4"/>
-                                    </svg>
-                                    Retry Failed
-                                </button>
-                            </form>
+                            <button type="button" onclick="confirmRetryFailed()" class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3.5 text-xs font-bold text-rose-700 transition hover:bg-rose-600 hover:text-white">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3 3L22 4"/>
+                                </svg>
+                                Retry Failed
+                            </button>
                         @endif
+
+                        @if ($sentCount > 0)
+                            <a href="{{ route('invoices.download-zip', ['month' => $month]) }}" class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 text-xs font-bold text-slate-700 transition hover:bg-slate-900 hover:text-white shadow-sm">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                Download All (ZIP)
+                            </a>
+                        @endif
+
+                        <button type="button" onclick="confirmClearQueue()" class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 text-xs font-bold text-slate-700 transition hover:bg-rose-600 hover:text-white hover:border-rose-600 shadow-sm">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Clear Month Invoices
+                        </button>
                     </div>
                 </div>
             </section>
@@ -261,7 +280,7 @@
             <!-- Dynamic Stats Cards Row -->
             <section class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
                 @foreach ($stats as $index => $stat)
-                    <article class="invoice-stat reveal rounded-2xl p-5" style="{{ $stat['style'] }} --reveal-delay: {{ $index * 70 }}ms;">
+                    <article onclick="showStatDetails('{{ $stat['key'] }}')" class="invoice-stat reveal rounded-2xl p-5 cursor-pointer hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] transition-all duration-200" style="{{ $stat['style'] }} --reveal-delay: {{ $index * 70 }}ms;">
                         <div class="relative z-10">
                             <div class="mb-5 flex items-start justify-between gap-3">
                                 <div class="stat-icon flex h-12 w-12 items-center justify-center rounded-xl text-white">
@@ -269,6 +288,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $stat['icon'] }}"/>
                                     </svg>
                                 </div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 border border-slate-100 rounded-full px-2 py-0.5 mt-1 hover:bg-slate-100">Click to View</span>
                             </div>
                             <p class="text-sm font-bold text-slate-500">{{ $stat['label'] }}</p>
                             <p class="stat-value mt-2 text-3xl font-black">{{ $stat['value'] }}</p>
@@ -326,6 +346,115 @@
                 </div>
             </section>
 
+        </div>
+    </div>
+
+    <!-- Beautiful Confirmation & Email Prompt Modal -->
+    <div id="invoice-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-200">
+        <div class="relative w-full max-w-md scale-95 transform rounded-2xl bg-white p-6 shadow-2xl transition-all duration-200" id="invoice-modal-content">
+            <!-- Close Button -->
+            <button type="button" onclick="closeInvoiceModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+
+            <!-- Modal Header -->
+            <div class="flex items-center gap-3">
+                <div id="modal-icon-container" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                    <div id="modal-icon">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <h3 id="modal-title" class="text-base font-extrabold text-slate-900">Confirm Action</h3>
+                    <p id="modal-subtitle" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Invoice Dispatch</p>
+                </div>
+            </div>
+
+            <!-- Modal Body / Content -->
+            <div class="mt-4">
+                <div id="modal-description" class="text-sm font-semibold leading-relaxed text-slate-600"></div>
+                
+                <!-- Email Input (hidden by default) -->
+                <div id="modal-email-group" class="mt-4" style="display: none;">
+                    <label for="modal-email-input" class="text-xs font-bold text-slate-700 uppercase tracking-wide">Contact Person Email</label>
+                    <input type="email" id="modal-email-input" class="mt-2 block w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 px-4 text-sm font-semibold text-slate-800 placeholder-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10" placeholder="e.g. chairman@society.com">
+                    <p id="modal-email-error" class="mt-1.5 text-xs font-bold text-rose-600" style="display: none;">Please enter a valid email address.</p>
+                </div>
+            </div>
+
+            <!-- Modal Footer / Actions -->
+            <div class="mt-6 flex items-center justify-end gap-3">
+                <button type="button" onclick="closeInvoiceModal()" class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition">
+                    Cancel
+                </button>
+                <button type="button" id="modal-submit-btn" class="rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white hover:bg-emerald-700 transition shadow-md shadow-slate-900/10">
+                    Confirm & Proceed
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Details Popup Modal -->
+    <div id="stats-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-200">
+        <div class="relative w-full max-w-2xl scale-95 transform rounded-2xl bg-white p-6 shadow-2xl transition-all duration-200" id="stats-modal-content">
+            <!-- Close Button -->
+            <button type="button" onclick="closeStatsModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+
+            <!-- Modal Header -->
+            <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 id="stats-modal-title" class="text-base font-extrabold text-slate-900">Statistics Details</h3>
+                    <p id="stats-modal-subtitle" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Month: {{ Carbon\Carbon::parse($month . '-01')->format('F Y') }}</p>
+                </div>
+            </div>
+
+            <!-- Modal Body (Detailed list) -->
+            <div class="mt-4 max-h-[400px] overflow-y-auto pr-1" id="stats-modal-body">
+                <!-- Loading State -->
+                <div class="flex flex-col items-center justify-center py-12 gap-3" id="stats-loading">
+                    <svg class="animate-spin h-8 w-8 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Loading details...</p>
+                </div>
+
+                <!-- Empty State -->
+                <div class="hidden flex-col items-center justify-center py-12 gap-2 text-center" id="stats-empty">
+                    <svg class="h-10 w-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0a2 2 0 01-2 2H6a2 2 0 01-2-2m16 0V9a2 2 0 00-2-2H6a2 2 0 00-2 2v2M9 11h6"/>
+                    </svg>
+                    <p class="text-sm font-bold text-slate-500">No records found matching this status.</p>
+                </div>
+
+                <!-- List Container -->
+                <div class="divide-y divide-slate-100" id="stats-items-list" style="display: none;">
+                    <!-- Will be dynamically populated -->
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="mt-6 border-t border-slate-100 pt-4 flex items-center justify-between">
+                <div id="stats-modal-actions">
+                    <!-- Dynamic action buttons e.g. Clear Pending Queue -->
+                </div>
+                <button type="button" onclick="closeStatsModal()" class="rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white hover:bg-emerald-700 transition shadow-md shadow-slate-900/10">
+                    Close Details
+                </button>
+            </div>
         </div>
     </div>
 
@@ -423,6 +552,384 @@
                     });
                 }
             });
+
+            // Modal Logic
+            const invoiceModal = document.getElementById('invoice-modal');
+            const modalContent = document.getElementById('invoice-modal-content');
+            const modalIconContainer = document.getElementById('modal-icon-container');
+            const modalIcon = document.getElementById('modal-icon');
+            const modalTitle = document.getElementById('modal-title');
+            const modalDescription = document.getElementById('modal-description');
+            const modalEmailGroup = document.getElementById('modal-email-group');
+            const modalEmailInput = document.getElementById('modal-email-input');
+            const modalEmailError = document.getElementById('modal-email-error');
+            const modalSubmitBtn = document.getElementById('modal-submit-btn');
+
+            let currentAction = null;
+
+            window.openInvoiceModal = function() {
+                invoiceModal.classList.remove('opacity-0', 'pointer-events-none');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            };
+
+            window.closeInvoiceModal = function() {
+                invoiceModal.classList.add('opacity-0', 'pointer-events-none');
+                modalContent.classList.remove('scale-100');
+                modalContent.classList.add('scale-95');
+                modalEmailError.style.display = 'none';
+            };
+
+            window.confirmGlobalDispatch = function() {
+                currentAction = { type: 'global' };
+                modalIconContainer.className = 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700';
+                modalIcon.innerHTML = `
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                `;
+                modalTitle.textContent = 'Confirm Global Dispatch';
+                modalDescription.innerHTML = `
+                    This will queue invoice generation and email dispatch jobs for <strong>all active societies</strong> for the selected month (<strong>{{ Carbon\Carbon::parse($month . '-01')->format('F Y') }}</strong>).<br><br>
+                    <span class="text-xs font-bold text-amber-600 block bg-amber-50 rounded-lg p-2.5 border border-amber-200">
+                        ⚠️ Warning: All registered societies will receive their invoices via email. Please ensure rate data is correct.
+                    </span>
+                `;
+                modalEmailGroup.style.display = 'none';
+                modalSubmitBtn.textContent = 'Proceed with Dispatch';
+                modalSubmitBtn.className = 'rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white hover:bg-emerald-700 transition shadow-md shadow-slate-900/10';
+                openInvoiceModal();
+            };
+
+            window.confirmRetryFailed = function() {
+                currentAction = { type: 'retry-failed' };
+                modalIconContainer.className = 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-700';
+                modalIcon.innerHTML = `
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3 3L22 4"/>
+                    </svg>
+                `;
+                modalTitle.textContent = 'Retry Failed Invoices';
+                modalDescription.innerHTML = `
+                    This will recreate email delivery tasks for all <strong>failed</strong> invoices in <strong>{{ Carbon\Carbon::parse($month . '-01')->format('F Y') }}</strong>.
+                `;
+                modalEmailGroup.style.display = 'none';
+                modalSubmitBtn.textContent = 'Retry Failed';
+                modalSubmitBtn.className = 'rounded-xl bg-rose-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-rose-700 transition shadow-md shadow-rose-600/10';
+                openInvoiceModal();
+            };
+
+            window.confirmSingleDispatch = function(societyId, societyName, email, actionType) {
+                currentAction = { type: 'single', id: societyId, name: societyName, email: email, action: actionType };
+                modalIconContainer.className = 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700';
+                modalIcon.innerHTML = `
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 19v-8.93a2 2 0 01.89-1.664l8-5.333a2 2 0 012.22 0l8 5.333A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76"/>
+                    </svg>
+                `;
+                
+                let titleText = 'Generate & Send Invoice';
+                let btnText = 'Send Invoice';
+                if (actionType === 'resend') {
+                    titleText = 'Regenerate & Re-send';
+                    btnText = 'Regenerate & Send';
+                } else if (actionType === 'retry') {
+                    titleText = 'Retry Dispatch';
+                    btnText = 'Retry';
+                }
+
+                modalTitle.textContent = titleText;
+                
+                if (email && email.trim() !== '') {
+                    modalDescription.innerHTML = `
+                        This will <strong>recalculate the billing amount</strong> based on current flats/rates, generate a fresh PDF, and queue email dispatch of the invoice for <strong>${societyName}</strong> to:<br>
+                        <strong class="text-emerald-700 text-xs block mt-2 font-mono">${email}</strong>
+                    `;
+                    modalEmailGroup.style.display = 'none';
+                    modalSubmitBtn.textContent = btnText;
+                } else {
+                    modalDescription.innerHTML = `
+                        <strong>${societyName}</strong> does not have a registered contact email address.<br>
+                        Please enter a valid email address below. It will be saved to the society profile and used to deliver the fresh invoice.
+                    `;
+                    modalEmailGroup.style.display = 'block';
+                    modalEmailInput.value = '';
+                    modalSubmitBtn.textContent = 'Save & Send';
+                }
+                modalSubmitBtn.className = 'rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white hover:bg-emerald-700 transition shadow-md shadow-slate-900/10';
+                openInvoiceModal();
+            };
+
+            window.confirmClearQueue = function() {
+                currentAction = { type: 'clear-queue' };
+                modalIconContainer.className = 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-700';
+                modalIcon.innerHTML = `
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                `;
+                modalTitle.textContent = 'Clear Month Invoices';
+                modalDescription.innerHTML = `
+                    This will <strong>permanently delete all invoice records and logs</strong> for the selected month (<strong>{{ Carbon\Carbon::parse($month . '-01')->format('F Y') }}</strong>).<br><br>
+                    <span class="text-xs font-bold text-rose-600 block bg-rose-50 rounded-lg p-2.5 border border-rose-200">
+                        ⚠️ Warning: This action cannot be undone. You will need to regenerate invoices to view or send them.
+                    </span>
+                `;
+                modalEmailGroup.style.display = 'none';
+                modalSubmitBtn.textContent = 'Clear All Invoices';
+                modalSubmitBtn.className = 'rounded-xl bg-rose-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-rose-700 transition shadow-md shadow-rose-600/10';
+                openInvoiceModal();
+            };
+
+            window.confirmClearPending = function() {
+                currentAction = { type: 'clear-pending' };
+                modalIconContainer.className = 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-700';
+                modalIcon.innerHTML = `
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                `;
+                modalTitle.textContent = 'Clear Pending Queue';
+                modalDescription.innerHTML = `
+                    This will <strong>delete all pending/failed invoice records</strong> for the selected month (<strong>{{ Carbon\Carbon::parse($month . '-01')->format('F Y') }}</strong>).<br><br>
+                    <span class="text-xs font-bold text-rose-600 block bg-rose-50 rounded-lg p-2.5 border border-rose-200">
+                        ⚠️ Warning: This will reset all pending invoice records. It will not affect sent invoices.
+                    </span>
+                `;
+                modalEmailGroup.style.display = 'none';
+                modalSubmitBtn.textContent = 'Clear Pending Invoices';
+                modalSubmitBtn.className = 'rounded-xl bg-rose-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-rose-700 transition shadow-md shadow-rose-600/10';
+                openInvoiceModal();
+            };
+
+            window.confirmGlobalGenerate = function() {
+                currentAction = { type: 'global-generate' };
+                modalIconContainer.className = 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700';
+                modalIcon.innerHTML = `
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6M12 9v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                `;
+                modalTitle.textContent = 'Generate Invoices Globally';
+                modalDescription.innerHTML = `
+                    This will calculate the billing amounts and generate invoice records for <strong>all societies</strong> for the selected month (<strong>{{ Carbon\Carbon::parse($month . '-01')->format('F Y') }}</strong>).<br><br>
+                    <strong class="text-emerald-700 block bg-emerald-50 border border-emerald-100 p-2.5 rounded-lg text-xs leading-normal">
+                        ℹ️ Invoices will be created in "Pending" status and will NOT be emailed to societies. You can review them here and dispatch them later.
+                    </strong>
+                `;
+                modalEmailGroup.style.display = 'none';
+                modalSubmitBtn.textContent = 'Generate Invoices';
+                modalSubmitBtn.className = 'rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-emerald-700 transition shadow-md shadow-emerald-600/10';
+                openInvoiceModal();
+            };
+
+            // Modal Submit Click Handler
+            modalSubmitBtn.addEventListener('click', () => {
+                if (!currentAction) return;
+
+                if (currentAction.type === 'global') {
+                    // Submit global dispatch form
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = "{{ route('invoices.global-dispatch') }}";
+                    const token = document.querySelector('meta[name="csrf-token"]').content;
+                    const tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.name = '_token';
+                    tokenInput.value = token;
+                    form.appendChild(tokenInput);
+                    const monthInput = document.createElement('input');
+                    monthInput.type = 'hidden';
+                    monthInput.name = 'month';
+                    monthInput.value = '{{ $month }}';
+                    form.appendChild(monthInput);
+                    document.body.appendChild(form);
+                    form.submit();
+                } else if (currentAction.type === 'retry-failed') {
+                    // Submit retry failed form
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = "{{ route('invoices.retry-failed') }}";
+                    const token = document.querySelector('meta[name="csrf-token"]').content;
+                    const tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.name = '_token';
+                    tokenInput.value = token;
+                    form.appendChild(tokenInput);
+                    const monthInput = document.createElement('input');
+                    monthInput.type = 'hidden';
+                    monthInput.name = 'month';
+                    monthInput.value = '{{ $month }}';
+                    form.appendChild(monthInput);
+                    document.body.appendChild(form);
+                    form.submit();
+                } else if (currentAction.type === 'clear-queue') {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = "{{ route('invoices.clear-queue') }}";
+                    const token = document.querySelector('meta[name="csrf-token"]').content;
+                    const tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.name = '_token';
+                    tokenInput.value = token;
+                    form.appendChild(tokenInput);
+                    const monthInput = document.createElement('input');
+                    monthInput.type = 'hidden';
+                    monthInput.name = 'month';
+                    monthInput.value = '{{ $month }}';
+                    form.appendChild(monthInput);
+                    document.body.appendChild(form);
+                    form.submit();
+                } else if (currentAction.type === 'clear-pending') {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = "{{ route('invoices.clear-pending') }}";
+                    const token = document.querySelector('meta[name="csrf-token"]').content;
+                    const tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.name = '_token';
+                    tokenInput.value = token;
+                    form.appendChild(tokenInput);
+                    const monthInput = document.createElement('input');
+                    monthInput.type = 'hidden';
+                    monthInput.name = 'month';
+                    monthInput.value = '{{ $month }}';
+                    form.appendChild(monthInput);
+                    document.body.appendChild(form);
+                    form.submit();
+                } else if (currentAction.type === 'global-generate') {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = "{{ route('invoices.generate-global') }}";
+                    const token = document.querySelector('meta[name="csrf-token"]').content;
+                    const tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.name = '_token';
+                    tokenInput.value = token;
+                    form.appendChild(tokenInput);
+                    const monthInput = document.createElement('input');
+                    monthInput.type = 'hidden';
+                    monthInput.name = 'month';
+                    monthInput.value = '{{ $month }}';
+                    form.appendChild(monthInput);
+                    document.body.appendChild(form);
+                    form.submit();
+                } else if (currentAction.type === 'single') {
+                    let emailVal = '';
+                    if (modalEmailGroup.style.display === 'block') {
+                        emailVal = modalEmailInput.value.trim();
+                        // Basic email validation regex
+                        if (!emailVal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+                            modalEmailError.style.display = 'block';
+                            return;
+                        }
+                    }
+                    
+                    // Submit single dispatch form
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/invoices/retry-single/${currentAction.id}`;
+                    const token = document.querySelector('meta[name="csrf-token"]').content;
+                    const tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.name = '_token';
+                    tokenInput.value = token;
+                    form.appendChild(tokenInput);
+                    const monthInput = document.createElement('input');
+                    monthInput.type = 'hidden';
+                    monthInput.name = 'month';
+                    monthInput.value = '{{ $month }}';
+                    form.appendChild(monthInput);
+                    
+                    if (emailVal) {
+                        const emailInput = document.createElement('input');
+                        emailInput.type = 'hidden';
+                        emailInput.name = 'email';
+                        emailInput.value = emailVal;
+                        form.appendChild(emailInput);
+                    }
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+
+            // Stats Details Modal Logic
+            const statsModal = document.getElementById('stats-modal');
+            const statsModalContent = document.getElementById('stats-modal-content');
+            const statsModalTitle = document.getElementById('stats-modal-title');
+            const statsLoading = document.getElementById('stats-loading');
+            const statsEmpty = document.getElementById('stats-empty');
+            const statsItemsList = document.getElementById('stats-items-list');
+
+            const statsModalActions = document.getElementById('stats-modal-actions');
+
+            window.openStatsModal = function() {
+                statsModal.classList.remove('opacity-0', 'pointer-events-none');
+                statsModalContent.classList.remove('scale-95');
+                statsModalContent.classList.add('scale-100');
+            };
+
+            window.closeStatsModal = function() {
+                statsModal.classList.add('opacity-0', 'pointer-events-none');
+                statsModalContent.classList.remove('scale-100');
+                statsModalContent.classList.add('scale-95');
+            };
+
+            window.showStatDetails = async function(status) {
+                // Show loading state, hide list and empty states
+                statsLoading.style.display = 'flex';
+                statsEmpty.style.display = 'none';
+                statsItemsList.style.display = 'none';
+                statsItemsList.innerHTML = '';
+                statsModalActions.innerHTML = '';
+                openStatsModal();
+
+                // Dynamically populate action button if status is pending
+                if (status === 'pending') {
+                    const clearPendingBtn = document.createElement('button');
+                    clearPendingBtn.type = 'button';
+                    clearPendingBtn.className = 'rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700 hover:bg-rose-600 hover:text-white transition';
+                    clearPendingBtn.textContent = 'Clear Pending Queue';
+                    clearPendingBtn.onclick = () => {
+                        closeStatsModal();
+                        confirmClearPending();
+                    };
+                    statsModalActions.appendChild(clearPendingBtn);
+                }
+
+                try {
+                    const response = await fetch(`/invoices/stats-details?status=${status}&month={{ $month }}`);
+                    const data = await response.json();
+                    
+                    statsModalTitle.textContent = data.title;
+                    statsLoading.style.display = 'none';
+
+                    if (!data.items || data.items.length === 0) {
+                        statsEmpty.style.display = 'flex';
+                    } else {
+                        data.items.forEach(item => {
+                            const row = document.createElement('div');
+                            row.className = 'py-3.5 flex items-center justify-between gap-4';
+                            row.innerHTML = `
+                                <div>
+                                    <h4 class="text-sm font-extrabold text-slate-800">${item.name}</h4>
+                                    <p class="text-xs font-bold text-slate-400 mt-0.5">${item.info} &bull; <span class="font-mono text-[11px] text-slate-500">${item.detail}</span></p>
+                                </div>
+                                <div class="text-right shrink-0">
+                                    <span class="text-sm font-black text-slate-900">${item.amount}</span>
+                                </div>
+                            `;
+                            statsItemsList.appendChild(row);
+                        });
+                        statsItemsList.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('Error fetching stat details:', error);
+                    statsLoading.style.display = 'none';
+                    statsEmpty.style.display = 'flex';
+                }
+            };
         </script>
     @endpush
 </x-app-layout>

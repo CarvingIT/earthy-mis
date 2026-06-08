@@ -96,9 +96,15 @@ Route::middleware('auth')->group(function () {
 
     // Invoice dispatch dashboard routes
     Route::get('/invoices', [InvoiceDispatchController::class, 'index'])->name('invoices.index');
+    Route::get('/invoices/download-zip', [InvoiceDispatchController::class, 'downloadZip'])->name('invoices.download-zip');
+    Route::get('/invoices/stats-details', [InvoiceDispatchController::class, 'getStatsDetails'])->name('invoices.stats-details');
+    Route::get('/invoices/society/{society}/pdf', [InvoiceDispatchController::class, 'viewPdfBySociety'])->name('invoices.society-pdf');
     Route::post('/invoices/global-dispatch', [InvoiceDispatchController::class, 'triggerGlobalDispatch'])->name('invoices.global-dispatch');
     Route::post('/invoices/retry-failed', [InvoiceDispatchController::class, 'retryFailed'])->name('invoices.retry-failed');
     Route::post('/invoices/retry-single/{society}', [InvoiceDispatchController::class, 'retrySingle'])->name('invoices.retry-single');
+    Route::post('/invoices/generate-global', [InvoiceDispatchController::class, 'generateGlobal'])->name('invoices.generate-global');
+    Route::post('/invoices/clear-pending', [InvoiceDispatchController::class, 'clearPending'])->name('invoices.clear-pending');
+    Route::post('/invoices/clear-queue', [InvoiceDispatchController::class, 'clearQueue'])->name('invoices.clear-queue');
     Route::get('/invoices/{invoice}/pdf', [InvoiceDispatchController::class, 'viewPdf'])->name('invoices.pdf');
 
     Route::middleware('admin')->group(function () {
