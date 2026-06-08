@@ -19,6 +19,7 @@ use App\Http\Controllers\StockController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\InvoiceDispatchController;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Society;
@@ -92,6 +93,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/windrow-data', [ChartController::class, 'windrowData']);
     Route::get('/api/jcb-data', [ChartController::class, 'jcbData']);
     Route::get('/api/weight-data', [ChartController::class, 'weightData']);
+
+    // Invoice dispatch dashboard routes
+    Route::get('/invoices', [InvoiceDispatchController::class, 'index'])->name('invoices.index');
+    Route::post('/invoices/global-dispatch', [InvoiceDispatchController::class, 'triggerGlobalDispatch'])->name('invoices.global-dispatch');
+    Route::post('/invoices/retry-failed', [InvoiceDispatchController::class, 'retryFailed'])->name('invoices.retry-failed');
+    Route::post('/invoices/retry-single/{society}', [InvoiceDispatchController::class, 'retrySingle'])->name('invoices.retry-single');
+    Route::get('/invoices/{invoice}/pdf', [InvoiceDispatchController::class, 'viewPdf'])->name('invoices.pdf');
 
     Route::middleware('admin')->group(function () {
         Route::resource('users', UserController::class)->except('show');

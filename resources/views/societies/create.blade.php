@@ -170,6 +170,24 @@
                                         <x-text-input id="flats_families" name="flats_families" type="text" class="form-field mt-2 block w-full" :value="old('flats_families')" placeholder="120" />
                                         <x-input-error class="mt-2" :messages="$errors->get('flats_families')" />
                                     </div>
+
+                                    <div>
+                                        <label for="billing_amount" class="form-label">Billing Amount (Monthly)</label>
+                                        <x-text-input id="billing_amount" name="billing_amount" type="number" step="0.01" class="form-field mt-2 block w-full" :value="old('billing_amount', '0')" placeholder="10000.00" />
+                                        <x-input-error class="mt-2" :messages="$errors->get('billing_amount')" />
+                                    </div>
+
+                                    <div>
+                                        <label for="rate_per_flat" class="form-label">Rate per Flat (Auto-calculated)</label>
+                                        <x-text-input id="rate_per_flat" name="rate_per_flat" type="number" step="0.01" class="form-field mt-2 block w-full bg-slate-50" :value="old('rate_per_flat', '0')" placeholder="50.00" readonly />
+                                        <x-input-error class="mt-2" :messages="$errors->get('rate_per_flat')" />
+                                    </div>
+
+                                    <div>
+                                        <label for="vehicle_number" class="form-label">Vehicle number</label>
+                                        <x-text-input id="vehicle_number" name="vehicle_number" type="text" class="form-field mt-2 block w-full" :value="old('vehicle_number')" placeholder="MH-12-PQ-1234" />
+                                        <x-input-error class="mt-2" :messages="$errors->get('vehicle_number')" />
+                                    </div>
                                 </div>
                             </div>
                         </section>
@@ -255,19 +273,37 @@
 
                 if (!('IntersectionObserver' in window)) {
                     revealItems.forEach((item) => item.classList.add('is-visible'));
-                    return;
+                } else {
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach((entry) => {
+                            if (!entry.isIntersecting) return;
+                            entry.target.classList.add('is-visible');
+                            observer.unobserve(entry.target);
+                        });
+                    }, { threshold: .12 });
+                    revealItems.forEach((item) => observer.observe(item));
                 }
 
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach((entry) => {
-                        if (!entry.isIntersecting) return;
+                // Dynamic rate calculation
+                const flatsInput = document.getElementById('flats_families');
+                const billingInput = document.getElementById('billing_amount');
+                const rateInput = document.getElementById('rate_per_flat');
 
-                        entry.target.classList.add('is-visible');
-                        observer.unobserve(entry.target);
-                    });
-                }, { threshold: .12 });
+                function calculateRate() {
+                    const flats = parseFloat(flatsInput.value) || 0;
+                    const billing = parseFloat(billingInput.value) || 0;
+                    if (flats > 0 && billing > 0) {
+                        rateInput.value = (billing / flats).toFixed(2);
+                    } else {
+                        rateInput.value = '0.00';
+                    }
+                }
 
-                revealItems.forEach((item) => observer.observe(item));
+                if (flatsInput && billingInput && rateInput) {
+                    flatsInput.addEventListener('input', calculateRate);
+                    billingInput.addEventListener('input', calculateRate);
+                    calculateRate();
+                }
             });
         </script>
     @endpush

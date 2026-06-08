@@ -322,6 +322,7 @@
                                 <th>City</th>
                                 <th>Joining Month</th>
                                 <th>Flats/Families</th>
+                                <th>Billing (Monthly)</th>
                                 <th>Chairman</th>
                                 <th>Secretary / Email</th>
                                 <th>Phone</th>
@@ -352,6 +353,9 @@
                                     <td class="font-semibold text-slate-600">{{ $society->joining_month ?: 'Not set' }}</td>
                                     <td>
                                         <span class="font-extrabold text-slate-900">{{ $society->flats_families ?: '0' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="font-extrabold text-slate-900">₹{{ number_format((float)$society->billing_amount, 2) }}</span>
                                     </td>
                                     <td class="font-semibold text-slate-700">{{ $society->chairman_name ?: 'Not set' }}</td>
                                     <td>

@@ -31,6 +31,9 @@ class SocietyController extends Controller
             'secretary_name' => ['nullable', 'string', 'max:255'],
             'contact_person_email' => ['nullable', 'string', 'lowercase', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
+            'rate_per_flat' => ['nullable', 'numeric', 'min:0'],
+            'billing_amount' => ['nullable', 'numeric', 'min:0'],
+            'vehicle_number' => ['nullable', 'string', 'max:255'],
         ]);
 
         Society::create($data + ['user_id' => auth()->id()]);
@@ -66,6 +69,9 @@ class SocietyController extends Controller
             'secretary_name' => ['nullable', 'string', 'max:255'],
             'contact_person_email' => ['nullable', 'string', 'lowercase', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
+            'rate_per_flat' => ['nullable', 'numeric', 'min:0'],
+            'billing_amount' => ['nullable', 'numeric', 'min:0'],
+            'vehicle_number' => ['nullable', 'string', 'max:255'],
         ]);
 
         $society->update($data);
