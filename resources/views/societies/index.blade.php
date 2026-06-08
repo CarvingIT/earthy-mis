@@ -140,27 +140,10 @@
             margin: 1rem 0 0;
         }
 
-        .societies-table-card .dt-search label,
         .societies-table-card .dt-info {
             color: #64748b;
             font-size: .82rem;
             font-weight: 700;
-        }
-
-        .societies-table-card .dt-input {
-            border: 1px solid #e2e8f0 !important;
-            border-radius: .75rem !important;
-            color: #334155;
-            font-weight: 600;
-            min-height: 2.65rem;
-            outline: none;
-            padding: .55rem .85rem !important;
-            transition: border-color .16s ease, box-shadow .16s ease;
-        }
-
-        .societies-table-card .dt-input:focus {
-            border-color: #10b981 !important;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, .14);
         }
 
         .societies-table-card .dt-paging .dt-paging-button {
@@ -304,29 +287,39 @@
             </section>
 
             <section class="society-table-card reveal rounded-2xl p-4 sm:p-6">
-                <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h3 class="text-lg font-extrabold text-slate-900">All societies</h3>
                         <p class="mt-1 text-sm font-medium text-slate-500">Primary contacts, city coverage, and onboarding information.</p>
                     </div>
-                    <span class="w-fit rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-emerald-700">
-                        {{ number_format($totalSocieties) }} records
-                    </span>
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <div class="relative min-w-[260px] sm:min-w-[320px]">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </div>
+                            <input type="text" id="custom-search" class="block w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-10 pr-4 text-xs font-semibold text-slate-800 placeholder-slate-400 transition hover:bg-slate-50 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10" placeholder="Search societies by name, city, contact...">
+                        </div>
+                        <span class="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-emerald-700 h-10 shrink-0">
+                            {{ number_format($totalSocieties) }} records
+                        </span>
+                    </div>
                 </div>
 
                 <div class="societies-table-wrap">
                     <table id="societies-table" data-datatable class="societies-table min-w-full">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>City</th>
-                                <th>Joining Month</th>
-                                <th>Flats/Families</th>
-                                <th>Billing (Monthly)</th>
-                                <th>Chairman</th>
-                                <th>Secretary / Email</th>
-                                <th>Phone</th>
-                                <th class="text-right">Actions</th>
+                                <th class="w-[30%] min-w-[240px]">Name</th>
+                                <th class="w-[8%] min-w-[80px]">City</th>
+                                <th class="w-[6%] min-w-[80px]">Joined</th>
+                                <th class="w-[5%] min-w-[70px]">Flats</th>
+                                <th class="w-[10%] min-w-[110px]">Billing (Monthly)</th>
+                                <th class="w-[10%] min-w-[110px]">Chairman</th>
+                                <th class="w-[14%] min-w-[160px]">Secretary / Email</th>
+                                <th class="w-[10%] min-w-[110px]">Phone</th>
+                                <th class="text-right w-[8%] min-w-[100px]">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -334,9 +327,9 @@
                                 <tr>
                                     <td>
                                         <div class="flex items-start gap-3">
-                                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-sm font-black text-slate-700">
+                                            <!-- <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-sm font-black text-slate-700">
                                                 {{ mb_strtoupper(mb_substr($society->name ?? 'S', 0, 1)) }}
-                                            </div>
+                                            </div> -->
                                             <div class="min-w-0">
                                                 <p class="font-extrabold text-slate-900">{{ $society->name }}</p>
                                                 @if (filled($society->address))

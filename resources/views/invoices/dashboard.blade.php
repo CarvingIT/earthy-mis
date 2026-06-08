@@ -294,13 +294,13 @@
                     <table class="invoices-table min-w-full">
                         <thead>
                             <tr>
-                                <th>Society Name</th>
-                                <th>Billing Month</th>
-                                <th>Flats & Rate</th>
-                                <th>Total Amount</th>
-                                <th>Status</th>
-                                <th>Processed At</th>
-                                <th class="text-right">Actions</th>
+                                <th class="w-[30%] min-w-[240px]">Society Name</th>
+                                <th class="w-[12%] min-w-[110px]">Billing Month</th>
+                                <th class="w-[12%] min-w-[110px]">Flats & Rate</th>
+                                <th class="w-[12%] min-w-[115px]">Total Amount</th>
+                                <th class="w-[10%] min-w-[100px]">Status</th>
+                                <th class="w-[14%] min-w-[140px]">Processed At</th>
+                                <th class="text-right w-[10%] min-w-[110px]">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
