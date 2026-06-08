@@ -349,6 +349,51 @@
         </div>
     </div>
 
+    <!-- Live Dispatch Progress Drawer -->
+    <div id="dispatch-drawer" class="fixed inset-0 z-[60] flex items-end justify-center pointer-events-none">
+        <div id="dispatch-drawer-backdrop" class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="dispatch-drawer-panel" class="relative w-full max-w-2xl translate-y-full transition-transform duration-400 ease-out bg-white rounded-t-2xl shadow-2xl pointer-events-auto" style="max-height: 80vh;">
+            <!-- Handle -->
+            <div class="flex justify-center pt-3 pb-1">
+                <div class="h-1 w-10 rounded-full bg-slate-200"></div>
+            </div>
+            <!-- Header -->
+            <div class="px-6 pb-4 border-b border-slate-100 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div id="drawer-icon" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                        <svg class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-extrabold text-slate-900">Live Invoice Dispatch</h3>
+                        <p id="drawer-subtitle" class="text-xs font-bold text-slate-400 mt-0.5">Initializing...</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <!-- Progress counters -->
+                    <div class="flex items-center gap-2 text-[11px] font-bold">
+                        <span class="flex items-center gap-1 text-emerald-600"><span class="h-2 w-2 rounded-full bg-emerald-500 inline-block"></span><span id="cnt-sent">0</span> sent</span>
+                        <span class="flex items-center gap-1 text-amber-500"><span class="h-2 w-2 rounded-full bg-amber-400 inline-block"></span><span id="cnt-skipped">0</span> skipped</span>
+                        <span class="flex items-center gap-1 text-rose-600"><span class="h-2 w-2 rounded-full bg-rose-500 inline-block"></span><span id="cnt-failed">0</span> failed</span>
+                    </div>
+                    <button id="drawer-close-btn" type="button" onclick="closeDispatchDrawer()" class="hidden inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+            <!-- Progress Bar -->
+            <div class="px-6 py-3">
+                <div class="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                    <div id="dispatch-progress-bar" class="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <p id="dispatch-progress-text" class="mt-1.5 text-[11px] font-bold text-slate-400">0 of 0 processed</p>
+            </div>
+            <!-- Live Feed -->
+            <div id="dispatch-feed" class="overflow-y-auto px-6 pb-6 space-y-1" style="max-height: 42vh;">
+                <!-- rows injected by JS -->
+            </div>
+        </div>
+    </div>
+
     <!-- Beautiful Confirmation & Email Prompt Modal -->
     <div id="invoice-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-200">
         <div class="relative w-full max-w-md scale-95 transform rounded-2xl bg-white p-6 shadow-2xl transition-all duration-200" id="invoice-modal-content">
@@ -590,13 +635,13 @@
                 `;
                 modalTitle.textContent = 'Confirm Global Dispatch';
                 modalDescription.innerHTML = `
-                    This will queue invoice generation and email dispatch jobs for <strong>all active societies</strong> for the selected month (<strong>{{ Carbon\Carbon::parse($month . '-01')->format('F Y') }}</strong>).<br><br>
+                    This will generate and email invoices to <strong>all active societies</strong> for <strong>{{ Carbon\Carbon::parse($month . '-01')->format('F Y') }}</strong>.<br><br>
                     <span class="text-xs font-bold text-amber-600 block bg-amber-50 rounded-lg p-2.5 border border-amber-200">
-                        ⚠️ Warning: All registered societies will receive their invoices via email. Please ensure rate data is correct.
+                        ⚡ Dispatch runs live — you'll see each society's result in real time. The page will not freeze.
                     </span>
                 `;
                 modalEmailGroup.style.display = 'none';
-                modalSubmitBtn.textContent = 'Proceed with Dispatch';
+                modalSubmitBtn.textContent = 'Start Live Dispatch';
                 modalSubmitBtn.className = 'rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white hover:bg-emerald-700 transition shadow-md shadow-slate-900/10';
                 openInvoiceModal();
             };
@@ -728,23 +773,8 @@
                 if (!currentAction) return;
 
                 if (currentAction.type === 'global') {
-                    // Submit global dispatch form
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = "{{ route('invoices.global-dispatch') }}";
-                    const token = document.querySelector('meta[name="csrf-token"]').content;
-                    const tokenInput = document.createElement('input');
-                    tokenInput.type = 'hidden';
-                    tokenInput.name = '_token';
-                    tokenInput.value = token;
-                    form.appendChild(tokenInput);
-                    const monthInput = document.createElement('input');
-                    monthInput.type = 'hidden';
-                    monthInput.name = 'month';
-                    monthInput.value = '{{ $month }}';
-                    form.appendChild(monthInput);
-                    document.body.appendChild(form);
-                    form.submit();
+                    closeInvoiceModal();
+                    startLiveDispatch('{{ $month }}');
                 } else if (currentAction.type === 'retry-failed') {
                     // Submit retry failed form
                     const form = document.createElement('form');
@@ -930,6 +960,135 @@
                     statsEmpty.style.display = 'flex';
                 }
             };
+            // ─── Live Dispatch Engine ──────────────────────────────────────────
+            const drawerEl       = document.getElementById('dispatch-drawer');
+            const drawerBackdrop = document.getElementById('dispatch-drawer-backdrop');
+            const drawerPanel    = document.getElementById('dispatch-drawer-panel');
+            const drawerSubtitle = document.getElementById('drawer-subtitle');
+            const drawerIcon     = document.getElementById('drawer-icon');
+            const drawerCloseBtn = document.getElementById('drawer-close-btn');
+            const dispatchFeed   = document.getElementById('dispatch-feed');
+            const progressBar    = document.getElementById('dispatch-progress-bar');
+            const progressText   = document.getElementById('dispatch-progress-text');
+            const cntSent    = document.getElementById('cnt-sent');
+            const cntSkipped = document.getElementById('cnt-skipped');
+            const cntFailed  = document.getElementById('cnt-failed');
+
+            function openDispatchDrawer() {
+                drawerEl.classList.remove('pointer-events-none');
+                drawerBackdrop.classList.remove('opacity-0');
+                drawerBackdrop.classList.add('opacity-100');
+                // Next tick for transition
+                requestAnimationFrame(() => {
+                    drawerPanel.classList.remove('translate-y-full');
+                    drawerPanel.classList.add('translate-y-0');
+                });
+            }
+
+            window.closeDispatchDrawer = function() {
+                drawerPanel.classList.add('translate-y-full');
+                drawerPanel.classList.remove('translate-y-0');
+                drawerBackdrop.classList.remove('opacity-100');
+                drawerBackdrop.classList.add('opacity-0');
+                setTimeout(() => drawerEl.classList.add('pointer-events-none'), 350);
+            };
+
+            function addFeedRow(name, status, error) {
+                const cfg = {
+                    sent:    { dot: 'bg-emerald-500', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', label: 'Sent' },
+                    skipped: { dot: 'bg-amber-400',   badge: 'bg-amber-50 text-amber-700 border-amber-200',   label: 'Skipped' },
+                    failed:  { dot: 'bg-rose-500',    badge: 'bg-rose-50 text-rose-700 border-rose-200',     label: 'Failed' },
+                }[status] || { dot: 'bg-slate-400', badge: 'bg-slate-50 text-slate-700 border-slate-200', label: status };
+
+                const row = document.createElement('div');
+                row.className = 'flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 bg-slate-50/70 border border-slate-100 opacity-0 translate-y-2 transition-all duration-300';
+                row.innerHTML = `
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <span class="h-2 w-2 rounded-full ${cfg.dot} shrink-0"></span>
+                        <span class="text-sm font-semibold text-slate-800 truncate">${name}</span>
+                        ${error ? `<span class="text-[10px] text-slate-400 truncate font-mono">${error.substring(0, 60)}</span>` : ''}
+                    </div>
+                    <span class="shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide ${cfg.badge}">${cfg.label}</span>
+                `;
+                dispatchFeed.appendChild(row);
+                // Animate in
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        row.classList.remove('opacity-0', 'translate-y-2');
+                    });
+                });
+                // Auto-scroll
+                dispatchFeed.scrollTop = dispatchFeed.scrollHeight;
+            }
+
+            window.startLiveDispatch = async function(month) {
+                // Reset state
+                dispatchFeed.innerHTML = '';
+                progressBar.style.width = '0%';
+                progressText.textContent = 'Fetching societies...';
+                drawerSubtitle.textContent = 'Fetching society list...';
+                cntSent.textContent = cntSkipped.textContent = cntFailed.textContent = '0';
+                drawerCloseBtn.classList.add('hidden');
+                drawerIcon.innerHTML = `<svg class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+                openDispatchDrawer();
+
+                const csrf = document.querySelector('meta[name="csrf-token"]').content;
+
+                // 1. Fetch all societies
+                let societies;
+                try {
+                    const res = await fetch('/invoices/societies-list', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    societies = await res.json();
+                } catch (e) {
+                    drawerSubtitle.textContent = 'Failed to fetch society list.';
+                    drawerCloseBtn.classList.remove('hidden');
+                    return;
+                }
+
+                if (!societies.length) {
+                    drawerSubtitle.textContent = 'No societies found.';
+                    drawerCloseBtn.classList.remove('hidden');
+                    return;
+                }
+
+                const total = societies.length;
+                let processed = 0, sent = 0, skipped = 0, failed = 0;
+
+                // 2. Process each society one by one
+                for (const society of societies) {
+                    drawerSubtitle.textContent = `Sending to ${society.name}...`;
+                    try {
+                        const res = await fetch(`/invoices/dispatch-one/${society.id}`, {
+                            method: 'POST',
+                            headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrf, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ month }),
+                        });
+                        const data = await res.json();
+                        processed++;
+                        if (data.status === 'sent')         { sent++;    cntSent.textContent = sent; }
+                        else if (data.status === 'skipped') { skipped++; cntSkipped.textContent = skipped; }
+                        else                                { failed++;  cntFailed.textContent = failed; }
+                        addFeedRow(data.name, data.status, data.error);
+                    } catch (e) {
+                        processed++;
+                        failed++;
+                        cntFailed.textContent = failed;
+                        addFeedRow(society.name, 'failed', 'Network error');
+                    }
+                    progressBar.style.width = `${Math.round((processed / total) * 100)}%`;
+                    progressText.textContent = `${processed} of ${total} processed`;
+                }
+
+                // 3. Done — update header
+                drawerSubtitle.textContent = `Done! ${sent} sent, ${skipped} skipped, ${failed} failed.`;
+                drawerIcon.innerHTML = `<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`;
+                drawerIcon.className = 'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white';
+                drawerCloseBtn.classList.remove('hidden');
+
+                // 4. Soft-refresh the stats numbers without a full page reload
+                setTimeout(() => window.location.reload(), 1800);
+            };
+            // ──────────────────────────────────────────────────────────────────
         </script>
     @endpush
 </x-app-layout>

@@ -47,7 +47,7 @@ class InvoiceDispatchController extends Controller
     }
 
     /**
-     * Trigger invoice generation and dispatch for all active societies.
+     * Trigger invoice generation and dispatch for all active societies (legacy form-submit fallback).
      */
     public function triggerGlobalDispatch(Request $request)
     {
@@ -63,14 +63,40 @@ class InvoiceDispatchController extends Controller
             GenerateAndDispatchInvoice::dispatch($society, $month);
             $inv = Invoice::where('society_id', $society->id)->where('billing_month', $month)->first();
             if ($inv) {
-                if ($inv->status === 'sent')    $sent++;
-                elseif ($inv->status === 'skipped') $skipped++;
+                if ($inv->status === 'sent')         $sent++;
+                elseif ($inv->status === 'skipped')  $skipped++;
                 else $failed++;
             }
         }
 
-        return redirect()->back()->with('success', "Dispatch complete for {$societies->count()} societies — Sent: {$sent}, Skipped (no email): {$skipped}, Failed: {$failed}.");
+        return redirect()->back()->with('success', "Dispatch complete — Sent: {$sent}, Skipped (no email): {$skipped}, Failed: {$failed}.");
     }
+
+    /**
+     * AJAX: Return list of all society IDs + names for the live dispatch UI.
+     */
+    public function getSocietiesForDispatch(Request $request)
+    {
+        $societies = Society::select('id', 'name', 'contact_person_email')->orderBy('name')->get();
+        return response()->json($societies);
+    }
+
+    /**
+     * AJAX: Dispatch invoice for a single society and return JSON result.
+     */
+    public function dispatchOne(Request $request, Society $society)
+    {
+        $month = $request->input('month', now()->format('Y-m'));
+        GenerateAndDispatchInvoice::dispatch($society, $month);
+        $inv = Invoice::where('society_id', $society->id)->where('billing_month', $month)->first();
+        return response()->json([
+            'society_id' => $society->id,
+            'name'       => $society->name,
+            'status'     => $inv ? $inv->status : 'failed',
+            'error'      => ($inv && $inv->status === 'failed') ? $inv->error_log : null,
+        ]);
+    }
+
 
     /**
      * Retry dispatch for all failed invoices in the given month.

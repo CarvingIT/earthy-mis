@@ -98,8 +98,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/invoices', [InvoiceDispatchController::class, 'index'])->name('invoices.index');
     Route::get('/invoices/download-zip', [InvoiceDispatchController::class, 'downloadZip'])->name('invoices.download-zip');
     Route::get('/invoices/stats-details', [InvoiceDispatchController::class, 'getStatsDetails'])->name('invoices.stats-details');
+    Route::get('/invoices/societies-list', [InvoiceDispatchController::class, 'getSocietiesForDispatch'])->name('invoices.societies-list');
     Route::get('/invoices/society/{society}/pdf', [InvoiceDispatchController::class, 'viewPdfBySociety'])->name('invoices.society-pdf');
     Route::post('/invoices/global-dispatch', [InvoiceDispatchController::class, 'triggerGlobalDispatch'])->name('invoices.global-dispatch');
+    Route::post('/invoices/dispatch-one/{society}', [InvoiceDispatchController::class, 'dispatchOne'])->name('invoices.dispatch-one');
     Route::post('/invoices/retry-failed', [InvoiceDispatchController::class, 'retryFailed'])->name('invoices.retry-failed');
     Route::post('/invoices/retry-single/{society}', [InvoiceDispatchController::class, 'retrySingle'])->name('invoices.retry-single');
     Route::post('/invoices/generate-global', [InvoiceDispatchController::class, 'generateGlobal'])->name('invoices.generate-global');
