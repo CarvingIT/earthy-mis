@@ -15,11 +15,11 @@ class InvoiceDispatchController extends Controller
         $month = $request->query('month', now()->format('Y-m'));
         
         $totalSocieties = Society::count();
-        $sentCount = Invoice::where('billing_month', $month)->where('status', 'sent')->count();
-        $failedCount = Invoice::where('billing_month', $month)->where('status', 'failed')->count();
+        $sentCount    = Invoice::where('billing_month', $month)->where('status', 'sent')->count();
+        $failedCount  = Invoice::where('billing_month', $month)->where('status', 'failed')->count();
         $pendingCount = Invoice::where('billing_month', $month)->where('status', 'pending')->count();
-        
-        // Societies that don't have an invoice record yet for this month are also pending/not generated
+        $skippedCount = Invoice::where('billing_month', $month)->where('status', 'skipped')->count();
+
         $allSocieties = Society::with(['invoices' => function ($query) use ($month) {
             $query->where('billing_month', $month);
         }])->orderBy('name')->paginate(15);
@@ -27,11 +27,11 @@ class InvoiceDispatchController extends Controller
         if ($request->ajax() || $request->query('ajax') == 1) {
             $html = view('invoices.partials.rows', compact('allSocieties', 'month'))->render();
             return response()->json([
-                'html' => $html,
-                'hasMore' => $allSocieties->hasMorePages(),
+                'html'        => $html,
+                'hasMore'     => $allSocieties->hasMorePages(),
                 'nextPageUrl' => $allSocieties->nextPageUrl() ? $allSocieties->nextPageUrl() . '&month=' . $month . '&ajax=1' : null,
-                'total' => $allSocieties->total(),
-                'count' => $allSocieties->count(),
+                'total'       => $allSocieties->total(),
+                'count'       => $allSocieties->count(),
             ]);
         }
 
@@ -41,6 +41,7 @@ class InvoiceDispatchController extends Controller
             'sentCount',
             'failedCount',
             'pendingCount',
+            'skippedCount',
             'allSocieties'
         ));
     }
@@ -57,11 +58,18 @@ class InvoiceDispatchController extends Controller
             return redirect()->back()->with('error', 'No societies found to process.');
         }
 
+        $sent = 0; $failed = 0; $skipped = 0;
         foreach ($societies as $society) {
             GenerateAndDispatchInvoice::dispatch($society, $month);
+            $inv = Invoice::where('society_id', $society->id)->where('billing_month', $month)->first();
+            if ($inv) {
+                if ($inv->status === 'sent')    $sent++;
+                elseif ($inv->status === 'skipped') $skipped++;
+                else $failed++;
+            }
         }
 
-        return redirect()->back()->with('success', "Global dispatch queue jobs generated for {$societies->count()} societies for month {$month}.");
+        return redirect()->back()->with('success', "Dispatch complete for {$societies->count()} societies — Sent: {$sent}, Skipped (no email): {$skipped}, Failed: {$failed}.");
     }
 
     /**
@@ -293,9 +301,9 @@ class InvoiceDispatchController extends Controller
     {
         $month = $request->input('month', now()->format('Y-m'));
 
-        Invoice::where('billing_month', $month)->whereIn('status', ['pending', 'failed'])->delete();
+        Invoice::where('billing_month', $month)->whereIn('status', ['pending', 'failed', 'skipped'])->delete();
 
-        return redirect()->back()->with('success', "All pending/failed invoice records for {$month} have been cleared.");
+        return redirect()->back()->with('success', "All pending/failed/skipped invoice records for {$month} have been cleared.");
     }
 
     /**
