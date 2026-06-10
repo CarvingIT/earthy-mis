@@ -39,7 +39,7 @@ class DispatchMonthlyInvoices extends Command
         }
 
         foreach ($societies as $society) {
-            GenerateAndDispatchInvoice::dispatch($society, $month);
+            GenerateAndDispatchInvoice::dispatch($society, $month, 'cron');
         }
 
         $this->info("Dispatched generation jobs for {$societies->count()} societies.");

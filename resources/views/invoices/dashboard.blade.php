@@ -198,6 +198,13 @@
                                    class="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
                         </form>
 
+                        <button type="button" onclick="openReportModal()" class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 text-xs font-bold text-slate-700 hover:bg-slate-900 hover:text-white transition shadow-sm">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Dispatch Report
+                        </button>
+
                         <button type="button" onclick="confirmGlobalDispatch()" class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-slate-900 px-3.5 text-xs font-bold text-white transition hover:bg-emerald-700">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
@@ -498,6 +505,84 @@
                 </div>
                 <button type="button" onclick="closeStatsModal()" class="rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white hover:bg-emerald-700 transition shadow-md shadow-slate-900/10">
                     Close Details
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Popup Modal -->
+    <div id="report-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-200">
+        <div class="relative w-full max-w-4xl scale-95 transform rounded-2xl bg-white p-6 shadow-2xl transition-all duration-200" id="report-modal-content">
+            <!-- Close Button -->
+            <button type="button" onclick="closeReportModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600 focus:outline-none">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+
+            <!-- Modal Header -->
+            <div class="flex items-center gap-3 border-b border-slate-100 pb-4 mb-4">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-extrabold text-slate-900">Invoice Dispatch Audit Report</h3>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Month: <span id="report-modal-month-label">{{ Carbon\Carbon::parse($month . '-01')->format('F Y') }}</span></p>
+                </div>
+            </div>
+
+            <!-- Modal Search Input -->
+            <div class="mb-4">
+                <input type="text" id="report-search-input" onkeyup="filterReportTable()" placeholder="Search society or invoice number..." class="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-4 text-sm font-semibold text-slate-800 placeholder-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10">
+            </div>
+
+            <!-- Modal Body (Audit details table) -->
+            <div class="overflow-y-auto max-h-[50vh] pr-1" id="report-modal-body">
+                <!-- Loading State -->
+                <div class="flex flex-col items-center justify-center py-12 gap-3" id="report-loading">
+                    <svg class="animate-spin h-8 w-8 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Compiling report...</p>
+                </div>
+
+                <!-- Empty State -->
+                <div class="hidden flex-col items-center justify-center py-12 gap-2 text-center" id="report-empty">
+                    <svg class="h-10 w-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0a2 2 0 01-2 2H6a2 2 0 01-2-2m16 0V9a2 2 0 00-2-2H6a2 2 0 00-2 2v2M9 11h6"/>
+                    </svg>
+                    <p class="text-sm font-bold text-slate-500">No invoices have been generated or dispatched for this month yet.</p>
+                </div>
+
+                <!-- Table Container -->
+                <div id="report-table-container" style="display: none;">
+                    <table class="min-w-full divide-y divide-slate-100 text-left border border-slate-100 rounded-xl overflow-hidden">
+                        <thead class="bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                            <tr>
+                                <th class="px-4 py-3">Society Name</th>
+                                <th class="px-4 py-3">Invoice No.</th>
+                                <th class="px-4 py-3">Status</th>
+                                <th class="px-4 py-3 text-center">Mails Sent</th>
+                                <th class="px-4 py-3">First Generated</th>
+                                <th class="px-4 py-3">Latest Event Details</th>
+                                <th class="px-4 py-3 text-right">History</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 bg-white text-xs text-slate-700" id="report-table-rows">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="mt-6 border-t border-slate-100 pt-4 flex items-center justify-between">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Audit log tracks cron jobs & manual dispatches</p>
+                <button type="button" onclick="closeReportModal()" class="rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white hover:bg-emerald-700 transition shadow-md shadow-slate-900/10">
+                    Close Report
                 </button>
             </div>
         </div>
@@ -960,6 +1045,184 @@
                     statsEmpty.style.display = 'flex';
                 }
             };
+
+            // Report Modal Logic
+            const reportModal = document.getElementById('report-modal');
+            const reportModalContent = document.getElementById('report-modal-content');
+            const reportLoading = document.getElementById('report-loading');
+            const reportEmpty = document.getElementById('report-empty');
+            const reportTableContainer = document.getElementById('report-table-container');
+            const reportTableRows = document.getElementById('report-table-rows');
+            const reportSearchInput = document.getElementById('report-search-input');
+            const reportModalMonthLabel = document.getElementById('report-modal-month-label');
+
+            window.openReportModal = function() {
+                reportModal.classList.remove('opacity-0', 'pointer-events-none');
+                reportModalContent.classList.remove('scale-95');
+                reportModalContent.classList.add('scale-100');
+                loadReport();
+            };
+
+            window.closeReportModal = function() {
+                reportModal.classList.add('opacity-0', 'pointer-events-none');
+                reportModalContent.classList.remove('scale-100');
+                reportModalContent.classList.add('scale-95');
+            };
+
+            window.loadReport = async function() {
+                reportLoading.style.display = 'flex';
+                reportEmpty.style.display = 'none';
+                reportTableContainer.style.display = 'none';
+                reportTableRows.innerHTML = '';
+                reportSearchInput.value = '';
+
+                try {
+                    const response = await fetch(`/invoices/report?month={{ $month }}`);
+                    const data = await response.json();
+                    
+                    reportModalMonthLabel.textContent = data.month_label;
+                    reportLoading.style.display = 'none';
+
+                    if (!data.invoices || data.invoices.length === 0) {
+                        reportEmpty.style.display = 'flex';
+                    } else {
+                        data.invoices.forEach(inv => {
+                            let badgeClass = 'border-slate-200 bg-slate-50 text-slate-700';
+                            if (inv.status === 'sent') badgeClass = 'border-emerald-200 bg-emerald-50 text-emerald-700';
+                            else if (inv.status === 'failed') badgeClass = 'border-rose-200 bg-rose-50 text-rose-700';
+                            else if (inv.status === 'pending') badgeClass = 'border-amber-200 bg-amber-50 text-amber-700';
+                            else if (inv.status === 'skipped') badgeClass = 'border-yellow-200 bg-yellow-50 text-yellow-700';
+
+                            let latestDetail = '-';
+                            if (inv.dispatch_history && inv.dispatch_history.length > 0) {
+                                const latest = inv.dispatch_history[inv.dispatch_history.length - 1];
+                                const sourceStr = latest.source === 'cron' ? 'Cron' : 'Manual';
+                                latestDetail = `${latest.event.toUpperCase()} (${sourceStr}): ${latest.details || ''}`;
+                            }
+
+                            const summaryRow = document.createElement('tr');
+                            summaryRow.className = 'hover:bg-slate-50/50 transition duration-150 report-row';
+                            summaryRow.setAttribute('data-society', inv.society_name.toLowerCase());
+                            summaryRow.setAttribute('data-invoice', inv.invoice_number.toLowerCase());
+                            
+                            summaryRow.innerHTML = `
+                                <td class="px-4 py-3 font-extrabold text-slate-900">${inv.society_name}</td>
+                                <td class="px-4 py-3 font-mono text-[11px] text-slate-500">${inv.invoice_number}</td>
+                                <td class="px-4 py-3">
+                                    <span class="rounded-full border px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide ${badgeClass}">${inv.status}</span>
+                                </td>
+                                <td class="px-4 py-3 text-center font-bold text-slate-800">${inv.mail_sent_count}</td>
+                                <td class="px-4 py-3 text-slate-500 font-medium">${inv.created_at ? new Date(inv.created_at).toLocaleString('en-IN', {day:'2-digit', month:'short', year:'2-digit', hour:'2-digit', minute:'2-digit'}) : '-'}</td>
+                                <td class="px-4 py-3 text-slate-500 font-semibold truncate max-w-[200px]" title="${latestDetail.replace(/"/g, '&quot;')}">${latestDetail}</td>
+                                <td class="px-4 py-3 text-right">
+                                    <button type="button" onclick="toggleInvoiceHistory(${inv.id})" class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-600 transition hover:bg-slate-900 hover:text-white hover:border-slate-900">
+                                        <span>Log</span>
+                                        <svg id="arrow-icon-${inv.id}" class="h-3 w-3 transform transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </button>
+                                </td>
+                            `;
+
+                            const historyRow = document.createElement('tr');
+                            historyRow.id = `history-row-${inv.id}`;
+                            historyRow.className = 'hidden bg-slate-50/40';
+                            
+                            let timelineHtml = '';
+                            if (inv.dispatch_history && inv.dispatch_history.length > 0) {
+                                timelineHtml = `
+                                    <div class="relative border-l border-slate-200 ml-4 my-2 pl-6 space-y-4">
+                                        ${inv.dispatch_history.map(evt => {
+                                            let dotBg = 'bg-slate-400';
+                                            if (evt.event === 'sent') dotBg = 'bg-emerald-500';
+                                            else if (evt.event === 'failed') dotBg = 'bg-rose-500';
+                                            else if (evt.event === 'generated') dotBg = 'bg-blue-500';
+                                            else if (evt.event === 'skipped') dotBg = 'bg-yellow-500';
+
+                                            const formattedTime = new Date(evt.timestamp).toLocaleString('en-IN', {
+                                                day: '2-digit', month: 'short', year: 'numeric',
+                                                hour: '2-digit', minute: '2-digit', second: '2-digit'
+                                            });
+
+                                            return `
+                                                <div class="relative">
+                                                    <span class="absolute -left-[31px] top-1.5 flex h-2.5 w-2.5 items-center justify-center rounded-full ${dotBg} ring-4 ring-white"></span>
+                                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="text-xs font-bold text-slate-800 uppercase tracking-wide">${evt.event}</span>
+                                                            <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-500 uppercase tracking-wider">via ${evt.source === 'cron' ? 'Cron job' : 'Manual action'}</span>
+                                                        </div>
+                                                        <span class="text-[10px] font-bold text-slate-400">${formattedTime}</span>
+                                                    </div>
+                                                    <p class="text-xs text-slate-500 mt-1 font-semibold">${evt.details || 'No additional details.'}</p>
+                                                </div>
+                                            `;
+                                        }).reverse().join('')}
+                                    </div>
+                                `;
+                            } else {
+                                timelineHtml = `
+                                    <div class="py-4 text-center text-xs font-semibold text-slate-400">
+                                        No history log entries available for this invoice.
+                                    </div>
+                                `;
+                            }
+
+                            historyRow.innerHTML = `
+                                <td colspan="7" class="px-6 py-4">
+                                    <div class="border border-slate-100 rounded-xl bg-white p-4 shadow-sm">
+                                        <h5 class="text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-3">Audit Trail / Dispatch History</h5>
+                                        ${timelineHtml}
+                                    </div>
+                                </td>
+                            `;
+
+                            reportTableRows.appendChild(summaryRow);
+                            reportTableRows.appendChild(historyRow);
+                        });
+                        reportTableContainer.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('Error compiling report:', error);
+                    reportLoading.style.display = 'none';
+                    reportEmpty.style.display = 'flex';
+                }
+            };
+
+            window.toggleInvoiceHistory = function(invoiceId) {
+                const row = document.getElementById(`history-row-${invoiceId}`);
+                const arrow = document.getElementById(`arrow-icon-${invoiceId}`);
+                if (row.classList.contains('hidden')) {
+                    row.classList.remove('hidden');
+                    arrow.classList.add('rotate-180');
+                } else {
+                    row.classList.add('hidden');
+                    arrow.classList.remove('rotate-180');
+                }
+            };
+
+            window.filterReportTable = function() {
+                const query = reportSearchInput.value.toLowerCase().trim();
+                const rows = document.querySelectorAll('.report-row');
+                
+                rows.forEach(row => {
+                    const id = row.querySelector('button').getAttribute('onclick').match(/\d+/)[0];
+                    const historyRow = document.getElementById(`history-row-${id}`);
+                    
+                    const societyName = row.getAttribute('data-society') || '';
+                    const invoiceNumber = row.getAttribute('data-invoice') || '';
+                    
+                    if (societyName.includes(query) || invoiceNumber.includes(query)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                        historyRow.classList.add('hidden');
+                        const arrow = document.getElementById(`arrow-icon-${id}`);
+                        if (arrow) arrow.classList.remove('rotate-180');
+                    }
+                });
+            };
+
             // ─── Live Dispatch Engine ──────────────────────────────────────────
             const drawerEl       = document.getElementById('dispatch-drawer');
             const drawerBackdrop = document.getElementById('dispatch-drawer-backdrop');

@@ -351,7 +351,7 @@ class InvoiceDispatchController extends Controller
             }
             $invoiceNumber = 'INV-' . str_replace('-', '', $month) . '-' . str_pad($society->id, 4, '0', STR_PAD_LEFT);
 
-            Invoice::updateOrCreate(
+            $invoice = Invoice::updateOrCreate(
                 [
                     'society_id' => $society->id,
                     'billing_month' => $month,
@@ -363,8 +363,47 @@ class InvoiceDispatchController extends Controller
                     'error_log' => null,
                 ]
             );
+
+            $history = $invoice->dispatch_history ?? [];
+            $history[] = [
+                'event' => 'generated',
+                'timestamp' => now()->toIso8601String(),
+                'source' => 'manual',
+                'details' => 'Generated globally without mailing',
+            ];
+            $invoice->update(['dispatch_history' => $history]);
         }
 
         return redirect()->back()->with('success', "Successfully generated invoice records for {$societies->count()} societies for {$month}.");
+    }
+
+    /**
+     * Get JSON report data for invoices dispatched/generated in a month.
+     */
+    public function getReportData(Request $request)
+    {
+        $month = $request->query('month', now()->format('Y-m'));
+
+        $invoices = Invoice::where('billing_month', $month)
+            ->with('society')
+            ->get();
+
+        $data = $invoices->map(function ($invoice) {
+            return [
+                'id' => $invoice->id,
+                'society_name' => $invoice->society->name ?? 'Unknown',
+                'invoice_number' => $invoice->invoice_number,
+                'status' => $invoice->status,
+                'mail_sent_count' => $invoice->mail_sent_count ?? 0,
+                'created_at' => $invoice->created_at ? $invoice->created_at->toIso8601String() : null,
+                'sent_at' => $invoice->sent_at ? $invoice->sent_at->toIso8601String() : null,
+                'dispatch_history' => $invoice->dispatch_history ?? [],
+            ];
+        });
+
+        return response()->json([
+            'month_label' => \Carbon\Carbon::parse($month . '-01')->format('F Y'),
+            'invoices' => $data
+        ]);
     }
 }

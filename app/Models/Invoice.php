@@ -14,11 +14,14 @@ class Invoice extends Model
         'status',
         'error_log',
         'sent_at',
+        'mail_sent_count',
+        'dispatch_history',
     ];
 
     protected $casts = [
         'sent_at' => 'datetime',
         'total_amount' => 'decimal:2',
+        'dispatch_history' => 'array',
     ];
 
     public function society()

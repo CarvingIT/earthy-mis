@@ -9,19 +9,37 @@ class GenerateAndDispatchInvoice
 {
     public Society $society;
     public string $billingMonth;
+    public string $source;
 
-    public function __construct(Society $society, ?string $billingMonth = null)
+    public function __construct(Society $society, ?string $billingMonth = null, string $source = 'manual')
     {
         $this->society = $society;
         $this->billingMonth = $billingMonth ?: now()->format('Y-m');
+        $this->source = $source;
     }
 
     /**
      * Static dispatch — runs synchronously (no queue worker needed).
      */
-    public static function dispatch(Society $society, ?string $billingMonth = null): void
+    public static function dispatch(Society $society, ?string $billingMonth = null, string $source = 'manual'): void
     {
-        (new self($society, $billingMonth))->handle();
+        (new self($society, $billingMonth, $source))->handle();
+    }
+
+    protected function logEvent(Invoice $invoice, string $event, ?string $details = null): void
+    {
+        $history = $invoice->dispatch_history ?? [];
+        $history[] = [
+            'event' => $event,
+            'timestamp' => now()->toIso8601String(),
+            'source' => $this->source,
+            'details' => $details,
+        ];
+        $updateData = ['dispatch_history' => $history];
+        if ($event === 'sent') {
+            $updateData['mail_sent_count'] = ($invoice->mail_sent_count ?? 0) + 1;
+        }
+        $invoice->update($updateData);
     }
 
     public function handle(): void
@@ -38,10 +56,11 @@ class GenerateAndDispatchInvoice
 
             // Skip societies with no email — mark as 'skipped' and move on
             if (empty($this->society->contact_person_email)) {
-                Invoice::updateOrCreate(
+                $invoice = Invoice::updateOrCreate(
                     ['society_id' => $this->society->id, 'billing_month' => $this->billingMonth],
                     ['invoice_number' => $invoiceNumber, 'total_amount' => $amount, 'status' => 'skipped', 'error_log' => 'No email address configured.']
                 );
+                $this->logEvent($invoice, 'skipped', 'No email address configured.');
                 return;
             }
 
@@ -50,6 +69,7 @@ class GenerateAndDispatchInvoice
                 ['society_id' => $this->society->id, 'billing_month' => $this->billingMonth],
                 ['invoice_number' => $invoiceNumber, 'total_amount' => $amount, 'status' => 'pending', 'error_log' => null]
             );
+            $this->logEvent($invoice, 'generated', 'Invoice record generated.');
 
             $amountInWords = self::numberToWords($amount);
 
@@ -65,10 +85,12 @@ class GenerateAndDispatchInvoice
                 ->send(new \App\Mail\SocietyInvoiceMail($invoice, $pdf->output()));
 
             $invoice->update(['status' => 'sent', 'sent_at' => now()]);
+            $this->logEvent($invoice, 'sent', "Emailed to {$this->society->contact_person_email}");
 
         } catch (\Throwable $e) {
             if ($invoice) {
                 $invoice->update(['status' => 'failed', 'error_log' => $e->getMessage()]);
+                $this->logEvent($invoice, 'failed', $e->getMessage());
             }
             \Illuminate\Support\Facades\Log::error("Invoice dispatch failed for society {$this->society->id}: " . $e->getMessage());
         }
