@@ -17,7 +17,7 @@ class InvoiceDispatchController extends Controller
         $totalSocieties = Society::count();
         $sentCount    = Invoice::where('billing_month', $month)->where('status', 'sent')->count();
         $failedCount  = Invoice::where('billing_month', $month)->where('status', 'failed')->count();
-        $pendingCount = Invoice::where('billing_month', $month)->where('status', 'pending')->count();
+        $pendingCount = max(0, $totalSocieties - $sentCount - $failedCount);
         $skippedCount = Invoice::where('billing_month', $month)->where('status', 'skipped')->count();
 
         $allSocieties = Society::with(['invoices' => function ($query) use ($month) {
@@ -239,13 +239,23 @@ class InvoiceDispatchController extends Controller
             }
             $title = "Sent Invoices (" . count($data) . ")";
         } elseif ($status === 'pending') {
-            $invoices = Invoice::where('billing_month', $month)->where('status', 'pending')->with('society')->get();
-            foreach ($invoices as $inv) {
+            $sentOrFailedSocietyIds = Invoice::where('billing_month', $month)
+                ->whereIn('status', ['sent', 'failed'])
+                ->pluck('society_id');
+
+            $pendingSocieties = Society::whereNotIn('id', $sentOrFailedSocietyIds)->orderBy('name')->get();
+
+            foreach ($pendingSocieties as $s) {
+                $inv = Invoice::where('society_id', $s->id)->where('billing_month', $month)->first();
+                $invoiceNum = $inv ? $inv->invoice_number : 'Not Generated';
+                $statusLabel = $inv ? ucfirst($inv->status) : 'Not Generated';
+                $amount = $inv ? $inv->total_amount : ($s->billing_amount ?: (($s->flats_families ?? 0) * ($s->rate_per_flat ?? 0)));
+
                 $data[] = [
-                    'name' => $inv->society->name,
-                    'info' => $inv->invoice_number,
-                    'detail' => $inv->society->contact_person_email ?: 'No email set',
-                    'amount' => '₹' . number_format($inv->total_amount, 2)
+                    'name' => $s->name,
+                    'info' => "{$invoiceNum} ({$statusLabel})",
+                    'detail' => $s->contact_person_email ?: 'No email set',
+                    'amount' => '₹' . number_format($amount, 2)
                 ];
             }
             $title = "Pending Queue (" . count($data) . ")";
