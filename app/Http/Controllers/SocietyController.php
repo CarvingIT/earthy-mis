@@ -34,6 +34,7 @@ class SocietyController extends Controller
             'rate_per_flat' => ['nullable', 'numeric', 'min:0'],
             'billing_amount' => ['nullable', 'numeric', 'min:0'],
             'vehicle_number' => ['nullable', 'string', 'max:255'],
+            'mou_end_date' => ['nullable', 'date'],
         ]);
 
         Society::create($data + ['user_id' => auth()->id()]);
@@ -72,6 +73,7 @@ class SocietyController extends Controller
             'rate_per_flat' => ['nullable', 'numeric', 'min:0'],
             'billing_amount' => ['nullable', 'numeric', 'min:0'],
             'vehicle_number' => ['nullable', 'string', 'max:255'],
+            'mou_end_date' => ['nullable', 'date'],
         ]);
 
         $society->update($data);

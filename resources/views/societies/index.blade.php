@@ -121,6 +121,14 @@
             background: #f8fafc;
         }
 
+        .societies-table tbody tr.expired-row {
+            background: rgba(254, 242, 242, 0.85) !important;
+        }
+
+        .societies-table tbody tr.expired-row:hover {
+            background: rgba(254, 226, 226, 0.95) !important;
+        }
+
         .societies-table tbody tr:last-child td {
             border-bottom: 0;
         }
@@ -316,6 +324,7 @@
                                 <th class="w-[6%] min-w-[80px]">Joined</th>
                                 <th class="w-[5%] min-w-[70px]">Flats</th>
                                 <th class="w-[10%] min-w-[110px]">Billing (Monthly)</th>
+                                <th class="w-[10%] min-w-[120px]">MOU End Date</th>
                                 <th class="w-[10%] min-w-[110px]">Chairman</th>
                                 <th class="w-[14%] min-w-[160px]">Secretary / Email</th>
                                 <th class="w-[10%] min-w-[110px]">Phone</th>
@@ -324,7 +333,10 @@
                         </thead>
                         <tbody>
                             @forelse ($societies as $society)
-                                <tr>
+                                @php
+                                    $isExpired = $society->mou_end_date && $society->mou_end_date->isPast();
+                                @endphp
+                                <tr class="{{ $isExpired ? 'expired-row' : '' }}">
                                     <td>
                                         <div class="flex items-start gap-3">
                                             <!-- <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-sm font-black text-slate-700">
@@ -349,6 +361,22 @@
                                     </td>
                                     <td>
                                         <span class="font-extrabold text-slate-900">₹{{ number_format((float)$society->billing_amount, 2) }}</span>
+                                    </td>
+                                    <td>
+                                        @if($society->mou_end_date)
+                                            <span class="font-extrabold {{ $isExpired ? 'text-rose-600' : 'text-emerald-600' }}">
+                                                {{ $society->mou_end_date->format('d M Y') }}
+                                            </span>
+                                            <div class="text-[10px] font-bold uppercase tracking-wider mt-0.5">
+                                                @if($isExpired)
+                                                    <span class="text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded">Expired</span>
+                                                @else
+                                                    <span class="text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded">Active</span>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="text-slate-400">Not set</span>
+                                        @endif
                                     </td>
                                     <td class="font-semibold text-slate-700">{{ $society->chairman_name ?: 'Not set' }}</td>
                                     <td>
@@ -387,7 +415,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8">
+                                    <td colspan="10">
                                         <div class="flex flex-col items-center justify-center py-12 text-center">
                                             <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
                                                 <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">

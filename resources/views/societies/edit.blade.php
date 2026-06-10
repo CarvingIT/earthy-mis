@@ -189,6 +189,12 @@
                                         <x-text-input id="vehicle_number" name="vehicle_number" type="text" class="form-field mt-2 block w-full" :value="old('vehicle_number', $society->vehicle_number)" placeholder="MH-12-PQ-1234" />
                                         <x-input-error class="mt-2" :messages="$errors->get('vehicle_number')" />
                                     </div>
+
+                                    <div>
+                                        <label for="mou_end_date" class="form-label">MOU End Date</label>
+                                        <x-text-input id="mou_end_date" name="mou_end_date" type="date" class="form-field mt-2 block w-full" :value="old('mou_end_date', $society->mou_end_date?->format('Y-m-d'))" />
+                                        <x-input-error class="mt-2" :messages="$errors->get('mou_end_date')" />
+                                    </div>
                                 </div>
                             </div>
                         </section>

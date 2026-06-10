@@ -25,7 +25,13 @@ class Society extends Model
         'rate_per_flat',
         'billing_amount',
         'vehicle_number',
+        'mou_end_date',
     ];
+
+    protected $casts = [
+        'mou_end_date' => 'date',
+    ];
+
 
     public function getRatePerFlatAttribute($value)
     {
