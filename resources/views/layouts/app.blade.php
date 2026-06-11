@@ -53,11 +53,23 @@
                     }
 
                     table.dataset.datatableInitialized = 'true';
-                    new DataTable(table, {
+                    const dt = new DataTable(table, {
                         pageLength: 10,
                         lengthChange: false,
                         order: [],
+                        autoWidth: false,
+                        layout: {
+                            topStart: null,
+                            topEnd: null
+                        }
                     });
+
+                    const customSearch = document.getElementById('custom-search');
+                    if (customSearch) {
+                        customSearch.addEventListener('input', function() {
+                            dt.search(this.value).draw();
+                        });
+                    }
                 });
             });
         </script>

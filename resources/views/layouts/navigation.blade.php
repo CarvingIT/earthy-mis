@@ -428,7 +428,7 @@
 
                 <!-- Operations Dropdown -->
                 <div class="relative group">
-                    <button class="dropdown-trigger group-hover:text-blue-600 {{ request()->routeIs('logistics.*', 'weights.*', 'trips.*', 'windrow.*', 'turning.*', 'jcb.*', 'supplyitems.*', 'stock.*', 'sale.*') ? 'active' : '' }}" x-data="{ open: false }" @click="open = !open" :class="{ 'open': open }">
+                    <button class="dropdown-trigger group-hover:text-blue-600 {{ request()->routeIs('logistics.*', 'weights.*', 'trips.*', 'windrow.*', 'turning.*', 'jcb.*', 'supplyitems.*', 'stock.*', 'sale.*', 'invoices.*') ? 'active' : '' }}" x-data="{ open: false }" @click="open = !open" :class="{ 'open': open }">
                         <span>Operations
                             @if (request()->routeIs('logistics.*'))
                                 - Logistics
@@ -448,6 +448,8 @@
                                 - Stock
                             @elseif (request()->routeIs('sale.*'))
                                 - Sales
+                            @elseif (request()->routeIs('invoices.*'))
+                                - Invoices
                             @endif
                         </span>
                         <svg fill="currentColor" viewBox="0 0 20 20">
@@ -464,6 +466,7 @@
                         <a href="{{ route('supplyitems.index') }}" class="{{ request()->routeIs('supplyitems.*') ? 'active' : '' }}">Supply Items</a>
                         <a href="{{ route('stock.index') }}" class="{{ request()->routeIs('stock.*') ? 'active' : '' }}">Stock</a>
                         <a href="{{ route('sale.index') }}" class="{{ request()->routeIs('sale.*') ? 'active' : '' }}">Sales</a>
+                        <a href="{{ route('invoices.index') }}" class="{{ request()->routeIs('invoices.*') ? 'active' : '' }}">Invoices</a>
                     </div>
                 </div>
             </div>
@@ -567,7 +570,7 @@
         </div>
 
         <div class="mobile-menu-section">
-            <div class="mobile-menu-section-title {{ request()->routeIs('logistics.*', 'weights.*', 'trips.*', 'windrow.*', 'turning.*', 'jcb.*', 'supplyitems.*', 'stock.*', 'sale.*') ? 'active' : '' }}">
+            <div class="mobile-menu-section-title {{ request()->routeIs('logistics.*', 'weights.*', 'trips.*', 'windrow.*', 'turning.*', 'jcb.*', 'supplyitems.*', 'stock.*', 'sale.*', 'invoices.*') ? 'active' : '' }}">
                 Operations
                 @if (request()->routeIs('logistics.*'))
                     <span> - Logistics</span>
@@ -587,6 +590,8 @@
                     <span> - Stock</span>
                 @elseif (request()->routeIs('sale.*'))
                     <span> - Sales</span>
+                @elseif (request()->routeIs('invoices.*'))
+                    <span> - Invoices</span>
                 @endif
             </div>
             <a href="{{ route('logistics.index') }}" class="{{ request()->routeIs('logistics.*') ? 'active' : '' }}">Logistics</a>
@@ -598,6 +603,7 @@
             <a href="{{ route('supplyitems.index') }}" class="{{ request()->routeIs('supplyitems.*') ? 'active' : '' }}">Supply Items</a>
             <a href="{{ route('stock.index') }}" class="{{ request()->routeIs('stock.*') ? 'active' : '' }}">Stock</a>
             <a href="{{ route('sale.index') }}" class="{{ request()->routeIs('sale.*') ? 'active' : '' }}">Sales</a>
+            <a href="{{ route('invoices.index') }}" class="{{ request()->routeIs('invoices.*') ? 'active' : '' }}">Invoices</a>
         </div>
 
         <div class="border-t border-gray-200 pt-4 mt-4">
