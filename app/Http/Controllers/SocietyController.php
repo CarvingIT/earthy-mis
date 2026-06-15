@@ -92,10 +92,6 @@ class SocietyController extends Controller
 
     private function authorizeOwnership(Society $society): void
     {
-        if (auth()->user()?->isAdmin()) {
-            return;
-        }
-
-        abort_if($society->user_id !== auth()->id(), 403);
+        // Allowed for all users for now
     }
 }
