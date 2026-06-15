@@ -105,11 +105,25 @@
 </head>
 <body>
     <div class="container">
+        <!-- Logo & Title Row -->
+        <table class="table-borderless" style="margin-bottom: 10px;">
+            <tr>
+                <td style="width: 50%; vertical-align: middle;">
+                    @if(file_exists(public_path('earthycompanionslogo.jpeg')))
+                        <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(public_path('earthycompanionslogo.jpeg'))) }}" style="height: 50px; width: auto;" alt="Logo">
+                    @endif
+                </td>
+                <td style="width: 50%; text-align: right; vertical-align: middle;">
+                    <div class="header-title" style="margin: 0;">Tax Invoice</div>
+                </td>
+            </tr>
+        </table>
+
         <!-- Main Outer Layout -->
-        <table class="table-borderless">
+        <table class="table-borderless" style="margin-top: 5px;">
             <tr>
                 <!-- Left Company Address -->
-                <td style="width: 55%; padding-right: 20px;">
+                <td style="width: 55%; padding-right: 20px; vertical-align: top;">
                     <div class="company-name">Earthy Companions Services Pvt. Ltd. FIWM</div>
                     <div style="margin-bottom: 10px;">
                         Flat No. C-402, S. No. 43/78,79,80,82,<br>
@@ -121,24 +135,23 @@
                 </td>
                 
                 <!-- Right Invoice Details -->
-                <td style="width: 45%; text-align: right;">
-                    <div class="header-title">Tax Invoice</div>
-                    <table class="table-borderless" style="margin-top: 5px; float: right; width: auto;">
+                <td style="width: 45%; text-align: right; vertical-align: top;">
+                    <table class="table-borderless" style="margin: 0; float: right; width: auto;">
                         <tr>
-                            <td class="font-bold" style="padding-right: 15px; text-align: right;">Invoice No:</td>
-                            <td style="text-align: left;">{{ $invoice->invoice_number }}</td>
+                            <td class="font-bold" style="padding-right: 15px; text-align: right; padding-top: 0; padding-bottom: 2px;">Invoice No:</td>
+                            <td style="text-align: left; padding-top: 0; padding-bottom: 2px;">{{ $invoice->invoice_number }}</td>
                         </tr>
                         <tr>
-                            <td class="font-bold" style="padding-right: 15px; text-align: right;">Invoice Date:</td>
-                            <td style="text-align: left;">{{ now()->format('d-M-y') }}</td>
+                            <td class="font-bold" style="padding-right: 15px; text-align: right; padding-top: 2px; padding-bottom: 2px;">Invoice Date:</td>
+                            <td style="text-align: left; padding-top: 2px; padding-bottom: 2px;">{{ now()->format('d-M-y') }}</td>
                         </tr>
                         <tr>
-                            <td class="font-bold" style="padding-right: 15px; text-align: right;">Billing Month:</td>
-                            <td style="text-align: left;">{{ Carbon\Carbon::parse($invoice->billing_month . '-01')->format('F Y') }}</td>
+                            <td class="font-bold" style="padding-right: 15px; text-align: right; padding-top: 2px; padding-bottom: 2px;">Billing Month:</td>
+                            <td style="text-align: left; padding-top: 2px; padding-bottom: 2px;">{{ Carbon\Carbon::parse($invoice->billing_month . '-01')->format('F Y') }}</td>
                         </tr>
                         <tr>
-                            <td class="font-bold" style="padding-right: 15px; text-align: right;">Destination:</td>
-                            <td style="text-align: left;">A/P KODIT, PURANDAR, PUNE</td>
+                            <td class="font-bold" style="padding-right: 15px; text-align: right; padding-top: 2px; padding-bottom: 2px;">Destination:</td>
+                            <td style="text-align: left; padding-top: 2px; padding-bottom: 2px;">A/P KODIT, PURANDAR, PUNE</td>
                         </tr>
                     </table>
                 </td>
@@ -199,7 +212,7 @@
                 </tr>
                 <!-- Empty spacer rows to pad the table -->
                 <tr>
-                    <td class="text-center" style="height: 40px;"></td>
+                    <td class="text-center" style="height: 20px;"></td>
                     <td></td>
                     <td></td>
                     <td></td>
@@ -254,10 +267,19 @@
                         <strong>Declaration:</strong><br>
                         We declare that this invoice shows the actual price of the services described and that all particulars are true and correct.
                     </div>
-                    <div style="margin-top: 30px; text-align: right;">
-                        <div class="company-name" style="font-size: 9px; margin-bottom: 40px;">For Earthy Companions Services Pvt. Ltd.</div>
-                        <div class="signature-space">
-                            Authorized Signatory
+                    <div style="margin-top: 20px; text-align: right;">
+                        <div class="company-name" style="font-size: 9px; margin-bottom: 5px;">For Earthy Companions Services Pvt. Ltd.</div>
+                        <div style="float: right; width: 180px; text-align: center;">
+                            @if(file_exists(public_path('earthycompanions_sign_and_stamp.jpeg')))
+                                <div style="height: 55px; margin-bottom: 5px; text-align: center;">
+                                    <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(public_path('earthycompanions_sign_and_stamp.jpeg'))) }}" style="height: 55px; width: auto;" alt="Signature & Stamp">
+                                </div>
+                            @else
+                                <div style="height: 45px;"></div>
+                            @endif
+                            <div style="border-top: 1px dashed #000000; padding-top: 5px; font-weight: bold;">
+                                Authorized Signatory
+                            </div>
                         </div>
                     </div>
                 </td>
