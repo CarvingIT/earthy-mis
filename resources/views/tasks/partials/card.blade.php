@@ -48,10 +48,10 @@
         @endif
     </div>
 
-    <!-- Bottom Metadata Row (Due date & Actions) -->
+    <!-- Bottom Metadata Row (Due date, Comments & Actions) -->
     <div class="border-t border-slate-100 pt-2.5 flex justify-between items-center mt-2.5">
-        <!-- Due Date Tag -->
-        <div>
+        <!-- Due Date Tag & Comments Badge -->
+        <div class="flex items-center gap-2">
             @if($task->due_date)
                 @php
                     $isOverdue = $task->due_date->isPast() && $task->status !== 'completed' && !$task->due_date->isToday();
@@ -70,7 +70,7 @@
                     </div>
                 @else
                     <div class="flex items-center gap-1 text-[0.68rem] text-slate-500 font-bold bg-slate-50 px-2 py-0.5 rounded border border-slate-100/60">
-                        <svg xmlns="http://www.w3.org/2050/svg" class="h-3 w-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         <span>{{ $task->due_date->format('M d') }}</span>
@@ -79,6 +79,26 @@
             @else
                 <span class="text-[0.68rem] text-slate-400 font-bold tracking-wider uppercase bg-slate-50 px-2 py-0.5 rounded border border-slate-100/60">No Deadline</span>
             @endif
+
+            <!-- Clickable Comments & File Badge -->
+            <button type="button" 
+                    @click.stop="openDrawerForEdit({{ $task->toJson() }})"
+                    class="inline-flex items-center gap-1 text-[0.68rem] font-bold text-slate-600 bg-slate-100 hover:bg-emerald-100 hover:text-emerald-800 px-2 py-0.5 rounded-md border border-slate-200/70 transition-all cursor-pointer" 
+                    title="View task activity, comments & files">
+                <svg class="w-3 h-3 text-slate-500 hover:text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                </svg>
+                <span>{{ $task->comments->count() }}</span>
+                @php
+                    $fileCount = $task->comments->whereNotNull('file_path')->count();
+                @endphp
+                @if($fileCount > 0)
+                    <svg class="w-3 h-3 text-emerald-600 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                    </svg>
+                    <span class="text-emerald-700 font-extrabold">{{ $fileCount }}</span>
+                @endif
+            </button>
         </div>
 
         <!-- Shift & Control Actions (Glassmorphic colored buttons) -->

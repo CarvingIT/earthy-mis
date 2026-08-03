@@ -13,6 +13,7 @@ use App\Http\Controllers\WindrowController;
 use App\Http\Controllers\TurningController;
 use App\Http\Controllers\JcbController;
 use App\Http\Controllers\ConsumableController;
+use App\Http\Controllers\LeadController;
 use App\Http\Controllers\SupplyItemController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\StockController;
@@ -56,6 +57,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('societies', SocietyController::class)->except('show');
+    Route::resource('leads', LeadController::class)->except('show');
     Route::resource('vehicles', VehicleController::class)->except('show');
     Route::resource('customers', CustomerController::class)->except('show');
     Route::resource('products', ProductController::class)->except('show');
@@ -70,6 +72,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('sale', SaleController::class)->except('show');
     Route::resource('stock', StockController::class)->except('show');
     Route::resource('tasks', TaskController::class)->except('show');
+    Route::post('/tasks/{task}/comments', [\App\Http\Controllers\TaskCommentController::class, 'store'])->name('tasks.comments.store');
+    Route::get('/task-comments/{comment}/download', [\App\Http\Controllers\TaskCommentController::class, 'download'])->name('tasks.comments.download');
+    Route::delete('/task-comments/{comment}', [\App\Http\Controllers\TaskCommentController::class, 'destroy'])->name('tasks.comments.destroy');
     Route::post('/stock/sync-sales', [StockController::class, 'syncSales'])->name('stock.sync-sales');
 
     Route::get('/get_product_rate/ajax/{product_id}',[ProductController::class, 'getProductRate']);
@@ -109,6 +114,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/invoices/clear-pending', [InvoiceDispatchController::class, 'clearPending'])->name('invoices.clear-pending');
     Route::post('/invoices/clear-queue', [InvoiceDispatchController::class, 'clearQueue'])->name('invoices.clear-queue');
     Route::get('/invoices/{invoice}/pdf', [InvoiceDispatchController::class, 'viewPdf'])->name('invoices.pdf');
+    Route::post('/invoices/penalty/generate', [InvoiceDispatchController::class, 'generatePenaltyInvoice'])->name('invoices.penalty.generate');
+    Route::post('/invoices/penalty/download', [InvoiceDispatchController::class, 'downloadPenaltyInvoice'])->name('invoices.penalty.download');
+    Route::post('/invoices/penalty/send', [InvoiceDispatchController::class, 'sendPenaltyInvoice'])->name('invoices.penalty.send');
+    Route::post('/invoices/penalty/{invoice}/send-existing', [InvoiceDispatchController::class, 'sendExistingPenaltyInvoice'])->name('invoices.penalty.send-existing');
 
     Route::middleware('admin')->group(function () {
         Route::resource('users', UserController::class)->except('show');

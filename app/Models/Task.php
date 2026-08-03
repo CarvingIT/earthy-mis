@@ -39,4 +39,12 @@ class Task extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    /**
+     * Get the date-wise comments for the task.
+     */
+    public function comments()
+    {
+        return $this->hasMany(TaskComment::class)->orderBy('created_at', 'desc');
+    }
 }

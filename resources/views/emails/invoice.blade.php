@@ -86,6 +86,8 @@
                 </tr>
             </table>
 
+            <p style="font-size: 0.85em; color: #6b7280; margin-bottom: 15px;"><strong>Note:</strong> Payment made after 10th of the month will attract late payment charges of Rs. 450. This will reflect in the next immediate month bill.</p>
+
             <p>If you have any questions or require further assistance, please contact us at Ecspl.Fiwm@gmail.Com or call us at +91 8412037640.</p>
             <p>Thank you for your continued partnership.</p>
         </div>

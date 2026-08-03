@@ -26,6 +26,7 @@ class Society extends Model
         'billing_amount',
         'vehicle_number',
         'mou_end_date',
+        'mou_file',
     ];
 
     protected $casts = [

@@ -114,7 +114,7 @@
                     @endif
                 </td>
                 <td style="width: 50%; text-align: right; vertical-align: middle;">
-                    <div class="header-title" style="margin: 0;">Tax Invoice</div>
+                    <div class="header-title" style="margin: 0;">{{ (!empty($isPenalty) || ($invoice->invoice_type ?? '') === 'penalty') ? 'Penalty Tax Invoice' : 'Tax Invoice' }}</div>
                 </td>
             </tr>
         </table>
@@ -143,7 +143,7 @@
                         </tr>
                         <tr>
                             <td class="font-bold" style="padding-right: 15px; text-align: right; padding-top: 2px; padding-bottom: 2px;">Invoice Date:</td>
-                            <td style="text-align: left; padding-top: 2px; padding-bottom: 2px;">{{ now()->format('d-M-y') }}</td>
+                            <td style="text-align: left; padding-top: 2px; padding-bottom: 2px;">{{ !empty($invoice->invoice_date) ? Carbon\Carbon::parse($invoice->invoice_date)->format('d-M-y') : now()->format('d-M-y') }}</td>
                         </tr>
                         <tr>
                             <td class="font-bold" style="padding-right: 15px; text-align: right; padding-top: 2px; padding-bottom: 2px;">Billing Month:</td>
@@ -202,6 +202,16 @@
                 </tr>
             </thead>
             <tbody>
+                @if(!empty($isPenalty) || ($invoice->invoice_type ?? '') === 'penalty')
+                <tr>
+                    <td class="text-center">1</td>
+                    <td class="font-bold">Late Payment Penalty Fee</td>
+                    <td class="text-center">996791</td>
+                    <td class="text-center">1</td>
+                    <td class="text-right">{{ number_format((float)$invoice->total_amount, 2) }}</td>
+                    <td class="text-right">{{ number_format((float)$invoice->total_amount, 2) }}</td>
+                </tr>
+                @else
                 <tr>
                     <td class="text-center">1</td>
                     <td class="font-bold">Transport Charges - Waste Collection</td>
@@ -210,6 +220,7 @@
                     <td class="text-right">{{ number_format((float)$society->rate_per_flat, 2) }}</td>
                     <td class="text-right">{{ number_format((float)$invoice->total_amount, 2) }}</td>
                 </tr>
+                @endif
                 <!-- Empty spacer rows to pad the table -->
                 <tr>
                     <td class="text-center" style="height: 20px;"></td>
@@ -263,6 +274,10 @@
                 </td>
                 
                 <td style="width: 45%; vertical-align: bottom;">
+                    <div class="footer-declaration" style="margin-bottom: 8px;">
+                        <strong>Terms & Conditions:</strong><br>
+                        1. Payment made after 10th of the month will attract late payment charges of Rs. 450. This will reflect in the next immediate month bill.
+                    </div>
                     <div class="footer-declaration">
                         <strong>Declaration:</strong><br>
                         We declare that this invoice shows the actual price of the services described and that all particulars are true and correct.

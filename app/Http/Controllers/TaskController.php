@@ -13,7 +13,7 @@ class TaskController extends Controller
      */
     public function index()
     {
-        $tasks = Task::with('assignedUser')
+        $tasks = Task::with(['assignedUser', 'comments.user'])
             ->orderBy('due_date', 'asc')
             ->get();
 

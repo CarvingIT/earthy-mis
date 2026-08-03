@@ -205,6 +205,13 @@
                             Dispatch Report
                         </button>
 
+                        <button type="button" onclick="openPenaltyModal()" class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-amber-600 bg-amber-50 px-3.5 text-xs font-bold text-amber-700 transition hover:bg-amber-600 hover:text-white shadow-sm">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            Penalty Invoice
+                        </button>
+
                         <button type="button" onclick="confirmGlobalDispatch()" class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-slate-900 px-3.5 text-xs font-bold text-white transition hover:bg-emerald-700">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
@@ -352,6 +359,109 @@
                     @endif
                 </div>
             </section>
+
+            <!-- Penalty Invoices Table / Directory Section -->
+            @if(isset($penaltyInvoices) && $penaltyInvoices->count() > 0)
+                <section class="invoice-table-card reveal rounded-2xl p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-slate-100 mb-4 gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-700 font-bold">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-extrabold text-slate-900">Penalty Invoices Log</h3>
+                                <p class="text-xs font-semibold text-slate-500">Track and manage generated penalty invoices for {{ Carbon\Carbon::parse($month . '-01')->format('F Y') }}</p>
+                            </div>
+                        </div>
+                        <span class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
+                            {{ $penaltyInvoices->count() }} Penalties Recorded
+                        </span>
+                    </div>
+
+                    <div class="invoices-table-wrap overflow-x-auto">
+                        <table class="invoices-table w-full text-left">
+                            <thead>
+                                <tr>
+                                    <th>Invoice #</th>
+                                    <th>Date</th>
+                                    <th>Society Name</th>
+                                    <th>Contact Email</th>
+                                    <th>Late Fee</th>
+                                    <th>Status</th>
+                                    <th class="text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($penaltyInvoices as $pen)
+                                    <tr>
+                                        <td>
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-extrabold text-slate-900">{{ $pen->invoice_number }}</span>
+                                                <span class="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-black uppercase text-amber-800">Penalty</span>
+                                            </div>
+                                        </td>
+                                        <td class="font-semibold text-slate-600">
+                                            {{ $pen->invoice_date ? \Carbon\Carbon::parse($pen->invoice_date)->format('d M Y') : \Carbon\Carbon::parse($pen->created_at)->format('d M Y') }}
+                                        </td>
+                                        <td>
+                                            <div class="font-extrabold text-slate-900">{{ $pen->society->name ?? 'N/A' }}</div>
+                                        </td>
+                                        <td>
+                                            @if(!empty($pen->society->contact_person_email))
+                                                <span class="text-xs font-semibold text-slate-600">{{ $pen->society->contact_person_email }}</span>
+                                            @else
+                                                <span class="text-xs font-bold text-rose-600">No Email Set</span>
+                                            @endif
+                                        </td>
+                                        <td class="font-extrabold text-slate-900">
+                                            ₹{{ number_format((float)$pen->total_amount, 2) }}
+                                        </td>
+                                        <td>
+                                            @if($pen->status === 'sent')
+                                                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800">
+                                                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                    Sent
+                                                </span>
+                                            @elseif($pen->status === 'failed')
+                                                <span class="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-bold text-rose-800">
+                                                    Failed
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-800">
+                                                    Pending
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="text-right">
+                                            <div class="inline-flex items-center gap-1.5 justify-end">
+                                                <a href="{{ route('invoices.pdf', $pen) }}" target="_blank" title="View PDF" class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-900 hover:text-white transition">
+                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                </a>
+
+                                                <a href="{{ route('invoices.pdf', $pen) }}?download=1" title="Download PDF" download class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white transition">
+                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                                </a>
+
+                                                @if(!empty($pen->society->contact_person_email))
+                                                    <form method="POST" action="{{ route('invoices.penalty.send-existing', $pen) }}" class="inline">
+                                                        @csrf
+                                                        <button type="submit" title="Email Penalty Invoice" class="inline-flex h-8 items-center justify-center gap-1 rounded-lg bg-slate-900 px-2.5 text-xs font-bold text-white hover:bg-emerald-700 transition">
+                                                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                                            Send
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            @endif
 
         </div>
     </div>
@@ -585,6 +695,98 @@
                     Close Report
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Penalty Invoice Modal -->
+    <div id="penalty-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-200">
+        <div class="relative w-full max-w-md scale-95 transform rounded-2xl bg-white p-6 shadow-2xl transition-all duration-200" id="penalty-modal-content">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-extrabold text-slate-900">Penalty Invoice</h3>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Manage Late Payment Penalties</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closePenaltyModal()" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <form id="penalty-invoice-form" method="POST" action="{{ route('invoices.penalty.generate') }}" class="mt-4 space-y-4">
+                @csrf
+                <div>
+                    <label for="penalty_date" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Date</label>
+                    <input type="date" id="penalty_date" name="penalty_date" value="{{ date('Y-m-d') }}" required
+                           onchange="updatePenaltyPreview()"
+                           class="mt-1 block w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 px-4 text-sm font-semibold text-slate-800 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-amber-500/10">
+                </div>
+
+                <div>
+                    <label for="penalty_society_id" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Select Society (Master List)</label>
+                    <select id="penalty_society_id" name="society_id" required
+                            onchange="updatePenaltyPreview()"
+                            class="mt-1 block w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 px-4 text-sm font-semibold text-slate-800 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-amber-500/10">
+                        <option value="" data-email="" data-name="">-- Select Society --</option>
+                        @if(isset($masterSocieties))
+                            @foreach($masterSocieties as $s)
+                                <option value="{{ $s->id }}" data-email="{{ $s->contact_person_email }}" data-name="{{ $s->name }}">
+                                    {{ $s->name }} {{ $s->contact_person_email ? '('.$s->contact_person_email.')' : '(No Email)' }}
+                                </option>
+                            @endforeach
+                        @endif
+                    </select>
+                </div>
+
+                <div>
+                    <label for="penalty_amount" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Late Fee Amount (₹)</label>
+                    <input type="number" step="0.01" min="0" id="penalty_amount" name="amount" value="450.00" required placeholder="Enter late fee amount"
+                           oninput="updatePenaltyPreview()"
+                           class="mt-1 block w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 px-4 text-sm font-semibold text-slate-800 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-amber-500/10">
+                </div>
+
+                <!-- Live Mail & Invoice Preview Card -->
+                <div id="penalty-preview-card" class="rounded-xl border border-amber-200 bg-amber-50/60 p-3.5 text-xs text-slate-700 space-y-2">
+                    <div class="flex items-center justify-between font-bold text-amber-900 pb-1.5 border-b border-amber-200/60">
+                        <span class="inline-flex items-center gap-1.5">
+                            <svg class="h-4 w-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            Mail & Invoice Preview
+                        </span>
+                        <span id="preview-email-status" class="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-extrabold text-slate-600">Select Society</span>
+                    </div>
+
+                    <div class="space-y-1 text-[11px]">
+                        <div><strong class="text-slate-900">Recipient Email:</strong> <span id="prev-email" class="font-semibold text-slate-600">--</span></div>
+                        <div><strong class="text-slate-900">Subject:</strong> <span id="prev-subject" class="font-semibold text-slate-600">Tax Invoice (Penalty) - --</span></div>
+                        <div><strong class="text-slate-900">Bill Head:</strong> <span class="font-semibold text-slate-600">Late Payment Penalty Fee</span></div>
+                        <div><strong class="text-slate-900">Amount:</strong> <span id="prev-amount" class="font-bold text-emerald-700">₹450.00</span></div>
+                        <div><strong class="text-slate-900">PDF Attachment:</strong> <span id="prev-pdf-name" class="font-mono text-[10px] text-slate-500">Penalty_Invoice.pdf</span></div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex flex-wrap items-center justify-end gap-2 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closePenaltyModal()" class="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                        Cancel
+                    </button>
+
+                    <button type="submit" formaction="{{ route('invoices.penalty.generate') }}" class="rounded-xl bg-amber-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-amber-700 transition shadow-md shadow-amber-600/10" title="Saves Penalty Invoice in DB log">
+                        Generate & Save
+                    </button>
+
+                    <button type="submit" formaction="{{ route('invoices.penalty.download') }}" formtarget="_blank" class="rounded-xl border border-amber-600 bg-amber-50 px-3.5 py-2 text-xs font-bold text-amber-700 hover:bg-amber-600 hover:text-white transition" title="Download PDF document directly">
+                        Download PDF
+                    </button>
+
+                    <button type="submit" formaction="{{ route('invoices.penalty.send') }}" class="rounded-xl bg-slate-900 px-3.5 py-2 text-xs font-bold text-white hover:bg-emerald-700 transition shadow-md" title="Generates and emails PDF directly to recipient">
+                        Send Email
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -978,6 +1180,69 @@
             const statsItemsList = document.getElementById('stats-items-list');
 
             const statsModalActions = document.getElementById('stats-modal-actions');
+
+            window.updatePenaltyPreview = function() {
+                const socSelect = document.getElementById('penalty_society_id');
+                if (!socSelect) return;
+                const opt = socSelect.options[socSelect.selectedIndex];
+                const email = opt ? opt.getAttribute('data-email') : '';
+                const name = opt ? opt.getAttribute('data-name') : '';
+                const dateVal = document.getElementById('penalty_date').value || '';
+                const amountVal = parseFloat(document.getElementById('penalty_amount').value || 0).toFixed(2);
+
+                const prevEmail = document.getElementById('prev-email');
+                const prevStatus = document.getElementById('preview-email-status');
+                const prevSubject = document.getElementById('prev-subject');
+                const prevAmount = document.getElementById('prev-amount');
+                const prevPdfName = document.getElementById('prev-pdf-name');
+
+                if (email) {
+                    prevEmail.textContent = email;
+                    prevEmail.className = 'font-semibold text-emerald-700';
+                    prevStatus.textContent = 'Email Configured';
+                    prevStatus.className = 'rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800';
+                } else if (name) {
+                    prevEmail.textContent = 'No Email Set (Cannot Email)';
+                    prevEmail.className = 'font-bold text-rose-600';
+                    prevStatus.textContent = 'Missing Email';
+                    prevStatus.className = 'rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-extrabold text-rose-800';
+                } else {
+                    prevEmail.textContent = '--';
+                    prevEmail.className = 'font-semibold text-slate-600';
+                    prevStatus.textContent = 'Select Society';
+                    prevStatus.className = 'rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-extrabold text-slate-600';
+                }
+
+                const socName = name || '--';
+                const dateClean = dateVal.replace(/-/g, '');
+                const invNum = 'PEN-' + (dateClean || 'DATE') + '-XXXX';
+                prevSubject.textContent = `Tax Invoice (Penalty) ${invNum} - ${socName}`;
+                prevAmount.textContent = `₹${amountVal}`;
+                prevPdfName.textContent = `Penalty_Invoice_${invNum}.pdf`;
+            };
+
+            window.openPenaltyModal = function() {
+                const modal = document.getElementById('penalty-modal');
+                const content = document.getElementById('penalty-modal-content');
+                if (modal && content) {
+                    updatePenaltyPreview();
+                    modal.classList.remove('opacity-0', 'pointer-events-none');
+                    content.classList.remove('scale-95');
+                    content.classList.add('scale-100');
+                }
+            };
+
+            window.closePenaltyModal = function() {
+                const modal = document.getElementById('penalty-modal');
+                const content = document.getElementById('penalty-modal-content');
+                if (modal && content) {
+                    content.classList.remove('scale-100');
+                    content.classList.add('scale-95');
+                    setTimeout(() => {
+                        modal.classList.add('opacity-0', 'pointer-events-none');
+                    }, 150);
+                }
+            };
 
             window.openStatsModal = function() {
                 statsModal.classList.remove('opacity-0', 'pointer-events-none');

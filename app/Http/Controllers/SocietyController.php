@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Society;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class SocietyController extends Controller
 {
@@ -35,7 +36,12 @@ class SocietyController extends Controller
             'billing_amount' => ['nullable', 'numeric', 'min:0'],
             'vehicle_number' => ['nullable', 'string', 'max:255'],
             'mou_end_date' => ['nullable', 'date'],
+            'mou_file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:10240'],
         ]);
+
+        if ($request->hasFile('mou_file')) {
+            $data['mou_file'] = $request->file('mou_file')->store('society_mous', 'public');
+        }
 
         Society::create($data + ['user_id' => auth()->id()]);
 
@@ -74,7 +80,15 @@ class SocietyController extends Controller
             'billing_amount' => ['nullable', 'numeric', 'min:0'],
             'vehicle_number' => ['nullable', 'string', 'max:255'],
             'mou_end_date' => ['nullable', 'date'],
+            'mou_file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:10240'],
         ]);
+
+        if ($request->hasFile('mou_file')) {
+            if ($society->mou_file && Storage::disk('public')->exists($society->mou_file)) {
+                Storage::disk('public')->delete($society->mou_file);
+            }
+            $data['mou_file'] = $request->file('mou_file')->store('society_mous', 'public');
+        }
 
         $society->update($data);
 

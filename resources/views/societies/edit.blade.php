@@ -121,7 +121,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('societies.update', $society) }}">
+            <form method="POST" action="{{ route('societies.update', $society) }}" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -194,6 +194,20 @@
                                         <label for="mou_end_date" class="form-label">MOU End Date</label>
                                         <x-text-input id="mou_end_date" name="mou_end_date" type="date" class="form-field mt-2 block w-full" :value="old('mou_end_date', $society->mou_end_date?->format('Y-m-d'))" />
                                         <x-input-error class="mt-2" :messages="$errors->get('mou_end_date')" />
+                                    </div>
+
+                                    <div>
+                                        <label for="mou_file" class="form-label">MOU Document (PDF / Image)</label>
+                                        <input id="mou_file" name="mou_file" type="file" accept=".pdf,image/*" class="form-field mt-2 block w-full px-3 py-1.5 text-sm file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100" />
+                                        @if($society->mou_file)
+                                            <div class="mt-2 flex items-center gap-2">
+                                                <a href="{{ Storage::url($society->mou_file) }}" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 hover:text-emerald-700 hover:underline">
+                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                    View Current MOU Document
+                                                </a>
+                                            </div>
+                                        @endif
+                                        <x-input-error class="mt-2" :messages="$errors->get('mou_file')" />
                                     </div>
                                 </div>
                             </div>
