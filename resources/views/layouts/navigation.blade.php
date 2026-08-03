@@ -389,12 +389,14 @@
 
                 <!-- Master Data Dropdown -->
                 <div class="relative group">
-                    <button class="dropdown-trigger group-hover:text-blue-600 {{ request()->routeIs('users.*', 'societies.*', 'vehicles.*', 'customers.*', 'products.*', 'consumables.*', 'units.*') ? 'active' : '' }}" x-data="{ open: false }" @click="open = !open" :class="{ 'open': open }">
+                    <button class="dropdown-trigger group-hover:text-blue-600 {{ request()->routeIs('users.*', 'societies.*', 'leads.*', 'vehicles.*', 'customers.*', 'products.*', 'consumables.*', 'units.*') ? 'active' : '' }}" x-data="{ open: false }" @click="open = !open" :class="{ 'open': open }">
                         <span>Master Data
                             @if (request()->routeIs('users.*'))
                                 - Users
                             @elseif (request()->routeIs('societies.*'))
                                 - Societies
+                            @elseif (request()->routeIs('leads.*'))
+                                - Leads
                             @elseif (request()->routeIs('vehicles.*'))
                                 - Vehicles
                             @elseif (request()->routeIs('customers.*'))
@@ -416,6 +418,7 @@
                             <a href="{{ route('users.index') }}" class="{{ request()->routeIs('users.*') ? 'active' : '' }}">Users</a>
                         @endif
                         <a href="{{ route('societies.index') }}" class="{{ request()->routeIs('societies.*') ? 'active' : '' }}">Societies</a>
+                        <a href="{{ route('leads.index') }}" class="{{ request()->routeIs('leads.*') ? 'active' : '' }}">Leads</a>
                         <a href="{{ route('vehicles.index') }}" class="{{ request()->routeIs('vehicles.*') ? 'active' : '' }}">Vehicles</a>
                         <a href="{{ route('customers.index') }}" class="{{ request()->routeIs('customers.*') ? 'active' : '' }}">Customers</a>
                         <a href="{{ route('products.index') }}" class="{{ request()->routeIs('products.*') ? 'active' : '' }}">Products</a>
@@ -538,12 +541,14 @@
         </div>
 
         <div class="mobile-menu-section">
-            <div class="mobile-menu-section-title {{ request()->routeIs('users.*', 'societies.*', 'vehicles.*', 'customers.*', 'products.*', 'consumables.*', 'units.*') ? 'active' : '' }}">
+            <div class="mobile-menu-section-title {{ request()->routeIs('users.*', 'societies.*', 'leads.*', 'vehicles.*', 'customers.*', 'products.*', 'consumables.*', 'units.*') ? 'active' : '' }}">
                 Master Data
                 @if (request()->routeIs('users.*'))
                     <span> - Users</span>
                 @elseif (request()->routeIs('societies.*'))
                     <span> - Societies</span>
+                @elseif (request()->routeIs('leads.*'))
+                    <span> - Leads</span>
                 @elseif (request()->routeIs('vehicles.*'))
                     <span> - Vehicles</span>
                 @elseif (request()->routeIs('customers.*'))
@@ -560,6 +565,7 @@
                 <a href="{{ route('users.index') }}" class="{{ request()->routeIs('users.*') ? 'active' : '' }}">Users</a>
             @endif
             <a href="{{ route('societies.index') }}" class="{{ request()->routeIs('societies.*') ? 'active' : '' }}">Societies</a>
+            <a href="{{ route('leads.index') }}" class="{{ request()->routeIs('leads.*') ? 'active' : '' }}">Leads</a>
             <a href="{{ route('vehicles.index') }}" class="{{ request()->routeIs('vehicles.*') ? 'active' : '' }}">Vehicles</a>
             <a href="{{ route('customers.index') }}" class="{{ request()->routeIs('customers.*') ? 'active' : '' }}">Customers</a>
             <a href="{{ route('products.index') }}" class="{{ request()->routeIs('products.*') ? 'active' : '' }}">Products</a>

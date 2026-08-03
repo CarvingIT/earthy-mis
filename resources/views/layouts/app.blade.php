@@ -52,6 +52,12 @@
                         return;
                     }
 
+                    // Skip initialization if table has single empty row with colspan
+                    const emptyCell = table.querySelector('tbody tr td[colspan]');
+                    if (emptyCell && table.querySelectorAll('tbody tr').length === 1) {
+                        return;
+                    }
+
                     table.dataset.datatableInitialized = 'true';
                     const dt = new DataTable(table, {
                         pageLength: 10,

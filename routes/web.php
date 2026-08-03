@@ -13,6 +13,7 @@ use App\Http\Controllers\WindrowController;
 use App\Http\Controllers\TurningController;
 use App\Http\Controllers\JcbController;
 use App\Http\Controllers\ConsumableController;
+use App\Http\Controllers\LeadController;
 use App\Http\Controllers\SupplyItemController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\StockController;
@@ -56,6 +57,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('societies', SocietyController::class)->except('show');
+    Route::resource('leads', LeadController::class)->except('show');
     Route::resource('vehicles', VehicleController::class)->except('show');
     Route::resource('customers', CustomerController::class)->except('show');
     Route::resource('products', ProductController::class)->except('show');
