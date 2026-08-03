@@ -263,6 +263,10 @@
                 </td>
                 
                 <td style="width: 45%; vertical-align: bottom;">
+                    <div class="footer-declaration" style="margin-bottom: 8px;">
+                        <strong>Terms & Conditions:</strong><br>
+                        1. Payment made after 10th of the month will attract late payment charges of Rs. 450. This will reflect in the next immediate month bill.
+                    </div>
                     <div class="footer-declaration">
                         <strong>Declaration:</strong><br>
                         We declare that this invoice shows the actual price of the services described and that all particulars are true and correct.
