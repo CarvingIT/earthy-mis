@@ -322,16 +322,16 @@
                  x-transition:leave="transition ease-in duration-180"
                  x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                  x-transition:leave-end="opacity-0 scale-95 translate-y-2"
-                 class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full max-w-2xl border border-slate-200/80 z-10 my-auto">
+                 class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full max-w-3xl border border-slate-200/80 z-10 my-auto max-h-[90vh] flex flex-col">
                 
                 <!-- Top Accent line -->
                 <div class="absolute top-0 left-0 right-0 h-[4px] bg-gradient-to-r from-emerald-500 to-teal-400"></div>
 
                 <!-- Modal Header -->
-                <div class="px-6 pt-6 pb-4 flex justify-between items-start border-b border-slate-100">
+                <div class="px-6 pt-6 pb-4 flex justify-between items-start border-b border-slate-100 shrink-0">
                     <div>
-                        <h3 class="text-base font-bold text-slate-900 tracking-tight" x-text="isEditing ? 'Modify Operations Task' : 'Register Pipeline Task'"></h3>
-                        <p class="text-xs text-slate-400 font-semibold mt-0.5">Configure properties to update operations workflows.</p>
+                        <h3 class="text-base font-bold text-slate-900 tracking-tight" x-text="isEditing ? 'Task Details & Activity' : 'Register Pipeline Task'"></h3>
+                        <p class="text-xs text-slate-400 font-semibold mt-0.5">Configure properties and view date-wise updates.</p>
                     </div>
                     <button @click="showDrawer = false" class="text-slate-400 hover:text-slate-600 transition p-1 rounded-lg hover:bg-slate-50 border border-slate-100">
                         <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -340,65 +340,68 @@
                     </button>
                 </div>
 
-                <!-- Form Content in a Highly Polished 2-Column Grid -->
-                <form :action="isEditing ? '{{ url('tasks') }}/' + task.id : '{{ route('tasks.store') }}'" 
-                      method="POST"
-                      class="m-0">
-                    @csrf
-                    <input type="hidden" name="_method" :value="isEditing ? 'PUT' : 'POST'">
+                <!-- Modal Body (Scrollable) -->
+                <div class="overflow-y-auto p-6 space-y-6 flex-1">
+                    <!-- Form Content in 2-Column Grid -->
+                    <form :action="isEditing ? '{{ url('tasks') }}/' + task.id : '{{ route('tasks.store') }}'" 
+                          method="POST"
+                          id="taskMainForm"
+                          class="m-0">
+                        @csrf
+                        <input type="hidden" name="_method" :value="isEditing ? 'PUT' : 'POST'">
 
-                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-                        
-                        <!-- LEFT COLUMN: Content & Inputs -->
-                        <div class="space-y-4">
-                            <!-- Title -->
-                            <div>
-                                <label for="task_title" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Task Title *</label>
-                                <input type="text" 
-                                       name="title" 
-                                       id="task_title" 
-                                       x-model="task.title"
-                                       required 
-                                       class="w-full rounded-xl border-slate-200 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm py-2 px-3.5 font-medium text-slate-800 transition" 
-                                       placeholder="e.g. Schedule Windrow turning">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            
+                            <!-- LEFT COLUMN: Content & Inputs -->
+                            <div class="space-y-4">
+                                <!-- Title -->
+                                <div>
+                                    <label for="task_title" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Task Title *</label>
+                                    <input type="text" 
+                                           name="title" 
+                                           id="task_title" 
+                                           x-model="task.title"
+                                           required 
+                                           class="w-full rounded-xl border-slate-200 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm py-2 px-3.5 font-medium text-slate-800 transition" 
+                                           placeholder="e.g. Schedule Windrow turning">
+                                </div>
+
+                                <!-- Description -->
+                                <div>
+                                    <label for="task_desc" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Detailed Notes</label>
+                                    <textarea name="description" 
+                                              id="task_desc" 
+                                              x-model="task.description"
+                                              rows="4" 
+                                              class="w-full rounded-xl border-slate-200 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm py-2 px-3.5 font-medium text-slate-800 transition" 
+                                              placeholder="Reference JCB work, vehicle trips, or cargo weight details..."></textarea>
+                                </div>
                             </div>
 
-                            <!-- Description -->
-                            <div>
-                                <label for="task_desc" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Detailed Notes</label>
-                                <textarea name="description" 
-                                          id="task_desc" 
-                                          x-model="task.description"
-                                          rows="4" 
-                                          class="w-full rounded-xl border-slate-200 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm py-2 px-3.5 font-medium text-slate-800 transition" 
-                                          placeholder="Reference JCB work, vehicle trips, or cargo weight details..."></textarea>
-                            </div>
-                        </div>
+                            <!-- RIGHT COLUMN: Metadata & Settings -->
+                            <div class="space-y-4">
+                                <!-- Assignee -->
+                                <div>
+                                    <label for="task_assignee" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Assign Responsibility</label>
+                                    <select name="assigned_to" 
+                                            id="task_assignee" 
+                                            x-model="task.assigned_to"
+                                            class="w-full rounded-xl border-slate-200 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm py-2 font-semibold text-slate-700 transition">
+                                        <option value="">-- Unassigned / System --</option>
+                                        @foreach($users as $user)
+                                            <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
 
-                        <!-- RIGHT COLUMN: Metadata & Settings -->
-                        <div class="space-y-4">
-                            <!-- Assignee -->
-                            <div>
-                                <label for="task_assignee" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Assign Responsibility</label>
-                                <select name="assigned_to" 
-                                        id="task_assignee" 
-                                        x-model="task.assigned_to"
-                                        class="w-full rounded-xl border-slate-200 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm py-2 font-semibold text-slate-700 transition">
-                                    <option value="">-- Unassigned / System --</option>
-                                    @foreach($users as $user)
-                                        <option value="{{ $user->id }}">{{ $user->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <!-- Due Date -->
-                            <div>
-                                <label for="task_due" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Due Deadline</label>
-                                <input type="date" 
-                                       name="due_date" 
-                                       id="task_due" 
-                                       x-model="task.due_date"
-                                       class="w-full rounded-xl border-slate-200 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm py-2 px-3 font-medium text-slate-800 transition">
+                                <!-- Due Date -->
+                                <div>
+                                    <label for="task_due" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Due Deadline</label>
+                                    <input type="date" 
+                                           name="due_date" 
+                                           id="task_due" 
+                                           x-model="task.due_date"
+                                           class="w-full rounded-xl border-slate-200 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm py-2 px-3 font-medium text-slate-800 transition">
                                 </div>
 
                                 <!-- Priority & Status side-by-side -->
@@ -430,23 +433,163 @@
                                     </div>
                                 </div>
                             </div>
-
                         </div>
 
-                        <!-- Footer Actions -->
-                        <div class="bg-slate-50 px-6 py-4 flex justify-between gap-3 border-t border-slate-100 rounded-b-2xl">
-                            <button type="button" 
-                                    @click="showDrawer = false" 
-                                    class="w-1/2 justify-center inline-flex items-center px-4 py-2 border border-slate-200 text-slate-750 bg-white rounded-xl font-bold text-sm hover:bg-slate-50 transition shadow-sm">
-                                Cancel
-                            </button>
-                            <button type="submit" 
-                                    class="w-1/2 justify-center inline-flex items-center px-4 py-2 text-white bg-slate-900 hover:bg-emerald-700 rounded-xl font-bold text-sm shadow-md transition">
-                                Save Task
+                        <!-- Update Task Button -->
+                        <div class="mt-4 flex justify-end">
+                            <button type="submit" class="inline-flex items-center px-4 py-2 text-white bg-slate-900 hover:bg-emerald-700 rounded-xl font-bold text-xs shadow-sm transition">
+                                <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span x-text="isEditing ? 'Save Changes' : 'Create Task'"></span>
                             </button>
                         </div>
                     </form>
+
+                    <!-- DATE-WISE COMMENTS & FILE ATTACHMENTS SECTION (Show when editing existing task) -->
+                    <template x-if="isEditing">
+                        <div class="border-t border-slate-200/80 pt-5 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                                    </svg>
+                                    Date-wise Activity & Attachments
+                                </h4>
+                                <span class="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full" x-text="(task.comments || []).length + ' Entries'"></span>
+                            </div>
+
+                            <!-- Comment & File Upload Form -->
+                            <form :action="'{{ url('tasks') }}/' + task.id + '/comments'" 
+                                  method="POST" 
+                                  enctype="multipart/form-data" 
+                                  class="bg-slate-50/80 border border-slate-200/60 rounded-xl p-3.5 space-y-3">
+                                @csrf
+                                <div>
+                                    <textarea name="comment" 
+                                              rows="2" 
+                                              class="w-full rounded-lg border-slate-200 text-xs py-2 px-3 focus:border-emerald-500 focus:ring-emerald-500 font-medium text-slate-800" 
+                                              placeholder="Add a date-wise update or note..."></textarea>
+                                </div>
+                                
+                                <div class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1">
+                                    <div class="w-full sm:w-auto flex items-center gap-2">
+                                        <label class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 text-xs font-semibold transition shadow-2xs">
+                                            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                                            </svg>
+                                            <span>Attach File</span>
+                                            <input type="file" name="attachment" class="hidden" @change="selectedFileName = $event.target.files[0] ? $event.target.files[0].name : ''">
+                                        </label>
+                                        <span class="text-xs text-slate-500 italic truncate max-w-[180px]" x-text="selectedFileName"></span>
+                                    </div>
+
+                                    <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-xs">
+                                        Post Update
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Date-wise Timeline Feed -->
+                            <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
+                                <template x-for="cmt in task.comments || []" :key="cmt.id">
+                                    <div class="bg-white border border-slate-100 rounded-xl p-3 shadow-2xs space-y-1.5">
+                                        <div class="flex items-center justify-between text-xs">
+                                            <div class="flex items-center gap-2">
+                                                <span class="w-5 h-5 rounded-full bg-slate-700 text-white flex items-center justify-center font-bold text-[0.65rem]" x-text="cmt.user ? cmt.user.name.charAt(0).toUpperCase() : 'U'"></span>
+                                                <span class="font-bold text-slate-800" x-text="cmt.user ? cmt.user.name : 'User'"></span>
+                                            </div>
+                                            <!-- Date/Time display -->
+                                            <div class="flex items-center gap-2 text-[0.68rem] text-slate-400 font-medium">
+                                                <span x-text="new Date(cmt.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })"></span>
+                                                <form :action="'{{ url('task-comments') }}/' + cmt.id" method="POST" class="inline m-0" onsubmit="return confirm('Delete this comment?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-rose-500 hover:text-rose-700 p-0.5 rounded">
+                                                        &times;
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+
+                                        <!-- Comment Body -->
+                                        <template x-if="cmt.comment">
+                                            <p class="text-xs text-slate-600 font-medium whitespace-pre-line pl-7" x-text="cmt.comment"></p>
+                                        </template>
+
+                                        <!-- File Attachment / Image Preview Section -->
+                                        <template x-if="cmt.file_path">
+                                            <div class="pl-7 pt-1 space-y-2">
+                                                <!-- Image Preview (Small Thumbnail) -->
+                                                <template x-if="isImageFile(cmt.file_path)">
+                                                    <div class="flex items-center gap-3 bg-slate-50/60 p-1.5 rounded-xl border border-slate-200/60">
+                                                        <a :href="'/storage/' + cmt.file_path" target="_blank" title="Click to view full image" class="shrink-0">
+                                                            <img :src="'/storage/' + cmt.file_path" 
+                                                                 :alt="cmt.file_name" 
+                                                                 class="w-14 h-14 rounded-lg border border-slate-200/80 object-cover shadow-2xs hover:scale-105 transition-transform duration-200 cursor-pointer">
+                                                        </a>
+                                                        <div class="min-w-0 flex-1 pr-1">
+                                                            <p class="text-xs font-bold text-slate-800 truncate" x-text="cmt.file_name || 'Image Attachment'"></p>
+                                                            <div class="flex items-center gap-2 mt-0.5">
+                                                                <a :href="'/storage/' + cmt.file_path" target="_blank" class="text-[0.68rem] font-bold text-emerald-600 hover:underline">View</a>
+                                                                <span class="text-slate-300">•</span>
+                                                                <a :href="'{{ url('task-comments') }}/' + cmt.id + '/download'" class="text-[0.68rem] font-bold text-slate-500 hover:underline">Download</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+
+                                                <!-- Document / PDF / Other Attachment Preview -->
+                                                <template x-if="!isImageFile(cmt.file_path)">
+                                                    <div class="flex items-center gap-2 flex-wrap">
+                                                        <a :href="'{{ url('task-comments') }}/' + cmt.id + '/download'" 
+                                                           target="_blank"
+                                                           class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200/80 hover:border-emerald-200 transition text-xs font-semibold shadow-2xs">
+                                                            <template x-if="isPdfFile(cmt.file_path)">
+                                                                <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                                                </svg>
+                                                            </template>
+                                                            <template x-if="!isPdfFile(cmt.file_path)">
+                                                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                                                                </svg>
+                                                            </template>
+                                                            <span class="font-bold text-slate-800" x-text="cmt.file_name || 'Download Attachment'"></span>
+                                                            <span class="text-[0.65rem] text-slate-400 font-normal uppercase" x-text="'(' + cmt.file_path.split('.').pop() + ')'"></span>
+                                                        </a>
+                                                        
+                                                        <template x-if="isPdfFile(cmt.file_path)">
+                                                            <a :href="'/storage/' + cmt.file_path" target="_blank" class="text-xs font-bold text-emerald-600 hover:underline">
+                                                                Preview PDF &rarr;
+                                                            </a>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <template x-if="!task.comments || task.comments.length === 0">
+                                    <div class="text-center py-4 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                                        <p class="text-xs text-slate-400 font-medium">No date-wise comments or files uploaded yet.</p>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
                 </div>
+
+                <!-- Footer Actions -->
+                <div class="bg-slate-50 px-6 py-3 flex justify-end gap-3 border-t border-slate-100 rounded-b-2xl shrink-0">
+                    <button type="button" 
+                            @click="showDrawer = false" 
+                            class="px-4 py-2 border border-slate-200 text-slate-700 bg-white rounded-xl font-bold text-xs hover:bg-slate-50 transition shadow-xs">
+                        Close
+                    </button>
+                </div>
+            </div>
             
         </div>
     </div>
@@ -457,6 +600,7 @@
             return {
                 showDrawer: false,
                 isEditing: false,
+                selectedFileName: '',
                 task: {
                     id: null,
                     title: '',
@@ -464,11 +608,13 @@
                     priority: 'medium',
                     status: 'todo',
                     due_date: '',
-                    assigned_to: ''
+                    assigned_to: '',
+                    comments: []
                 },
 
                 openDrawerForCreate() {
                     this.isEditing = false;
+                    this.selectedFileName = '';
                     this.task = {
                         id: null,
                         title: '',
@@ -476,13 +622,15 @@
                         priority: 'medium',
                         status: 'todo',
                         due_date: '',
-                        assigned_to: ''
+                        assigned_to: '',
+                        comments: []
                     };
                     this.showDrawer = true;
                 },
 
                 openDrawerForCreateWithStatus(targetStatus) {
                     this.isEditing = false;
+                    this.selectedFileName = '';
                     this.task = {
                         id: null,
                         title: '',
@@ -490,13 +638,15 @@
                         priority: 'medium',
                         status: targetStatus,
                         due_date: '',
-                        assigned_to: ''
+                        assigned_to: '',
+                        comments: []
                     };
                     this.showDrawer = true;
                 },
 
                 openDrawerForEdit(taskData) {
                     this.isEditing = true;
+                    this.selectedFileName = '';
                     this.task = {
                         id: taskData.id,
                         title: taskData.title,
@@ -504,9 +654,21 @@
                         priority: taskData.priority,
                         status: taskData.status,
                         due_date: taskData.due_date ? taskData.due_date.split('T')[0] : '',
-                        assigned_to: taskData.assigned_to || ''
+                        assigned_to: taskData.assigned_to || '',
+                        comments: taskData.comments || []
                     };
                     this.showDrawer = true;
+                },
+
+                isImageFile(path) {
+                    if (!path) return false;
+                    const ext = path.split('.').pop().toLowerCase();
+                    return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext);
+                },
+
+                isPdfFile(path) {
+                    if (!path) return false;
+                    return path.split('.').pop().toLowerCase() === 'pdf';
                 }
             };
         }

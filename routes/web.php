@@ -70,6 +70,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('sale', SaleController::class)->except('show');
     Route::resource('stock', StockController::class)->except('show');
     Route::resource('tasks', TaskController::class)->except('show');
+    Route::post('/tasks/{task}/comments', [\App\Http\Controllers\TaskCommentController::class, 'store'])->name('tasks.comments.store');
+    Route::get('/task-comments/{comment}/download', [\App\Http\Controllers\TaskCommentController::class, 'download'])->name('tasks.comments.download');
+    Route::delete('/task-comments/{comment}', [\App\Http\Controllers\TaskCommentController::class, 'destroy'])->name('tasks.comments.destroy');
     Route::post('/stock/sync-sales', [StockController::class, 'syncSales'])->name('stock.sync-sales');
 
     Route::get('/get_product_rate/ajax/{product_id}',[ProductController::class, 'getProductRate']);
