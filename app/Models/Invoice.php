@@ -12,6 +12,8 @@ class Invoice extends Model
         'billing_month',
         'total_amount',
         'status',
+        'invoice_type',
+        'invoice_date',
         'error_log',
         'sent_at',
         'mail_sent_count',
@@ -20,6 +22,7 @@ class Invoice extends Model
 
     protected $casts = [
         'sent_at' => 'datetime',
+        'invoice_date' => 'date',
         'total_amount' => 'decimal:2',
         'dispatch_history' => 'array',
     ];

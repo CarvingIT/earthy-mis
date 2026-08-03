@@ -114,6 +114,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/invoices/clear-pending', [InvoiceDispatchController::class, 'clearPending'])->name('invoices.clear-pending');
     Route::post('/invoices/clear-queue', [InvoiceDispatchController::class, 'clearQueue'])->name('invoices.clear-queue');
     Route::get('/invoices/{invoice}/pdf', [InvoiceDispatchController::class, 'viewPdf'])->name('invoices.pdf');
+    Route::post('/invoices/penalty/generate', [InvoiceDispatchController::class, 'generatePenaltyInvoice'])->name('invoices.penalty.generate');
+    Route::post('/invoices/penalty/download', [InvoiceDispatchController::class, 'downloadPenaltyInvoice'])->name('invoices.penalty.download');
+    Route::post('/invoices/penalty/send', [InvoiceDispatchController::class, 'sendPenaltyInvoice'])->name('invoices.penalty.send');
+    Route::post('/invoices/penalty/{invoice}/send-existing', [InvoiceDispatchController::class, 'sendExistingPenaltyInvoice'])->name('invoices.penalty.send-existing');
 
     Route::middleware('admin')->group(function () {
         Route::resource('users', UserController::class)->except('show');

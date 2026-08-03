@@ -35,6 +35,13 @@ class InvoiceDispatchController extends Controller
             ]);
         }
 
+        $masterSocieties = Society::orderBy('name')->get();
+        $penaltyInvoices = Invoice::where('billing_month', $month)
+            ->where('invoice_type', 'penalty')
+            ->with('society')
+            ->latest()
+            ->get();
+
         return view('invoices.dashboard', compact(
             'month',
             'totalSocieties',
@@ -42,7 +49,9 @@ class InvoiceDispatchController extends Controller
             'failedCount',
             'pendingCount',
             'skippedCount',
-            'allSocieties'
+            'allSocieties',
+            'masterSocieties',
+            'penaltyInvoices'
         ));
     }
 
@@ -166,6 +175,7 @@ class InvoiceDispatchController extends Controller
             'invoice' => $invoice,
             'society' => $invoice->society,
             'amountInWords' => $amountInWords,
+            'isPenalty' => $invoice->invoice_type === 'penalty',
         ]);
 
         return $pdf->stream("Invoice_{$invoice->invoice_number}.pdf");
@@ -415,5 +425,224 @@ class InvoiceDispatchController extends Controller
             'month_label' => \Carbon\Carbon::parse($month . '-01')->format('F Y'),
             'invoices' => $data
         ]);
+    }
+
+    /**
+     * Generate a Penalty Invoice record in DB.
+     */
+    public function generatePenaltyInvoice(Request $request)
+    {
+        $request->validate([
+            'society_id' => 'required|exists:societies,id',
+            'penalty_date' => 'required|date',
+            'amount' => 'required|numeric|min:0',
+        ]);
+
+        $society = Society::findOrFail($request->society_id);
+        $date = $request->penalty_date;
+        $month = date('Y-m', strtotime($date));
+        $amount = (float) $request->amount;
+        $dateClean = str_replace('-', '', $date);
+        $invoiceNumber = 'PEN-' . $dateClean . '-' . str_pad($society->id, 4, '0', STR_PAD_LEFT);
+
+        $invoice = Invoice::create([
+            'society_id' => $society->id,
+            'billing_month' => $month,
+            'invoice_number' => $invoiceNumber,
+            'total_amount' => $amount,
+            'status' => 'pending',
+            'invoice_type' => 'penalty',
+            'invoice_date' => $date,
+            'dispatch_history' => [
+                [
+                    'event' => 'penalty_generated',
+                    'timestamp' => now()->toIso8601String(),
+                    'source' => 'manual',
+                    'details' => "Penalty invoice generated for ₹" . number_format($amount, 2),
+                ]
+            ],
+        ]);
+
+        return redirect()->back()->with('success', "Penalty Invoice {$invoiceNumber} generated for {$society->name}.");
+    }
+
+    /**
+     * Download Penalty Invoice PDF directly.
+     */
+    public function downloadPenaltyInvoice(Request $request)
+    {
+        $request->validate([
+            'society_id' => 'required|exists:societies,id',
+            'penalty_date' => 'required|date',
+            'amount' => 'required|numeric|min:0',
+        ]);
+
+        $society = Society::findOrFail($request->society_id);
+        $date = $request->penalty_date;
+        $month = date('Y-m', strtotime($date));
+        $amount = (float) $request->amount;
+        $dateClean = str_replace('-', '', $date);
+        $invoiceNumber = 'PEN-' . $dateClean . '-' . str_pad($society->id, 4, '0', STR_PAD_LEFT);
+
+        $invoice = new Invoice([
+            'society_id' => $society->id,
+            'billing_month' => $month,
+            'invoice_number' => $invoiceNumber,
+            'total_amount' => $amount,
+            'status' => 'pending',
+            'invoice_type' => 'penalty',
+            'invoice_date' => $date,
+        ]);
+
+        $amountInWords = GenerateAndDispatchInvoice::numberToWords($amount);
+
+        $pdf = Pdf::loadView('pdfs.invoice', [
+            'invoice' => $invoice,
+            'society' => $society,
+            'amountInWords' => $amountInWords,
+            'isPenalty' => true,
+        ]);
+
+        return $pdf->download("Penalty_Invoice_{$invoiceNumber}.pdf");
+    }
+
+    /**
+     * Generate & Email Penalty Invoice PDF to Society contact person.
+     */
+    public function sendPenaltyInvoice(Request $request)
+    {
+        $request->validate([
+            'society_id' => 'required|exists:societies,id',
+            'penalty_date' => 'required|date',
+            'amount' => 'required|numeric|min:0',
+        ]);
+
+        $society = Society::findOrFail($request->society_id);
+
+        if (empty($society->contact_person_email)) {
+            return redirect()->back()->with('error', "Cannot send penalty invoice: Society '{$society->name}' has no email address configured.");
+        }
+
+        $date = $request->penalty_date;
+        $month = date('Y-m', strtotime($date));
+        $amount = (float) $request->amount;
+        $dateClean = str_replace('-', '', $date);
+        $invoiceNumber = 'PEN-' . $dateClean . '-' . str_pad($society->id, 4, '0', STR_PAD_LEFT);
+
+        $invoice = Invoice::create([
+            'society_id' => $society->id,
+            'billing_month' => $month,
+            'invoice_number' => $invoiceNumber,
+            'total_amount' => $amount,
+            'status' => 'pending',
+            'invoice_type' => 'penalty',
+            'invoice_date' => $date,
+        ]);
+
+        try {
+            $amountInWords = GenerateAndDispatchInvoice::numberToWords($amount);
+
+            $pdf = Pdf::loadView('pdfs.invoice', [
+                'invoice' => $invoice,
+                'society' => $society,
+                'amountInWords' => $amountInWords,
+                'isPenalty' => true,
+            ]);
+
+            \Illuminate\Support\Facades\Mail::to($society->contact_person_email)
+                ->send(new \App\Mail\SocietyInvoiceMail($invoice, $pdf->output()));
+
+            $history = $invoice->dispatch_history ?? [];
+            $history[] = [
+                'event' => 'penalty_sent',
+                'timestamp' => now()->toIso8601String(),
+                'source' => 'manual',
+                'details' => "Penalty invoice emailed to {$society->contact_person_email}",
+            ];
+
+            $invoice->update([
+                'status' => 'sent',
+                'sent_at' => now(),
+                'mail_sent_count' => 1,
+                'dispatch_history' => $history,
+            ]);
+
+            return redirect()->back()->with('success', "Penalty Invoice {$invoiceNumber} sent to {$society->contact_person_email}.");
+        } catch (\Throwable $e) {
+            $history = $invoice->dispatch_history ?? [];
+            $history[] = [
+                'event' => 'penalty_failed',
+                'timestamp' => now()->toIso8601String(),
+                'source' => 'manual',
+                'details' => $e->getMessage(),
+            ];
+
+            $invoice->update([
+                'status' => 'failed',
+                'error_log' => $e->getMessage(),
+                'dispatch_history' => $history,
+            ]);
+
+            return redirect()->back()->with('error', "Failed to send penalty invoice: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Email an existing generated penalty invoice.
+     */
+    public function sendExistingPenaltyInvoice(Invoice $invoice)
+    {
+        $society = $invoice->society;
+
+        if (!$society || empty($society->contact_person_email)) {
+            return redirect()->back()->with('error', "Cannot send penalty invoice: Society has no contact email configured.");
+        }
+
+        try {
+            $amountInWords = GenerateAndDispatchInvoice::numberToWords($invoice->total_amount);
+
+            $pdf = Pdf::loadView('pdfs.invoice', [
+                'invoice' => $invoice,
+                'society' => $society,
+                'amountInWords' => $amountInWords,
+                'isPenalty' => true,
+            ]);
+
+            \Illuminate\Support\Facades\Mail::to($society->contact_person_email)
+                ->send(new \App\Mail\SocietyInvoiceMail($invoice, $pdf->output()));
+
+            $history = $invoice->dispatch_history ?? [];
+            $history[] = [
+                'event' => 'penalty_sent',
+                'timestamp' => now()->toIso8601String(),
+                'source' => 'manual',
+                'details' => "Penalty invoice emailed to {$society->contact_person_email}",
+            ];
+
+            $invoice->update([
+                'status' => 'sent',
+                'sent_at' => now(),
+                'mail_sent_count' => ($invoice->mail_sent_count ?? 0) + 1,
+                'dispatch_history' => $history,
+            ]);
+
+            return redirect()->back()->with('success', "Penalty Invoice {$invoice->invoice_number} sent successfully to {$society->contact_person_email}.");
+        } catch (\Throwable $e) {
+            $history = $invoice->dispatch_history ?? [];
+            $history[] = [
+                'event' => 'penalty_failed',
+                'timestamp' => now()->toIso8601String(),
+                'source' => 'manual',
+                'details' => $e->getMessage(),
+            ];
+
+            $invoice->update([
+                'status' => 'failed',
+                'error_log' => $e->getMessage(),
+                'dispatch_history' => $history,
+            ]);
+
+            return redirect()->back()->with('error', "Failed to send penalty invoice: " . $e->getMessage());
+        }
     }
 }
