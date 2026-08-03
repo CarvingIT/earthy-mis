@@ -81,6 +81,7 @@ class SocietyController extends Controller
             'vehicle_number' => ['nullable', 'string', 'max:255'],
             'mou_end_date' => ['nullable', 'date'],
             'mou_file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:10240'],
+            'remove_mou_file' => ['nullable', 'boolean'],
         ]);
 
         if ($request->hasFile('mou_file')) {
@@ -88,6 +89,11 @@ class SocietyController extends Controller
                 Storage::disk('public')->delete($society->mou_file);
             }
             $data['mou_file'] = $request->file('mou_file')->store('society_mous', 'public');
+        } elseif ($request->boolean('remove_mou_file')) {
+            if ($society->mou_file && Storage::disk('public')->exists($society->mou_file)) {
+                Storage::disk('public')->delete($society->mou_file);
+            }
+            $data['mou_file'] = null;
         }
 
         $society->update($data);
