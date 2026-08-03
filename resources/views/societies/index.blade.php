@@ -325,6 +325,7 @@
                                 <th class="w-[5%] min-w-[70px]">Flats</th>
                                 <th class="w-[10%] min-w-[110px]">Billing (Monthly)</th>
                                 <th class="w-[10%] min-w-[120px]">MOU End Date</th>
+                                <th class="w-[8%] min-w-[90px]">MOU File</th>
                                 <th class="w-[10%] min-w-[110px]">Chairman</th>
                                 <th class="w-[14%] min-w-[160px]">Secretary / Email</th>
                                 <th class="w-[10%] min-w-[110px]">Phone</th>
@@ -378,6 +379,16 @@
                                             <span class="text-slate-400">Not set</span>
                                         @endif
                                     </td>
+                                    <td>
+                                        @if($society->mou_file)
+                                            <a href="{{ Storage::url($society->mou_file) }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-extrabold text-emerald-700 transition hover:bg-emerald-600 hover:text-white" title="View MOU Document">
+                                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                View MOU
+                                            </a>
+                                        @else
+                                            <span class="text-slate-400 text-xs">No File</span>
+                                        @endif
+                                    </td>
                                     <td class="font-semibold text-slate-700">{{ $society->chairman_name ?: 'Not set' }}</td>
                                     <td>
                                         <p class="font-semibold text-slate-700">{{ $society->secretary_name ?: 'Not set' }}</p>
@@ -415,7 +426,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="10">
+                                    <td colspan="11">
                                         <div class="flex flex-col items-center justify-center py-12 text-center">
                                             <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
                                                 <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
