@@ -70,13 +70,6 @@
         }
 
         .reveal {
-            opacity: 0;
-            transform: translate3d(0, 18px, 0);
-            transition: opacity .48s ease, transform .48s ease;
-            transition-delay: var(--reveal-delay, 0ms);
-        }
-
-        .reveal.is-visible {
             opacity: 1;
             transform: translate3d(0, 0, 0);
         }

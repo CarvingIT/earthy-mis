@@ -29,21 +29,8 @@
         }
 
         .reveal {
-            opacity: 0;
-            transform: translate3d(0, 18px, 0);
-            transition:
-                opacity .48s ease,
-                transform .48s ease,
-                box-shadow .18s ease,
-                border-color .18s ease;
-            transition-delay: var(--reveal-delay, 0ms);
-            will-change: opacity, transform;
-        }
-
-        .reveal.is-visible {
             opacity: 1;
             transform: translate3d(0, 0, 0);
-            will-change: auto;
         }
 
         .supply-table-wrap {
