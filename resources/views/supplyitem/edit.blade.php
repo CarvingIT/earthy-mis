@@ -192,8 +192,8 @@
                                 <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
                                     <div>
                                         <label for="quantity" class="form-label">Quantity <span class="text-rose-500">*</span></label>
-                                        <x-text-input id="quantity" name="quantity" type="text" class="form-field mt-2 block w-full" :value="old('quantity', $supplyitem->quantity)" placeholder="e.g., 50 kg or 10 liters" required />
-                                        <p class="mt-1 text-xs font-medium text-slate-500">How much was purchased? Include unit if applicable.</p>
+                                        <x-text-input id="quantity" name="quantity" type="number" min="0" step="1" class="form-field mt-2 block w-full" :value="old('quantity', $supplyitem->quantity)" placeholder="e.g., 50" required />
+                                        <p class="mt-1 text-xs font-medium text-slate-500">How much was purchased (numeric count/units)?</p>
                                         <x-input-error class="mt-2" :messages="$errors->get('quantity')" />
                                     </div>
 
