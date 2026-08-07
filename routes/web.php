@@ -118,6 +118,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/invoices/penalty/download', [InvoiceDispatchController::class, 'downloadPenaltyInvoice'])->name('invoices.penalty.download');
     Route::post('/invoices/penalty/send', [InvoiceDispatchController::class, 'sendPenaltyInvoice'])->name('invoices.penalty.send');
     Route::post('/invoices/penalty/{invoice}/send-existing', [InvoiceDispatchController::class, 'sendExistingPenaltyInvoice'])->name('invoices.penalty.send-existing');
+    Route::delete('/invoices/{invoice}', [InvoiceDispatchController::class, 'destroy'])->name('invoices.destroy');
 
     Route::middleware('admin')->group(function () {
         Route::resource('users', UserController::class)->except('show');
