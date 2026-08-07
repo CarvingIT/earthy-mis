@@ -153,6 +153,23 @@
                 </div>
             @endif
 
+            @if ($errors->any())
+                <div class="relative p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold shadow-sm reveal-node is-visible mb-6" role="alert">
+                    <div class="flex items-center gap-2 font-extrabold text-rose-900 mb-1">
+                        <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>Validation Error:</span>
+                    </div>
+                    <ul class="list-disc list-inside space-y-1 text-rose-700 pl-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button class="absolute right-3.5 top-3.5 text-rose-400 hover:text-rose-600 text-base font-bold leading-none" onclick="this.parentElement.style.display='none'" aria-label="Dismiss">&times;</button>
+                </div>
+            @endif
+
             <!-- Dashboard Stats & Quick Bar -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between reveal-node" id="statsRow" style="--reveal-delay: 0ms">
                 <!-- Progress Stat Card (Metric Card Style) -->
@@ -345,6 +362,7 @@
                     <!-- Form Content in 2-Column Grid -->
                     <form :action="isEditing ? '{{ url('tasks') }}/' + task.id : '{{ route('tasks.store') }}'" 
                           method="POST"
+                          enctype="multipart/form-data"
                           id="taskMainForm"
                           class="m-0">
                         @csrf
@@ -435,14 +453,28 @@
                             </div>
                         </div>
 
-                        <!-- Update Task Button -->
-                        <div class="mt-4 flex justify-end">
-                            <button type="submit" class="inline-flex items-center px-4 py-2 text-white bg-slate-900 hover:bg-emerald-700 rounded-xl font-bold text-xs shadow-sm transition">
-                                <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                </svg>
-                                <span x-text="isEditing ? 'Save Changes' : 'Create Task'"></span>
-                            </button>
+                        <!-- Attach File (When Creating Task) & Submit Button -->
+                        <div class="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                            <template x-if="!isEditing">
+                                <div class="w-full sm:w-auto flex items-center gap-2">
+                                    <label class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 text-xs font-semibold transition shadow-2xs">
+                                        <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                                        </svg>
+                                        <span>Attach File</span>
+                                        <input type="file" name="attachment" accept=".jpeg,.png,.jpg,.gif,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip" class="hidden" @change="validateFile($event, 'create')">
+                                    </label>
+                                    <span class="text-xs text-slate-500 italic truncate max-w-[180px]" x-text="createFileName"></span>
+                                </div>
+                            </template>
+                            <div class="flex justify-end w-full sm:w-auto ml-auto">
+                                <button type="submit" class="inline-flex items-center px-4 py-2 text-white bg-slate-900 hover:bg-emerald-700 rounded-xl font-bold text-xs shadow-sm transition">
+                                    <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span x-text="isEditing ? 'Save Changes' : 'Create Task'"></span>
+                                </button>
+                            </div>
                         </div>
                     </form>
 
@@ -479,7 +511,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
                                             </svg>
                                             <span>Attach File</span>
-                                            <input type="file" name="attachment" class="hidden" @change="selectedFileName = $event.target.files[0] ? $event.target.files[0].name : ''">
+                                            <input type="file" name="attachment" accept=".jpeg,.png,.jpg,.gif,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip" class="hidden" @change="validateFile($event, 'comment')">
                                         </label>
                                         <span class="text-xs text-slate-500 italic truncate max-w-[180px]" x-text="selectedFileName"></span>
                                     </div>
@@ -601,6 +633,7 @@
                 showDrawer: false,
                 isEditing: false,
                 selectedFileName: '',
+                createFileName: '',
                 task: {
                     id: null,
                     title: '',
@@ -615,6 +648,7 @@
                 openDrawerForCreate() {
                     this.isEditing = false;
                     this.selectedFileName = '';
+                    this.createFileName = '';
                     this.task = {
                         id: null,
                         title: '',
@@ -631,6 +665,7 @@
                 openDrawerForCreateWithStatus(targetStatus) {
                     this.isEditing = false;
                     this.selectedFileName = '';
+                    this.createFileName = '';
                     this.task = {
                         id: null,
                         title: '',
@@ -669,6 +704,37 @@
                 isPdfFile(path) {
                     if (!path) return false;
                     return path.split('.').pop().toLowerCase() === 'pdf';
+                },
+
+                validateFile(event, type) {
+                    const file = event.target.files[0];
+                    if (!file) {
+                        if (type === 'create') this.createFileName = '';
+                        if (type === 'comment') this.selectedFileName = '';
+                        return;
+                    }
+                    const allowedExts = ['jpeg', 'png', 'jpg', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'txt', 'zip'];
+                    const ext = file.name.split('.').pop().toLowerCase();
+                    const maxSize = 10 * 1024 * 1024; // 10MB limit
+
+                    if (!allowedExts.includes(ext)) {
+                        alert('Invalid file format! Allowed: JPG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX, CSV, TXT, ZIP.');
+                        event.target.value = '';
+                        if (type === 'create') this.createFileName = '';
+                        if (type === 'comment') this.selectedFileName = '';
+                        return;
+                    }
+
+                    if (file.size > maxSize) {
+                        alert('File size exceeds the 10 MB limit.');
+                        event.target.value = '';
+                        if (type === 'create') this.createFileName = '';
+                        if (type === 'comment') this.selectedFileName = '';
+                        return;
+                    }
+
+                    if (type === 'create') this.createFileName = file.name;
+                    if (type === 'comment') this.selectedFileName = file.name;
                 }
             };
         }

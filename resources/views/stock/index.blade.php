@@ -65,21 +65,8 @@
         }
 
         .reveal {
-            opacity: 0;
-            transform: translate3d(0, 18px, 0);
-            transition:
-                opacity .48s ease,
-                transform .48s ease,
-                box-shadow .18s ease,
-                border-color .18s ease;
-            transition-delay: var(--reveal-delay, 0ms);
-            will-change: opacity, transform;
-        }
-
-        .reveal.is-visible {
             opacity: 1;
             transform: translate3d(0, 0, 0);
-            will-change: auto;
         }
 
         .stock-table-wrap {
@@ -244,24 +231,24 @@
                 </div>
             @endif
 
-            <section class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <section class="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
                 @foreach ($stats as $index => $stat)
-                    <article class="stock-stat reveal rounded-2xl p-5" style="{{ $stat['style'] }} --reveal-delay: {{ $index * 70 }}ms;">
-                        <div class="relative z-10">
-                            <div class="mb-5 flex items-start justify-between gap-3">
-                                <div class="stat-icon flex h-12 w-12 items-center justify-center rounded-xl text-white">
-                                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <article class="stock-stat reveal rounded-xl sm:rounded-2xl p-3 sm:p-5" style="{{ $stat['style'] }} --reveal-delay: {{ $index * 70 }}ms;">
+                        <div class="relative z-10 flex flex-col justify-between h-full">
+                            <div class="flex items-center justify-between gap-1.5 sm:gap-3 mb-2 sm:mb-4">
+                                <div class="stat-icon flex h-8 w-8 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-lg sm:rounded-xl text-white">
+                                    <svg class="h-4 w-4 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $stat['icon'] }}"/>
                                     </svg>
                                 </div>
                                 
                                 @if(isset($stat['value_sales']))
                                     <!-- Toggle switch for unit type -->
-                                    <div class="flex items-center gap-1 rounded-lg bg-slate-100 p-1">
+                                    <div class="flex items-center gap-0.5 rounded-md sm:rounded-lg bg-slate-100 p-0.5 sm:p-1">
                                         <button 
                                             type="button"
                                             id="btn-sales-unit" 
-                                            class="unit-toggle-btn px-3 py-1 text-[10px] font-bold rounded-md transition-all bg-white text-emerald-700 shadow-sm"
+                                            class="unit-toggle-btn px-1.5 py-0.5 sm:px-3 sm:py-1 text-[9px] sm:text-[10px] font-bold rounded transition-all bg-white text-emerald-700 shadow-sm"
                                             data-unit="sales"
                                         >
                                             Sales
@@ -269,7 +256,7 @@
                                         <button 
                                             type="button"
                                             id="btn-base-unit" 
-                                            class="unit-toggle-btn px-3 py-1 text-[10px] font-bold rounded-md transition-all text-slate-600 hover:text-slate-900"
+                                            class="unit-toggle-btn px-1.5 py-0.5 sm:px-3 sm:py-1 text-[9px] sm:text-[10px] font-bold rounded transition-all text-slate-600 hover:text-slate-900"
                                             data-unit="base"
                                         >
                                             Base
@@ -277,17 +264,20 @@
                                     </div>
                                 @endif
                             </div>
-                            <p class="text-sm font-bold text-slate-500">{{ $stat['label'] }}</p>
-                            
-                            @if(isset($stat['value_sales']))
-                                <!-- Stock stat with toggle -->
-                                <p class="stat-value mt-2 text-3xl font-black" id="stock-total-value">{{ $stat['value_sales'] }}</p>
-                                <p class="mt-3 text-xs font-semibold leading-5 text-slate-500" id="stock-total-note">{{ $stat['note_sales'] }}</p>
-                            @else
-                                <!-- Regular stat -->
-                                <p class="stat-value mt-2 text-3xl font-black">{{ $stat['value'] }}</p>
-                                <p class="mt-3 text-xs font-semibold leading-5 text-slate-500">{{ $stat['note'] }}</p>
-                            @endif
+
+                            <div>
+                                <p class="text-[11px] sm:text-sm font-bold text-slate-500 leading-tight truncate">{{ $stat['label'] }}</p>
+                                
+                                @if(isset($stat['value_sales']))
+                                    <!-- Stock stat with toggle -->
+                                    <p class="stat-value mt-1 sm:mt-2 text-xl sm:text-3xl font-black tracking-tight" id="stock-total-value">{{ $stat['value_sales'] }}</p>
+                                    <p class="mt-1 sm:mt-3 text-[10px] sm:text-xs font-semibold leading-tight sm:leading-5 text-slate-500 truncate sm:whitespace-normal" id="stock-total-note">{{ $stat['note_sales'] }}</p>
+                                @else
+                                    <!-- Regular stat -->
+                                    <p class="stat-value mt-1 sm:mt-2 text-xl sm:text-3xl font-black tracking-tight">{{ $stat['value'] }}</p>
+                                    <p class="mt-1 sm:mt-3 text-[10px] sm:text-xs font-semibold leading-tight sm:leading-5 text-slate-500 truncate sm:whitespace-normal">{{ $stat['note'] }}</p>
+                                @endif
+                            </div>
                         </div>
                     </article>
                 @endforeach

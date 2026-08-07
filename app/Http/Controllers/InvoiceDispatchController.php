@@ -645,4 +645,15 @@ class InvoiceDispatchController extends Controller
             return redirect()->back()->with('error', "Failed to send penalty invoice: " . $e->getMessage());
         }
     }
+
+    /**
+     * Delete an invoice log entry.
+     */
+    public function destroy(Invoice $invoice)
+    {
+        $invoiceNumber = $invoice->invoice_number;
+        $invoice->delete();
+
+        return redirect()->back()->with('success', "Invoice {$invoiceNumber} deleted successfully.");
+    }
 }

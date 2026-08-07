@@ -175,7 +175,7 @@
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
             
             <!-- Dashboard Operations Panel -->
-            <section class="invoice-panel reveal rounded-2xl p-5">
+            <section class="invoice-panel reveal rounded-2xl p-4 sm:p-5">
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div class="flex items-center gap-3">
                         <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
@@ -292,21 +292,23 @@
             @endif
 
             <!-- Dynamic Stats Cards Row -->
-            <section class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <section class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
                 @foreach ($stats as $index => $stat)
-                    <article onclick="showStatDetails('{{ $stat['key'] }}')" class="invoice-stat reveal rounded-2xl p-5 cursor-pointer hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] transition-all duration-200" style="{{ $stat['style'] }} --reveal-delay: {{ $index * 70 }}ms;">
-                        <div class="relative z-10">
-                            <div class="mb-5 flex items-start justify-between gap-3">
-                                <div class="stat-icon flex h-12 w-12 items-center justify-center rounded-xl text-white">
-                                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $stat['icon'] }}"/>
-                                    </svg>
+                    <article onclick="showStatDetails('{{ $stat['key'] }}')" class="invoice-stat reveal rounded-2xl p-3.5 sm:p-5 cursor-pointer hover:scale-[1.02] hover:shadow-xl active:scale-[0.97] touch-manipulation select-none transition-all duration-200" style="{{ $stat['style'] }} --reveal-delay: {{ $index * 70 }}ms;">
+                        <div class="relative z-10 flex flex-col justify-between h-full">
+                            <div>
+                                <div class="mb-2.5 sm:mb-4 flex items-center justify-between gap-1.5">
+                                    <div class="stat-icon flex h-9 w-9 sm:h-12 sm:w-12 items-center justify-center rounded-xl text-white shrink-0">
+                                        <svg class="h-4 w-4 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $stat['icon'] }}"/>
+                                        </svg>
+                                    </div>
+                                    <span class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 border border-slate-100 rounded-full px-1.5 py-0.5 sm:px-2 hover:bg-slate-100 shrink-0">View</span>
                                 </div>
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 border border-slate-100 rounded-full px-2 py-0.5 mt-1 hover:bg-slate-100">Click to View</span>
+                                <p class="text-xs sm:text-sm font-bold text-slate-500 truncate">{{ $stat['label'] }}</p>
+                                <p class="stat-value mt-1 sm:mt-2 text-xl sm:text-3xl font-black">{{ $stat['value'] }}</p>
                             </div>
-                            <p class="text-sm font-bold text-slate-500">{{ $stat['label'] }}</p>
-                            <p class="stat-value mt-2 text-3xl font-black">{{ $stat['value'] }}</p>
-                            <p class="mt-3 text-xs font-semibold leading-5 text-slate-500">{{ $stat['note'] }}</p>
+                            <p class="mt-2 sm:mt-3 text-[11px] sm:text-xs font-semibold leading-tight sm:leading-5 text-slate-500 line-clamp-2 sm:line-clamp-none">{{ $stat['note'] }}</p>
                         </div>
                     </article>
                 @endforeach
@@ -362,7 +364,7 @@
 
             <!-- Penalty Invoices Table / Directory Section -->
             @if(isset($penaltyInvoices) && $penaltyInvoices->count() > 0)
-                <section class="invoice-table-card reveal rounded-2xl p-6">
+                <section class="invoice-table-card reveal rounded-2xl p-4 sm:p-6">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-slate-100 mb-4 gap-2">
                         <div class="flex items-center gap-3">
                             <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-700 font-bold">
@@ -453,6 +455,14 @@
                                                         </button>
                                                     </form>
                                                 @endif
+                                                
+                                                <form method="POST" action="{{ route('invoices.destroy', $pen) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete penalty invoice {{ $pen->invoice_number }}?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" title="Delete Penalty Invoice" class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-600 hover:text-white transition">
+                                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                    </button>
+                                                </form>
                                             </div>
                                         </td>
                                     </tr>

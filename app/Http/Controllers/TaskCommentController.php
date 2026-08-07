@@ -17,6 +17,9 @@ class TaskCommentController extends Controller
         $request->validate([
             'comment' => 'nullable|string|max:2000',
             'attachment' => 'nullable|file|max:10240|mimes:jpeg,png,jpg,gif,pdf,doc,docx,xls,xlsx,csv,txt,zip',
+        ], [
+            'attachment.mimes' => 'The attached file must be an allowed format (JPEG, PNG, JPG, GIF, PDF, DOC, DOCX, XLS, XLSX, CSV, TXT, ZIP).',
+            'attachment.max' => 'The attached file size must not exceed 10 MB.',
         ]);
 
         if (empty($request->comment) && !$request->hasFile('attachment')) {
