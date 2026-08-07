@@ -52,11 +52,29 @@ class TaskController extends Controller
             'status' => 'required|in:todo,in_progress,completed',
             'due_date' => 'nullable|date',
             'assigned_to' => 'nullable|exists:users,id',
+            'attachment' => 'nullable|file|max:10240|mimes:jpeg,png,jpg,gif,pdf,doc,docx,xls,xlsx,csv,txt,zip',
+        ], [
+            'attachment.mimes' => 'The attached file must be an allowed format (JPEG, PNG, JPG, GIF, PDF, DOC, DOCX, XLS, XLSX, CSV, TXT, ZIP).',
+            'attachment.max' => 'The attached file size must not exceed 10 MB.',
         ]);
 
-        $validated['user_id'] = auth()->id();
+        $taskData = collect($validated)->except('attachment')->toArray();
+        $taskData['user_id'] = auth()->id();
 
-        Task::create($validated);
+        $task = Task::create($taskData);
+
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $fileName = $file->getClientOriginalName();
+            $filePath = $file->store('task_attachments', 'public');
+
+            $task->comments()->create([
+                'user_id' => auth()->id(),
+                'comment' => 'Initial attachment',
+                'file_path' => $filePath,
+                'file_name' => $fileName,
+            ]);
+        }
 
         return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
     }
