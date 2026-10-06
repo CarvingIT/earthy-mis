@@ -102,6 +102,7 @@ Route::middleware('auth')->group(function () {
     // Invoice dispatch dashboard routes
     Route::get('/invoices', [InvoiceDispatchController::class, 'index'])->name('invoices.index');
     Route::get('/invoices/report', [InvoiceDispatchController::class, 'getReportData'])->name('invoices.report');
+    Route::get('/invoices/export-csv', [InvoiceDispatchController::class, 'exportAuditCsv'])->name('invoices.export-csv');
     Route::get('/invoices/download-zip', [InvoiceDispatchController::class, 'downloadZip'])->name('invoices.download-zip');
     Route::get('/invoices/stats-details', [InvoiceDispatchController::class, 'getStatsDetails'])->name('invoices.stats-details');
     Route::get('/invoices/societies-list', [InvoiceDispatchController::class, 'getSocietiesForDispatch'])->name('invoices.societies-list');

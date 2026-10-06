@@ -17,8 +17,8 @@ class InvoiceDispatchController extends Controller
         $totalSocieties = Society::count();
         $sentCount    = Invoice::where('billing_month', $month)->where('status', 'sent')->count();
         $failedCount  = Invoice::where('billing_month', $month)->where('status', 'failed')->count();
-        $pendingCount = max(0, $totalSocieties - $sentCount - $failedCount);
         $skippedCount = Invoice::where('billing_month', $month)->where('status', 'skipped')->count();
+        $pendingCount = max(0, $totalSocieties - $sentCount - $failedCount - $skippedCount);
 
         $allSocieties = Society::with(['invoices' => function ($query) use ($month) {
             $query->where('billing_month', $month);
@@ -60,16 +60,27 @@ class InvoiceDispatchController extends Controller
      */
     public function triggerGlobalDispatch(Request $request)
     {
+        @set_time_limit(600);
         $month = $request->input('month', now()->format('Y-m'));
-        $societies = Society::all();
+        $force = (bool) $request->input('force', 0);
+
+        $query = Society::orderBy('name');
+        if (!$force) {
+            $alreadySentSocietyIds = Invoice::where('billing_month', $month)
+                ->where('status', 'sent')
+                ->pluck('society_id');
+            $query->whereNotIn('id', $alreadySentSocietyIds);
+        }
+
+        $societies = $query->get();
 
         if ($societies->isEmpty()) {
-            return redirect()->back()->with('error', 'No societies found to process.');
+            return redirect()->back()->with('info', "All societies for {$month} are already sent. No pending dispatches remaining.");
         }
 
         $sent = 0; $failed = 0; $skipped = 0;
         foreach ($societies as $society) {
-            GenerateAndDispatchInvoice::dispatch($society, $month);
+            GenerateAndDispatchInvoice::dispatch($society, $month, 'manual', $force);
             $inv = Invoice::where('society_id', $society->id)->where('billing_month', $month)->first();
             if ($inv) {
                 if ($inv->status === 'sent')         $sent++;
@@ -82,12 +93,23 @@ class InvoiceDispatchController extends Controller
     }
 
     /**
-     * AJAX: Return list of all society IDs + names for the live dispatch UI.
+     * AJAX: Return list of unsent society IDs + names for the live dispatch UI.
      */
     public function getSocietiesForDispatch(Request $request)
     {
-        $societies = Society::select('id', 'name', 'contact_person_email')->orderBy('name')->get();
-        return response()->json($societies);
+        $month = $request->query('month', now()->format('Y-m'));
+        $force = (bool) $request->query('force', 0);
+
+        $query = Society::select('id', 'name', 'contact_person_email')->orderBy('name');
+
+        if (!$force) {
+            $alreadySentSocietyIds = Invoice::where('billing_month', $month)
+                ->where('status', 'sent')
+                ->pluck('society_id');
+            $query->whereNotIn('id', $alreadySentSocietyIds);
+        }
+
+        return response()->json($query->get());
     }
 
     /**
@@ -95,9 +117,13 @@ class InvoiceDispatchController extends Controller
      */
     public function dispatchOne(Request $request, Society $society)
     {
+        @set_time_limit(120);
         $month = $request->input('month', now()->format('Y-m'));
-        GenerateAndDispatchInvoice::dispatch($society, $month);
+        $force = (bool) $request->input('force', 0);
+
+        GenerateAndDispatchInvoice::dispatch($society, $month, 'manual', $force);
         $inv = Invoice::where('society_id', $society->id)->where('billing_month', $month)->first();
+
         return response()->json([
             'society_id' => $society->id,
             'name'       => $society->name,
@@ -249,16 +275,16 @@ class InvoiceDispatchController extends Controller
             }
             $title = "Sent Invoices (" . count($data) . ")";
         } elseif ($status === 'pending') {
-            $sentOrFailedSocietyIds = Invoice::where('billing_month', $month)
-                ->whereIn('status', ['sent', 'failed'])
+            $sentFailedOrSkipped = Invoice::where('billing_month', $month)
+                ->whereIn('status', ['sent', 'failed', 'skipped'])
                 ->pluck('society_id');
 
-            $pendingSocieties = Society::whereNotIn('id', $sentOrFailedSocietyIds)->orderBy('name')->get();
+            $pendingSocieties = Society::whereNotIn('id', $sentFailedOrSkipped)->orderBy('name')->get();
 
             foreach ($pendingSocieties as $s) {
                 $inv = Invoice::where('society_id', $s->id)->where('billing_month', $month)->first();
                 $invoiceNum = $inv ? $inv->invoice_number : 'Not Generated';
-                $statusLabel = $inv ? ucfirst($inv->status) : 'Not Generated';
+                $statusLabel = $inv ? ucfirst($inv->status) : 'Awaiting Send';
                 $amount = $inv ? $inv->total_amount : ($s->billing_amount ?: (($s->flats_families ?? 0) * ($s->rate_per_flat ?? 0)));
 
                 $data[] = [
@@ -269,6 +295,17 @@ class InvoiceDispatchController extends Controller
                 ];
             }
             $title = "Pending Queue (" . count($data) . ")";
+        } elseif ($status === 'skipped') {
+            $invoices = Invoice::where('billing_month', $month)->where('status', 'skipped')->with('society')->get();
+            foreach ($invoices as $inv) {
+                $data[] = [
+                    'name' => $inv->society->name ?? 'Unknown Society',
+                    'info' => $inv->invoice_number . ' (Skipped)',
+                    'detail' => $inv->error_log ?: 'No email configured',
+                    'amount' => '₹' . number_format($inv->total_amount, 2)
+                ];
+            }
+            $title = "Skipped Societies (" . count($data) . ")";
         } elseif ($status === 'failed') {
             $invoices = Invoice::where('billing_month', $month)->where('status', 'failed')->with('society')->get();
             foreach ($invoices as $inv) {
@@ -395,6 +432,55 @@ class InvoiceDispatchController extends Controller
         }
 
         return redirect()->back()->with('success', "Successfully generated invoice records for {$societies->count()} societies for {$month}.");
+    }
+
+    /**
+     * Export complete monthly invoice dispatch audit report as CSV.
+     */
+    public function exportAuditCsv(Request $request)
+    {
+        $month = $request->query('month', now()->format('Y-m'));
+        $societies = Society::with(['invoices' => function ($q) use ($month) {
+            $q->where('billing_month', $month);
+        }])->orderBy('name')->get();
+
+        $filename = "invoice-dispatch-audit-{$month}.csv";
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ];
+
+        $callback = function () use ($societies, $month) {
+            $file = fopen('php://output', 'w');
+            fputs($file, "\xEF\xBB\xBF"); // UTF-8 BOM
+            fputcsv($file, ['Society ID', 'Society Name', 'Contact Person', 'Email Address', 'Billing Month', 'Invoice Number', 'Amount (INR)', 'Dispatch Status', 'Mails Sent Count', 'Sent At', 'Skip / Failure Reason']);
+
+            foreach ($societies as $society) {
+                $inv = $society->invoices->first();
+                $status = $inv ? $inv->status : 'not_generated';
+                $amount = $inv ? $inv->total_amount : ($society->billing_amount ?: (($society->flats_families ?? 0) * ($society->rate_per_flat ?? 0)));
+                $invoiceNum = $inv ? $inv->invoice_number : ('INV-' . str_replace('-', '', $month) . '-' . str_pad($society->id, 4, '0', STR_PAD_LEFT));
+                $sentAt = ($inv && $inv->sent_at) ? $inv->sent_at->format('Y-m-d H:i:s') : '-';
+                $reason = $inv ? ($inv->error_log ?: '') : (empty($society->contact_person_email) ? 'No email address configured' : 'Awaiting dispatch');
+
+                fputcsv($file, [
+                    $society->id,
+                    $society->name,
+                    $society->contact_person_name ?? '-',
+                    $society->contact_person_email ?? 'No email set',
+                    $month,
+                    $invoiceNum,
+                    number_format((float)$amount, 2, '.', ''),
+                    strtoupper($status),
+                    $inv ? ($inv->mail_sent_count ?? 0) : 0,
+                    $sentAt,
+                    $reason,
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     /**

@@ -57,9 +57,23 @@
                     Not Generated
                 </span>
             @elseif ($invoice->status === 'sent')
-                <span class="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-extrabold text-emerald-700">
-                    Sent
+                <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-extrabold text-emerald-700">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    Sent {{ ($invoice->mail_sent_count ?? 0) > 1 ? '(' . $invoice->mail_sent_count . 'x)' : '' }}
                 </span>
+            @elseif ($invoice->status === 'skipped')
+                <div class="relative group inline-block">
+                    <span class="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-extrabold text-amber-700 cursor-pointer">
+                        <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                        Skipped
+                    </span>
+                    <!-- Skipped Tooltip -->
+                    <div class="absolute bottom-full left-1/2 z-20 mb-2 w-56 -translate-x-1/2 rounded-xl bg-slate-900 p-2.5 text-xs text-white shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition duration-200">
+                        <p class="font-extrabold mb-0.5">Skipped Reason:</p>
+                        <p class="text-[11px] text-slate-300 leading-tight">{{ $invoice->error_log ?: 'No email configured in society master.' }}</p>
+                        <div class="absolute top-full left-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1 rotate-45 bg-slate-900"></div>
+                    </div>
+                </div>
             @elseif ($invoice->status === 'failed')
                 <div class="relative group inline-block">
                     <span class="inline-flex rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-extrabold text-rose-700 cursor-pointer">
@@ -73,7 +87,7 @@
                     </div>
                 </div>
             @else
-                <span class="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-extrabold text-amber-700">
+                <span class="inline-flex rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-extrabold text-indigo-700">
                     Pending
                 </span>
             @endif

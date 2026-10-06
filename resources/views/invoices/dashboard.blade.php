@@ -156,9 +156,17 @@
                 'key' => 'pending',
                 'label' => 'Pending Queue',
                 'value' => number_format($pendingCount),
-                'note' => 'Awaiting generation/send',
+                'note' => 'Awaiting dispatch (has email)',
                 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
                 'style' => '--stat-accent: linear-gradient(135deg, #4f46e5, #06b6d4); --stat-tint: rgba(99, 102, 241, .14); --stat-shadow: rgba(79, 70, 229, .28); --stat-text: #4338ca;',
+            ],
+            [
+                'key' => 'skipped',
+                'label' => 'Skipped (No Email)',
+                'value' => number_format($skippedCount),
+                'note' => 'Missing contact email',
+                'icon' => 'M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636',
+                'style' => '--stat-accent: linear-gradient(135deg, #f59e0b, #d97706); --stat-tint: rgba(245, 158, 11, .15); --stat-shadow: rgba(245, 158, 11, .28); --stat-text: #b45309;',
             ],
             [
                 'key' => 'failed',
@@ -205,6 +213,13 @@
                             Dispatch Report
                         </button>
 
+                        <a href="{{ route('invoices.export-csv', ['month' => $month]) }}" class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 text-xs font-bold text-slate-700 hover:bg-emerald-700 hover:text-white hover:border-emerald-700 transition shadow-sm">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Export Audit (CSV)
+                        </a>
+
                         <button type="button" onclick="openPenaltyModal()" class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-amber-600 bg-amber-50 px-3.5 text-xs font-bold text-amber-700 transition hover:bg-amber-600 hover:text-white shadow-sm">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
@@ -212,11 +227,11 @@
                             Penalty Invoice
                         </button>
 
-                        <button type="button" onclick="confirmGlobalDispatch()" class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-slate-900 px-3.5 text-xs font-bold text-white transition hover:bg-emerald-700">
+                        <button type="button" onclick="confirmGlobalDispatch()" class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg {{ $pendingCount > 0 ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-600/20' : 'bg-slate-900 text-white hover:bg-emerald-700' }} px-3.5 text-xs font-bold transition">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                             </svg>
-                            Global Dispatch
+                            {{ $pendingCount > 0 ? "Dispatch Remaining ({$pendingCount})" : "Global Dispatch" }}
                         </button>
 
                         <button type="button" onclick="confirmGlobalGenerate()" class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-emerald-600 bg-emerald-50 px-3.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-600 hover:text-white">
@@ -292,7 +307,7 @@
             @endif
 
             <!-- Dynamic Stats Cards Row -->
-            <section class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+            <section class="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-5">
                 @foreach ($stats as $index => $stat)
                     <article onclick="showStatDetails('{{ $stat['key'] }}')" class="invoice-stat reveal rounded-2xl p-3.5 sm:p-5 cursor-pointer hover:scale-[1.02] hover:shadow-xl active:scale-[0.97] touch-manipulation select-none transition-all duration-200" style="{{ $stat['style'] }} --reveal-delay: {{ $index * 70 }}ms;">
                         <div class="relative z-10 flex flex-col justify-between h-full">
@@ -932,10 +947,26 @@
                 `;
                 modalTitle.textContent = 'Confirm Global Dispatch';
                 modalDescription.innerHTML = `
-                    This will generate and email invoices to <strong>all active societies</strong> for <strong>{{ Carbon\Carbon::parse($month . '-01')->format('F Y') }}</strong>.<br><br>
-                    <span class="text-xs font-bold text-amber-600 block bg-amber-50 rounded-lg p-2.5 border border-amber-200">
-                        ⚡ Dispatch runs live — you'll see each society's result in real time. The page will not freeze.
-                    </span>
+                    <div class="space-y-2.5 text-xs text-slate-600 text-left">
+                        <p>Dispatching invoices for: <strong>{{ Carbon\Carbon::parse($month . '-01')->format('F Y') }}</strong></p>
+                        <div class="grid grid-cols-3 gap-2 py-1">
+                            <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2 text-center">
+                                <span class="block font-black text-emerald-700 text-sm">{{ $sentCount }}</span>
+                                <span class="text-[9px] font-bold text-emerald-600 uppercase tracking-tight">Already Sent</span>
+                            </div>
+                            <div class="rounded-lg bg-indigo-50 border border-indigo-200 p-2 text-center">
+                                <span class="block font-black text-indigo-700 text-sm">{{ $pendingCount }}</span>
+                                <span class="text-[9px] font-bold text-indigo-600 uppercase tracking-tight">To Dispatch</span>
+                            </div>
+                            <div class="rounded-lg bg-amber-50 border border-amber-200 p-2 text-center">
+                                <span class="block font-black text-amber-700 text-sm">{{ $skippedCount }}</span>
+                                <span class="text-[9px] font-bold text-amber-600 uppercase tracking-tight">Missing Email</span>
+                            </div>
+                        </div>
+                        <p class="text-[11px] font-medium text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-200">
+                            🛡️ <strong>Safety check:</strong> The <strong>{{ $sentCount }} already-sent</strong> societies will be automatically skipped and will <strong>NOT</strong> receive duplicate emails. Only remaining pending societies will be emailed.
+                        </p>
+                    </div>
                 `;
                 modalEmailGroup.style.display = 'none';
                 modalSubmitBtn.textContent = 'Start Live Dispatch';
@@ -1572,10 +1603,10 @@
 
                 const csrf = document.querySelector('meta[name="csrf-token"]').content;
 
-                // 1. Fetch all societies
+                // 1. Fetch unsent societies for this month
                 let societies;
                 try {
-                    const res = await fetch('/invoices/societies-list', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    const res = await fetch(`/invoices/societies-list?month=${encodeURIComponent(month)}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
                     societies = await res.json();
                 } catch (e) {
                     drawerSubtitle.textContent = 'Failed to fetch society list.';
@@ -1584,7 +1615,9 @@
                 }
 
                 if (!societies.length) {
-                    drawerSubtitle.textContent = 'No societies found.';
+                    drawerSubtitle.textContent = 'All societies for this month have already been sent!';
+                    drawerIcon.innerHTML = `<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`;
+                    drawerIcon.className = 'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white';
                     drawerCloseBtn.classList.remove('hidden');
                     return;
                 }

@@ -10,20 +10,22 @@ class GenerateAndDispatchInvoice
     public Society $society;
     public string $billingMonth;
     public string $source;
+    public bool $force;
 
-    public function __construct(Society $society, ?string $billingMonth = null, string $source = 'manual')
+    public function __construct(Society $society, ?string $billingMonth = null, string $source = 'manual', bool $force = false)
     {
         $this->society = $society;
         $this->billingMonth = $billingMonth ?: now()->format('Y-m');
         $this->source = $source;
+        $this->force = $force;
     }
 
     /**
      * Static dispatch — runs synchronously (no queue worker needed).
      */
-    public static function dispatch(Society $society, ?string $billingMonth = null, string $source = 'manual'): void
+    public static function dispatch(Society $society, ?string $billingMonth = null, string $source = 'manual', bool $force = false): void
     {
-        (new self($society, $billingMonth, $source))->handle();
+        (new self($society, $billingMonth, $source, $force))->handle();
     }
 
     protected function logEvent(Invoice $invoice, string $event, ?string $details = null): void
@@ -47,45 +49,74 @@ class GenerateAndDispatchInvoice
         $invoice = null;
 
         try {
-            $amount = (float) ($this->society->billing_amount ?? 0);
+            // 1. Check if invoice already exists
+            $existing = Invoice::where('society_id', $this->society->id)
+                ->where('billing_month', $this->billingMonth)
+                ->first();
+
+            // 2. If already sent and force is not requested, skip immediately without mailing
+            if (!$this->force && $existing && $existing->status === 'sent') {
+                return;
+            }
+
+            // Preserve existing invoice number if generated, else create standard format
+            $invoiceNumber = $existing->invoice_number ?? ('INV-' . str_replace('-', '', $this->billingMonth) . '-' . str_pad($this->society->id, 4, '0', STR_PAD_LEFT));
+
+            // Preserve existing invoice amount if valid (> 0), else calculate from society config
+            $amount = ($existing && (float)$existing->total_amount > 0)
+                ? (float)$existing->total_amount
+                : (float)($this->society->billing_amount ?? 0);
+
             if ($amount <= 0) {
                 $amount = ((float) ($this->society->flats_families ?? 0)) * ((float) ($this->society->rate_per_flat ?? 0));
             }
 
-            $invoiceNumber = 'INV-' . str_replace('-', '', $this->billingMonth) . '-' . str_pad($this->society->id, 4, '0', STR_PAD_LEFT);
-
-            // Skip societies with no email — mark as 'skipped' and move on
+            // 3. Skip societies with no email — mark as 'skipped' and move on
             if (empty($this->society->contact_person_email)) {
                 $invoice = Invoice::updateOrCreate(
                     ['society_id' => $this->society->id, 'billing_month' => $this->billingMonth],
-                    ['invoice_number' => $invoiceNumber, 'total_amount' => $amount, 'status' => 'skipped', 'error_log' => 'No email address configured.']
+                    [
+                        'invoice_number' => $invoiceNumber,
+                        'total_amount'   => $amount,
+                        'status'         => 'skipped',
+                        'error_log'      => 'No email address configured in society master.'
+                    ]
                 );
-                $this->logEvent($invoice, 'skipped', 'No email address configured.');
+                $this->logEvent($invoice, 'skipped', 'No email address configured in society master.');
                 return;
             }
 
-            // Create / update invoice record
+            // 4. Create / update pending record
             $invoice = Invoice::updateOrCreate(
                 ['society_id' => $this->society->id, 'billing_month' => $this->billingMonth],
-                ['invoice_number' => $invoiceNumber, 'total_amount' => $amount, 'status' => 'pending', 'error_log' => null]
+                [
+                    'invoice_number' => $invoiceNumber,
+                    'total_amount'   => $amount,
+                    'status'         => 'pending',
+                    'error_log'      => null
+                ]
             );
-            $this->logEvent($invoice, 'generated', 'Invoice record generated.');
+            $this->logEvent($invoice, 'generated', 'Invoice record verified for dispatch.');
 
             $amountInWords = self::numberToWords($amount);
 
-            // Generate PDF
+            // 5. Generate PDF
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdfs.invoice', [
                 'invoice'       => $invoice,
                 'society'       => $this->society,
                 'amountInWords' => $amountInWords,
             ]);
 
-            // Send mail synchronously
+            // 6. Send mail synchronously
             \Illuminate\Support\Facades\Mail::to($this->society->contact_person_email)
                 ->send(new \App\Mail\SocietyInvoiceMail($invoice, $pdf->output()));
 
-            $invoice->update(['status' => 'sent', 'sent_at' => now()]);
-            $this->logEvent($invoice, 'sent', "Emailed to {$this->society->contact_person_email}");
+            $invoice->update([
+                'status'    => 'sent',
+                'sent_at'   => now(),
+                'error_log' => null,
+            ]);
+            $this->logEvent($invoice, 'sent', "Successfully emailed to {$this->society->contact_person_email}");
 
         } catch (\Throwable $e) {
             if ($invoice) {
